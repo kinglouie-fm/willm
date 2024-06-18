@@ -1,4 +1,12 @@
 <script setup>
+import { ref } from 'vue';
+import Sidebar from '@/components/Sidebar.vue';
+
+const isSidebarOpen = ref(false);
+
+const toggleSidebar = () => {
+  isSidebarOpen.value = !isSidebarOpen.value;
+};
 </script>
 
 <template>
@@ -13,10 +21,13 @@
       <!-- Lower Left -->
       <div class="col-6">
         <div class="mx-5">
-          <button type="button" class="btn btn-md">Correct</button>
+          <button type="button" class="btn btn-md" @click="toggleSidebar">Correct</button>
         </div>
       </div>
     </div>
+
+    <!-- Sidebar Component -->
+    <Sidebar :isOpen="isSidebarOpen" @close="toggleSidebar" />
   </div>
 </template>
 
@@ -41,25 +52,7 @@
 }
 
 input {
-  border: 1px solid #c5c5c5
-}
-
-.paraphrase-p {
-  white-space: nowrap;
-}
-
-.textarea-custom-prompt {
-  word-wrap: break-word;
-  overflow: auto;
-  resize: none;
-  color: #c5c5c5;
-}
-
-input {
+  border: 1px solid #c5c5c5;
   color: #838383;
-}
-
-.slider {
-  width: 300px;
 }
 </style>

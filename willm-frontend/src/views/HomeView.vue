@@ -6,22 +6,28 @@ import axios from 'axios';
 const isSidebarOpen = ref(false);
 const textareaSmall = ref('');
 const textareaBig = ref('');
+const mistakes = ref([]);
+const corrections = ref([]);
+const explanations = ref([]);
 
 const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value;
 };
 
 const handleCorrect = async () => {
-  toggleSidebar();
   const textToCorrect = textareaBig.value;
   try {
     const response = await axios.post('http://localhost:3000/correct', {
       text: textToCorrect,
     });
-    console.log(response.data); // Handle the response as needed
+    mistakes.value = response.data.mistakes;
+    corrections.value = response.data.corrections;
+    explanations.value = response.data.explanations;
+    console.log('API Response:', response.data); // Debugging: Log the response data
   } catch (error) {
     console.error('Error correcting text:', error);
   }
+  toggleSidebar();
 };
 </script>
 
@@ -61,7 +67,20 @@ const handleCorrect = async () => {
     </div>
 
     <!-- Sidebar Component -->
-    <Sidebar :isOpen="isSidebarOpen" @close="toggleSidebar" />
+    <Sidebar :isOpen="isSidebarOpen" @close="toggleSidebar">
+      <h4>Mistakes</h4>
+      <ul>
+        <li v-for="mistake in mistakes" :key="mistake">{{ mistake }}</li>
+      </ul>
+      <h4>Corrections</h4>
+      <ul>
+        <li v-for="correction in corrections" :key="correction">{{ correction }}</li>
+      </ul>
+      <h4>Explanations</h4>
+      <ul>
+        <li v-for="explanation in explanations" :key="explanation">{{ explanation }}</li>
+      </ul>
+    </Sidebar>
   </div>
 </template>
 

@@ -18,6 +18,7 @@ const closeSidebar = () => {
             <button class="btn-close m-2" @click="closeSidebar"></button>
             <div class="w-100 mt-2">
                 <h3>Feedback</h3>
+                <slot></slot>
             </div>
         </div>
     </div>

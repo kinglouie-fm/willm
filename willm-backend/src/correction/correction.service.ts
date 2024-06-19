@@ -8,8 +8,6 @@ export class CorrectionService {
 
   async callPythonService(text: string): Promise<any> {
     const prompt = `
-      You are an assistant designed to help improve academic writing by providing detailed feedback on grammar and vocabulary. The user will submit a piece of writing, and your task is to identify and correct grammatical and vocabulary mistakes.
-
       Regarding grammar, look for issues with sentence structure, verb tense, subject-verb agreement, punctuation, and other grammatical errors. Provide the grammatical rule when explaining the mistake. Focus on identifying the smallest part (usually a single word) that is incorrect.
       Regarding vocabulary, suggest better word choices where applicable and explain why the suggested word is more appropriate.
 

@@ -4,18 +4,24 @@ import Sidebar from '@/components/Sidebar.vue';
 import axios from 'axios';
 
 const isSidebarOpen = ref(false);
-const textareaSmall = ref('');
-const textareaBig = ref('');
+const textareaSmall = ref('Introduction');
+const textareaBig = ref("Mastering writing present a significant challenge for learners, despite occasional oversight regarding the critical role of writing proficiency for students. In particular, achiving proficiency in academic writing, which is one of the most important genres of writing, proves difficult for many due to it's complexity and the necessity for engaging in both critical thinking and high-quality writing techniques.");
 const mistakes = ref([]);
 const corrections = ref([]);
 const explanations = ref([]);
+const suggestions = ref(['The phrase "despite occasional oversight regarding the critical role of writing proficiency for students" is awkward and unclear. Rewriting it clarifies the oversight and emphasizes its importance.', ' The phrase "which is one of the most important genres of writing" is redundant and can be made more concise by simply stating "an essential genre of writing." This improves clarity and conciseness.'])
 
 const toggleSidebar = () => {
-  isSidebarOpen.value = !isSidebarOpen.value;
+  if (!isSidebarOpen.value) {
+    isSidebarOpen.value = true;
+  }
 };
 
 const handleCorrect = async () => {
   const textToCorrect = textareaBig.value;
+  mistakes.value = [];
+  corrections.value = [];
+  explanations.value = [];
   try {
     const response = await axios.post('http://localhost:3000/correct', {
       text: textToCorrect,
@@ -67,18 +73,14 @@ const handleCorrect = async () => {
     </div>
 
     <!-- Sidebar Component -->
-    <Sidebar :isOpen="isSidebarOpen" @close="toggleSidebar">
-      <h4>Mistakes</h4>
-      <ul>
-        <li v-for="mistake in mistakes" :key="mistake">{{ mistake }}</li>
-      </ul>
-      <h4>Corrections</h4>
-      <ul>
-        <li v-for="correction in corrections" :key="correction">{{ correction }}</li>
-      </ul>
+    <Sidebar :isOpen="isSidebarOpen" @close="isSidebarOpen = false">
       <h4>Explanations</h4>
       <ul>
         <li v-for="explanation in explanations" :key="explanation">{{ explanation }}</li>
+      </ul>
+      <h4>Suggestions</h4>
+      <ul>
+        <li v-for="suggestion in suggestions" :key="suggestion">{{ suggestion }}</li>
       </ul>
     </Sidebar>
   </div>

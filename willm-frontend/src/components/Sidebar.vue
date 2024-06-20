@@ -17,7 +17,7 @@ const closeSidebar = () => {
         <div class="sidebar-content d-flex flex-column align-items-end">
             <button class="btn-close m-2" @click="closeSidebar"></button>
             <div class="w-100 mt-2">
-                <h3>Feedback</h3>
+                <h1 class="text-center">Feedback</h1>
                 <slot></slot>
             </div>
         </div>

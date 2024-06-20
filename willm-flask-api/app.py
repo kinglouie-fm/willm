@@ -25,7 +25,9 @@ def handle_correction():
         max_tokens=2000
     )
 
-    return response.choices[0].message['content']
+    result = response.choices[0].message.content
+
+    return result
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000)

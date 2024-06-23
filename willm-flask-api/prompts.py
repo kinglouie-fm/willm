@@ -22,6 +22,8 @@ Separate each set of mistakes/corrections/explanations with a blank line.
 
 Don't use bullet points or any other sort of list. Separate each set of mistakes/corrections/explanations with a blank line.
 
+Provide the corrected version of the text with the necessary changes after "Correction:".
+
 If the submitted writing is good as it is, simply state: "The submitted writing is fine."
 
 Don't add anything else to the output.

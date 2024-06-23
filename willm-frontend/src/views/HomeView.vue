@@ -9,7 +9,15 @@ const textareaBig = ref("Mastering writing present a significant challenge for l
 const mistakes = ref([]);
 const corrections = ref([]);
 const explanations = ref([]);
-const suggestions = ref(['The phrase "despite occasional oversight regarding the critical role of writing proficiency for students" is awkward and unclear. Rewriting it clarifies the oversight and emphasizes its importance.', ' The phrase "which is one of the most important genres of writing" is redundant and can be made more concise by simply stating "an essential genre of writing." This improves clarity and conciseness.'])
+const organizationMistakes = ref([]);
+const organizationCorrections = ref([]);
+const organizationExplanations = ref([]);
+const coherenceMistakes = ref([]);
+const coherenceCorrections = ref([]);
+const coherenceExplanations = ref([]);
+const writingStyleMistakes = ref([]);
+const writingStyleCorrections = ref([]);
+const writingStyleExplanations = ref([]);
 
 const toggleSidebar = () => {
   if (!isSidebarOpen.value) {
@@ -22,17 +30,46 @@ const handleCorrect = async () => {
   mistakes.value = [];
   corrections.value = [];
   explanations.value = [];
+  organizationMistakes.value = [];
+  organizationCorrections.value = [];
+  organizationExplanations.value = [];
+  coherenceMistakes.value = [];
+  coherenceCorrections.value = [];
+  coherenceExplanations.value = [];
+  writingStyleMistakes.value = [];
+  writingStyleCorrections.value = [];
+  writingStyleExplanations.value = [];
+
   try {
     const response = await axios.post('http://localhost:3000/correct', {
       text: textToCorrect,
     });
+    console.log(response.data)
+
     mistakes.value = response.data.mistakes;
     corrections.value = response.data.corrections;
     explanations.value = response.data.explanations;
-    console.log('API Response:', response.data); // Debugging: Log the response data
+
+    // After initial feedback, get further analysis
+    // const furtherResponse = await axios.post('http://localhost:3000/correct/further-correct', {
+    //   text: response.data.correctedText,
+    // });
+
+    // console.log(furtherResponse.data)
+
+    // organizationMistakes.value = furtherResponse.data.organization.mistakes;
+    // organizationCorrections.value = furtherResponse.data.organization.corrections;
+    // organizationExplanations.value = furtherResponse.data.organization.explanations;
+    // coherenceMistakes.value = furtherResponse.data.coherence.mistakes;
+    // coherenceCorrections.value = furtherResponse.data.coherence.corrections;
+    // coherenceExplanations.value = furtherResponse.data.coherence.explanations;
+    // writingStyleMistakes.value = furtherResponse.data.writingStyle.mistakes;
+    // writingStyleCorrections.value = furtherResponse.data.writingStyle.corrections;
+    // writingStyleExplanations.value = furtherResponse.data.writingStyle.explanations;
   } catch (error) {
     console.error('Error correcting text:', error);
   }
+
   toggleSidebar();
 };
 </script>
@@ -78,9 +115,29 @@ const handleCorrect = async () => {
       <ul>
         <li v-for="explanation in explanations" :key="explanation">{{ explanation }}</li>
       </ul>
-      <h4>Suggestions</h4>
+      <h4>Organization Feedback</h4>
       <ul>
-        <li v-for="suggestion in suggestions" :key="suggestion">{{ suggestion }}</li>
+        <li v-for="(mistake, index) in organizationMistakes" :key="index">
+          <strong>M:</strong> {{ mistake }} <br>
+          <strong>C:</strong> {{ organizationCorrections[index] }} <br>
+          <strong>E:</strong> {{ organizationExplanations[index] }}
+        </li>
+      </ul>
+      <h4>Coherence Feedback</h4>
+      <ul>
+        <li v-for="(mistake, index) in coherenceMistakes" :key="index">
+          <strong>M:</strong> {{ mistake }} <br>
+          <strong>C:</strong> {{ coherenceCorrections[index] }} <br>
+          <strong>E:</strong> {{ coherenceExplanations[index] }}
+        </li>
+      </ul>
+      <h4>Writing Style Feedback</h4>
+      <ul>
+        <li v-for="(mistake, index) in writingStyleMistakes" :key="index">
+          <strong>M:</strong> {{ mistake }} <br>
+          <strong>C:</strong> {{ writingStyleCorrections[index] }} <br>
+          <strong>E:</strong> {{ writingStyleExplanations[index] }}
+        </li>
       </ul>
     </Sidebar>
   </div>

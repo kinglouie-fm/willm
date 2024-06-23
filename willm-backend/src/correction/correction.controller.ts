@@ -7,12 +7,12 @@ export class CorrectionController {
 
   @Post()
   async handleCorrection(@Body() body: { text: string }) {
-    const result = await this.correctionService.callPythonService(body.text);
-    // const result = {
-    //   result: 'Mistakes: ["present", "oversight", "achiving", "it`s"]\n' +
-    //       'Corrections: ["presents", "oversights", "achieving", "its"]\n' +
-    //       'Explanations: ["`Present` should be `presents` to agree with the singular subject `Mastering writing` (subject-verb agreement).", "`Oversight` should be plural `oversights` to match `occasional,` which implies more than one instance (noun number agreement).", "`Achiving` is a misspelling and should be `achieving` (correct spelling).", "`It"s` is a contraction of `it is` and should be `its` to indicate possession (possessive pronoun).]'
-    // }
+    // const result = await this.correctionService.callPythonService(body.text);
+    const result = {
+      result: 'Mistakes: ["present", "oversight", "achiving", "it`s"]\n' +
+          'Corrections: ["presents", "oversights", "achieving", "its"]\n' +
+          'Explanations: ["`Present` should be `presents` to agree with the singular subject `Mastering writing` (subject-verb agreement).", "`Oversight` should be plural `oversights` to match `occasional,` which implies more than one instance (noun number agreement).", "`Achiving` is a misspelling and should be `achieving` (correct spelling).", "`It"s` is a contraction of `it is` and should be `its` to indicate possession (possessive pronoun).]'
+    }
     console.log(result);
 
     // Regular expressions to match content between brackets

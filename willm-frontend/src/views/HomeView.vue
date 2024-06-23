@@ -51,21 +51,21 @@ const handleCorrect = async () => {
     explanations.value = response.data.explanations;
 
     // After initial feedback, get further analysis
-    // const furtherResponse = await axios.post('http://localhost:3000/correct/further-correct', {
-    //   text: response.data.correctedText,
-    // });
+    const furtherResponse = await axios.post('http://localhost:3000/correct/further-correct', {
+      text: response.data.correctedText,
+    });
 
-    // console.log(furtherResponse.data)
+    console.log(furtherResponse.data)
 
-    // organizationMistakes.value = furtherResponse.data.organization.mistakes;
-    // organizationCorrections.value = furtherResponse.data.organization.corrections;
-    // organizationExplanations.value = furtherResponse.data.organization.explanations;
-    // coherenceMistakes.value = furtherResponse.data.coherence.mistakes;
-    // coherenceCorrections.value = furtherResponse.data.coherence.corrections;
-    // coherenceExplanations.value = furtherResponse.data.coherence.explanations;
-    // writingStyleMistakes.value = furtherResponse.data.writingStyle.mistakes;
-    // writingStyleCorrections.value = furtherResponse.data.writingStyle.corrections;
-    // writingStyleExplanations.value = furtherResponse.data.writingStyle.explanations;
+    organizationMistakes.value = furtherResponse.data.organization.mistakes;
+    organizationCorrections.value = furtherResponse.data.organization.corrections;
+    organizationExplanations.value = furtherResponse.data.organization.explanations;
+    coherenceMistakes.value = furtherResponse.data.coherence.mistakes;
+    coherenceCorrections.value = furtherResponse.data.coherence.corrections;
+    coherenceExplanations.value = furtherResponse.data.coherence.explanations;
+    writingStyleMistakes.value = furtherResponse.data.writingStyle.mistakes;
+    writingStyleCorrections.value = furtherResponse.data.writingStyle.corrections;
+    writingStyleExplanations.value = furtherResponse.data.writingStyle.explanations;
   } catch (error) {
     console.error('Error correcting text:', error);
   }

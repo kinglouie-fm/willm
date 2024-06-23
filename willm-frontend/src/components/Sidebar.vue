@@ -34,6 +34,7 @@ const closeSidebar = () => {
     background-color: white;
     box-shadow: -2px 0 5px rgba(0, 0, 0, 0.5);
     transition: right 0.3s ease;
+    overflow-y: auto;
 }
 
 .sidebar-open {

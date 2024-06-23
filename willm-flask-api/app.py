@@ -67,9 +67,9 @@ def handle_further_correction():
             ],
             max_tokens=2000
         )
+        print(response.choices[0].message.content)
         results[key] = process_further_result(response.choices[0].message.content)
 
-    print(results)
     return jsonify(results)
 
 def process_initial_result(result):
@@ -80,13 +80,16 @@ def process_initial_result(result):
     corrected_text = ""
 
     # Use regex to find mistakes, corrections, explanations, and corrected text
+    fine_match = re.search(r'The submitted writing is fine.', result)
     mistakes_match = re.findall(r'M: (.*?)\n', result, re.DOTALL)
     corrections_match = re.findall(r'C: (.*?)\n', result, re.DOTALL)
     explanations_match = re.findall(r'E: (.*?)(?=\nM:|Correction:|$)', result, re.DOTALL)
     corrected_text_match = re.search(r'Correction:(.*)', result, re.DOTALL)
 
-    print(mistakes_match)
-
+    if fine_match:
+        mistakes.append("The submitted writing is fine.")
+        corrections.append("The submitted writing is fine.")
+        explanations.append("The submitted writing is fine.")
     if mistakes_match:
         mistakes = [m.strip().replace("'", "").replace('"', "") for m in mistakes_match]
     if corrections_match:
@@ -96,7 +99,6 @@ def process_initial_result(result):
     if corrected_text_match:
         corrected_text = corrected_text_match.group(1).strip().replace("'", "").replace('"', "")
 
-    print(mistakes)
     return mistakes, corrections, explanations, corrected_text
 
 def process_further_result(result):
@@ -108,10 +110,15 @@ def process_further_result(result):
     }
 
     # Use regex to find mistakes, corrections, and explanations
+    fine_match = re.search(r'The submitted writing is fine.', result)
     mistakes_match = re.findall(r'M: (.*?)\n', result, re.DOTALL)
     corrections_match = re.findall(r'C: (.*?)\n', result, re.DOTALL)
     explanations_match = re.findall(r'E: (.*?)(?=\nM:|Correction:|$)', result, re.DOTALL)
 
+    if fine_match:
+        feedback["mistakes"].append("The submitted writing is fine.")
+        feedback["corrections"].append("The submitted writing is fine.")
+        feedback["explanations"].append("The submitted writing is fine.")
     if mistakes_match:
         feedback["mistakes"] = [m.strip().replace("'", "").replace('"', "") for m in mistakes_match]
     if corrections_match:

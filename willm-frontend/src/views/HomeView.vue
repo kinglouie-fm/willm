@@ -81,16 +81,32 @@ const activatePopovers = () => {
       placement: 'top'
     });
 
+    el.addEventListener('mouseenter', () => {
+      const popoverInstance = bootstrap.Popover.getInstance(el);
+      if (popoverInstance) {
+        popoverInstance.show();
+      }
+    });
+
+    el.addEventListener('mouseleave', () => {
+      const popoverInstance = bootstrap.Popover.getInstance(el);
+      if (popoverInstance) {
+        popoverInstance.hide();
+      }
+    });
+
     el.addEventListener('click', (e) => {
       e.stopPropagation();
-      const correction = el.getAttribute('data-content');
+      const correction = el.getAttribute('data-bs-content');
       el.innerText = correction;
       el.classList.remove('mistake');
       el.removeAttribute('data-bs-toggle');
       el.removeAttribute('data-bs-content');
+      el.removeAttribute('aria-describedby');
       const popoverInstance = bootstrap.Popover.getInstance(el);
       if (popoverInstance) {
         popoverInstance.dispose();
+        el.replaceWith(el.cloneNode(true));
       }
     });
   });

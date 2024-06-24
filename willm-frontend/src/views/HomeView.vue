@@ -1,11 +1,12 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import Sidebar from '@/components/Sidebar.vue';
 import axios from 'axios';
+import * as bootstrap from 'bootstrap';
 
 const isSidebarOpen = ref(false);
 const textareaSmall = ref('Introduction');
-const textareaBig = ref("Mastering writing present a significant challenge for learners, despite occasional oversight regarding the critical role of writing proficiency for students. In particular, achiving proficiency in academic writing, which is one of the most important genres of writing, proves difficult for many due to it's complexity and the necessity for engaging in both critical thinking and high-quality writing techniques.");
+const textareaBig = ref();
 const mistakes = ref([]);
 const corrections = ref([]);
 const explanations = ref([]);
@@ -18,6 +19,7 @@ const coherenceExplanations = ref([]);
 const writingStyleMistakes = ref([]);
 const writingStyleCorrections = ref([]);
 const writingStyleExplanations = ref([]);
+const editableDiv = ref(null);
 
 const toggleSidebar = () => {
   if (!isSidebarOpen.value) {
@@ -26,7 +28,7 @@ const toggleSidebar = () => {
 };
 
 const handleCorrect = async () => {
-  const textToCorrect = textareaBig.value;
+  const textToCorrect = editableDiv.value.innerText;
   mistakes.value = [];
   corrections.value = [];
   explanations.value = [];
@@ -50,27 +52,52 @@ const handleCorrect = async () => {
     corrections.value = response.data.corrections;
     explanations.value = response.data.explanations;
 
-    // After initial feedback, get further analysis
-    // const furtherResponse = await axios.post('http://localhost:3000/correct/further-correct', {
-    //   text: response.data.correctedText,
-    // });
+    highlightMistakes();
 
-    // console.log(furtherResponse.data)
-
-    // organizationMistakes.value = furtherResponse.data.organization.mistakes;
-    // organizationCorrections.value = furtherResponse.data.organization.corrections;
-    // organizationExplanations.value = furtherResponse.data.organization.explanations;
-    // coherenceMistakes.value = furtherResponse.data.coherence.mistakes;
-    // coherenceCorrections.value = furtherResponse.data.coherence.corrections;
-    // coherenceExplanations.value = furtherResponse.data.coherence.explanations;
-    // writingStyleMistakes.value = furtherResponse.data.writingStyle.mistakes;
-    // writingStyleCorrections.value = furtherResponse.data.writingStyle.corrections;
-    // writingStyleExplanations.value = furtherResponse.data.writingStyle.explanations;
   } catch (error) {
     console.error('Error correcting text:', error);
   }
 
   toggleSidebar();
+};
+
+const highlightMistakes = () => {
+  let htmlContent = editableDiv.value.innerHTML;
+  mistakes.value.forEach((mistake, index) => {
+    const regex = new RegExp(`(${mistake})`, 'gi');
+    htmlContent = htmlContent.replace(regex, `<span class="mistake" data-bs-toggle="popover" data-bs-content="${corrections.value[index]}">$1</span>`);
+  });
+  editableDiv.value.innerHTML = htmlContent;
+  activatePopovers();
+};
+
+const activatePopovers = () => {
+  const popoverElements = editableDiv.value.querySelectorAll('.mistake');
+  popoverElements.forEach((el) => {
+    new bootstrap.Popover(el, {
+      trigger: 'hover',
+      html: true,
+      container: 'body',
+      placement: 'top'
+    });
+
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const correction = el.getAttribute('data-content');
+      el.innerText = correction;
+      el.classList.remove('mistake');
+      el.removeAttribute('data-bs-toggle');
+      el.removeAttribute('data-bs-content');
+      const popoverInstance = bootstrap.Popover.getInstance(el);
+      if (popoverInstance) {
+        popoverInstance.dispose();
+      }
+    });
+  });
+};
+
+const updateText = () => {
+  textareaBig.value = editableDiv.value.innerText;
 };
 </script>
 
@@ -87,8 +114,9 @@ const handleCorrect = async () => {
         </div>
         <div class="row mx-5">
           <div class="col-12 p-0">
-            <textarea v-model="textareaBig" class="form-control textarea-big" placeholder="Enter writing..."
-              required></textarea>
+            <div ref="editableDiv" contenteditable="true" class="form-control textarea-big" @input="updateText">
+              {{ textareaBig }}
+            </div>
           </div>
         </div>
       </div>
@@ -167,10 +195,5 @@ const handleCorrect = async () => {
   height: 50px;
   line-height: 1.5rem;
   font-size: 1.1rem;
-}
-
-input {
-  border: 1px solid #c5c5c5;
-  color: #838383;
 }
 </style>

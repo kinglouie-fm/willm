@@ -1,1 +1,8 @@
-app {}
+.mistake {
+    background-color: #f8d7da;
+    color: #721c24;
+    cursor: pointer;
+    padding: 0 2px;
+    border-radius: 2px;
+    text-decoration-color: red !important;
+}

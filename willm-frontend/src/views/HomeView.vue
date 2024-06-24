@@ -65,11 +65,13 @@ const highlightMistakes = () => {
   let htmlContent = editableDiv.value.innerHTML;
   mistakes.value.forEach((mistake, index) => {
     const regex = new RegExp(`(${mistake})`, 'gi');
-    htmlContent = htmlContent.replace(regex, `<span class="mistake" data-bs-toggle="popover" data-bs-content="${corrections.value[index]}">$1</span>`);
+    htmlContent = htmlContent.replace(regex,
+      `<span class="mistake" data-bs-toggle="popover" data-bs-html="true" data-bs-content="<b>Correction</b>: ${corrections.value[index]}<br><b>Explanation</b>: ${explanations.value[index]}">$1</span>`);
   });
   editableDiv.value.innerHTML = htmlContent;
   activatePopovers();
 };
+
 
 const activatePopovers = () => {
   const popoverElements = editableDiv.value.querySelectorAll('.mistake');
@@ -97,12 +99,12 @@ const activatePopovers = () => {
 
     el.addEventListener('click', (e) => {
       e.stopPropagation();
-      const correction = el.getAttribute('data-bs-content');
+      const content = el.getAttribute('data-bs-content');
+      const correction = content.split('<br>')[0].replace('<b>Correction</b>: ', '');
       el.innerText = correction;
       el.classList.remove('mistake');
       el.removeAttribute('data-bs-toggle');
       el.removeAttribute('data-bs-content');
-      el.removeAttribute('aria-describedby');
       const popoverInstance = bootstrap.Popover.getInstance(el);
       if (popoverInstance) {
         popoverInstance.dispose();
@@ -155,10 +157,10 @@ const updateText = () => {
 
     <!-- Sidebar Component -->
     <Sidebar :isOpen="isSidebarOpen" @close="isSidebarOpen = false">
-      <h4>Explanations</h4>
+      <!-- <h4>Explanations</h4>
       <ul>
         <li v-for="explanation in explanations" :key="explanation">{{ explanation }}</li>
-      </ul>
+      </ul> -->
       <h4>Organization Feedback</h4>
       <ul>
         <li v-for="(mistake, index) in organizationMistakes" :key="index">

@@ -1,0 +1,22 @@
+services:
+  flask-api:
+    build:
+      context: ./willm-flask-api
+    ports:
+      - "8000:8000"
+    environment:
+      - FLASK_API_KEY=${FLASK_API_KEY}
+
+  nestjs:
+    build:
+      context: ./willm-backend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - flask-api
+    environment:
+      - AUTH_SERVER_URL=${AUTH_SERVER_URL}
+      - REALM=${REALM}
+      - CLIENT_ID=${CLIENT_ID}
+      - KEYCLOAK_SECRET=${KEYCLOAK_SECRET}
+      - REALM_PUBLIC_KEY=${REALM_PUBLIC_KEY}

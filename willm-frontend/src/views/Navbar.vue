@@ -1,22 +1,30 @@
 <script setup>
+import { auth } from '../stores/auth'
 
+const logout = async () => {
+    await auth.logout()
+}
 </script>
 
 <template>
     <nav class="navbar navbar-expand">
         <div class="container-fluid d-flex flex-column align-items-stretch my-0 mx-3">
             <div class="row align-items-center justify-content-between">
-                <div class="col-4 text-end mt-1"></div>
-                <div class="col-4 text-center mt-2">
-                    <h1 class="title">WILLM</h1>
-                </div>
-                <div class="col-4 text-end mt-1">
+                <div class="col-4 text-start mt-1">
                     <a-popover title="Information" placement="bottomRight">
                         <template #content>
                             <p>Information</p>
                         </template>
                         <img class="item-popover" src="/images/icons/icon-info-01.svg" />
                     </a-popover>
+                </div>
+                <div class="col-4 text-center mt-2">
+                    <h1 class="title">WILLM</h1>
+                </div>
+                <div class="col-4 text-end mt-1">
+                    <button class="btn" @click="logout">
+                        <h4>Logout</h4>
+                    </button>
                 </div>
             </div>
         </div>

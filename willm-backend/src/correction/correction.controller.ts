@@ -1,10 +1,12 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards } from '@nestjs/common';
 import { CorrectionService } from './correction.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('correct')
 export class CorrectionController {
   constructor(private readonly correctionService: CorrectionService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post()
   async handleCorrection(@Body() body: { text: string }) {
     const initialResult = await this.correctionService.callPythonService(body.text, 'initial');
@@ -40,6 +42,7 @@ export class CorrectionController {
     };
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('further-correct')
   async handleFurtherCorrection(@Body() body: { text: string }) {
     const furtherResult = await this.correctionService.callPythonService(body.text, 'further');

@@ -1,11 +1,11 @@
 // src/user/user.controller.ts
-import { Controller, Post, Body, UnauthorizedException } from '@nestjs/common';
+import { Controller, Post, Body, Res, UnauthorizedException, Get, Req } from '@nestjs/common';
+import { Response, Request } from 'express';
 import { UserService } from './user.service';
-import { UseGuards, Get } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('user')
 export class UserController {
+
   constructor(private readonly userService: UserService) {}
 
   @Post('register')
@@ -15,18 +15,32 @@ export class UserController {
   }
 
   @Post('login')
-  async login(@Body('username') username: string, @Body('password') password: string): Promise<{ token: string }> {
+  async login(@Body('username') username: string, @Body('password') password: string, @Res() res: Response): Promise<any> {
     const isValid = await this.userService.validateUser(username, password);
     if (!isValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
     const token = this.userService.generateJwtToken(username);
-    return { token };
+    res.cookie('auth_token', token, { httpOnly: true, secure: false });
+    return res.status(200).json({ message: 'Login successful' });
+  }
+
+  @Post('logout')
+  async logout(@Res() res: Response): Promise<any> {
+    res.clearCookie('auth_token');
+    return res.send({ message: 'Logout successful' });
   }
 
   @Get('profile')
-  @UseGuards(JwtAuthGuard)
-  async profile(@Body('username') username: string): Promise<{ username: string }> {
-    return { username };
+  async profile(@Req() req: Request, @Res() res: Response): Promise<any> {
+    const token = req.cookies['auth_token'];
+    if (!token) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+    const decoded = this.userService.verifyJwtToken(token);
+    if (!decoded) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+    return res.status(200).json({ username: decoded.username });
   }
 }

@@ -12,11 +12,9 @@ import Antd from 'ant-design-vue';
 
 const app = createApp(App)
 
+axios.defaults.withCredentials = true;
+
 app.use(router)
 app.use(Antd)
 
 app.mount('#app')
-
-if (auth.token) {
-  axios.defaults.headers.common['Authorization'] = `Bearer ${auth.token}`
-}

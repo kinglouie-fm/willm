@@ -1,14 +1,14 @@
-// src/auth/jwt-auth.guard.ts
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import { Request } from 'express';
 import { UserService } from '../user/user.service';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
   constructor(private readonly userService: UserService) {}
 
-  canActivate(context: ExecutionContext): boolean | Promise<boolean> {
-    const request = context.switchToHttp().getRequest();
-    const token = request.headers.authorization?.split(' ')[1];
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context.switchToHttp().getRequest<Request>();
+    const token = request.cookies['auth_token']; // Read token from cookie
     if (!token) {
       throw new UnauthorizedException('No token provided');
     }

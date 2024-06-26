@@ -1,7 +1,6 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import MainView from '../views/MainView.vue'
-import LoginView from '../views/LoginView.vue'
-import { auth } from '../stores/auth'
+import { createRouter, createWebHistory } from 'vue-router';
+import MainView from '../views/MainView.vue';
+import LoginView from '../views/LoginView.vue';
 
 const routes = [
   {
@@ -15,19 +14,30 @@ const routes = [
     name: 'login',
     component: LoginView
   }
-]
+];
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes
-})
+});
 
-router.beforeEach((to, from, next) => {
-  if (to.matched.some(record => record.meta.requiresAuth) && !auth.token) {
-    next({ name: 'login' })
+router.beforeEach(async (to, from, next) => {
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    try {
+      const response = await fetch('http://localhost:3000/user/profile', {
+        credentials: 'include'
+      });
+      if (response.status === 200) {
+        next();
+      } else {
+        next({ name: 'login' });
+      }
+    } catch (error) {
+      next({ name: 'login' });
+    }
   } else {
-    next()
+    next();
   }
-})
+});
 
-export default router
+export default router;

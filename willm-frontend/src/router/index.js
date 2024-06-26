@@ -23,6 +23,8 @@ const router = createRouter({
 
 router.beforeEach(async (to, from, next) => {
   if (to.matched.some(record => record.meta.requiresAuth)) {
+    // Frontend does not directly check the token in the cookie immediately after login 
+    // but relies on the server-side validation for protected routes.
     try {
       const response = await fetch('http://localhost:3000/user/profile', {
         credentials: 'include'

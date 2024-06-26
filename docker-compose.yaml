@@ -14,9 +14,14 @@ services:
       - "3000:3000"
     depends_on:
       - flask-api
-    environment:
-      - AUTH_SERVER_URL=${AUTH_SERVER_URL}
-      - REALM=${REALM}
-      - CLIENT_ID=${CLIENT_ID}
-      - KEYCLOAK_SECRET=${KEYCLOAK_SECRET}
-      - REALM_PUBLIC_KEY=${REALM_PUBLIC_KEY}
+      - mongodb
+
+  mongodb:
+    image: mongo:7.0
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-data:/data/db
+
+volumes:
+  mongodb-data:

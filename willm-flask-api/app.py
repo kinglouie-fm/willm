@@ -2,8 +2,10 @@ from flask import Flask, request, jsonify
 import openai
 from dotenv import load_dotenv
 import os
-import re  # Import the regular expression library
-import json  # Import the json library
+import re
+import json
+import asyncio
+import aiohttp
 from prompts import SYSTEM_PROMPT, GRAMMAR_VOCAB_PROMPT, ORGANIZATION_PROMPT, COHERENCE_PROMPT, WRITING_STYLE_PROMPT
 
 load_dotenv()
@@ -12,24 +14,35 @@ app = Flask(__name__)
 
 openai.api_key = os.getenv('FLASK_API_KEY')
 
+async def fetch_openai_response(session, prompt_template, data):
+    prompt = prompt_template.format(text=data)
+    async with session.post(
+        'https://api.openai.com/v1/chat/completions',
+        headers={
+            'Authorization': f'Bearer {openai.api_key}',
+            'Content-Type': 'application/json'
+        },
+        json={
+            "model": "gpt-4o",
+            "messages": [
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": prompt}
+            ],
+            "max_tokens": 2000
+        }
+    ) as response:
+        response_json = await response.json()
+        return response_json['choices'][0]['message']['content']
+
 @app.route('/handle-correction', methods=['POST'])
-def handle_correction():
+async def handle_correction():
     data = request.json.get('text')
 
     if not data:
         return jsonify({"error": "No text provided"}), 400
 
-    prompt = GRAMMAR_VOCAB_PROMPT.format(text=data)
-    response = openai.chat.completions.create(
-        model="gpt-4o",
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": prompt}
-        ],
-        max_tokens=2000
-    )
-
-    result = response.choices[0].message.content
+    async with aiohttp.ClientSession() as session:
+        result = await fetch_openai_response(session, GRAMMAR_VOCAB_PROMPT, data)
 
     print(result)
 
@@ -44,7 +57,7 @@ def handle_correction():
     })
 
 @app.route('/handle-further-correction', methods=['POST'])
-def handle_further_correction():
+async def handle_further_correction():
     data = request.json.get('text')
 
     if not data:
@@ -56,30 +69,20 @@ def handle_further_correction():
         "writingStyle": WRITING_STYLE_PROMPT
     }
 
-    results = {}
-    for key, prompt_template in prompts.items():
-        prompt = prompt_template.format(text=data)
-        response = openai.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": prompt}
-            ],
-            max_tokens=2000
-        )
-        print(response.choices[0].message.content)
-        results[key] = process_further_result(response.choices[0].message.content)
+    async with aiohttp.ClientSession() as session:
+        tasks = [fetch_openai_response(session, prompt_template, data) for prompt_template in prompts.values()]
+        results = await asyncio.gather(*tasks)
 
-    return jsonify(results)
+    feedback = {key: process_further_result(result) for key, result in zip(prompts.keys(), results)}
+
+    return jsonify(feedback)
 
 def process_initial_result(result):
-    # Extract mistakes, corrections, explanations, and corrected text from the result
     mistakes = []
     corrections = []
     explanations = []
     corrected_text = ""
 
-    # Use regex to find mistakes, corrections, explanations, and corrected text
     fine_match = re.search(r'The submitted writing is fine.', result)
     mistakes_match = re.findall(r'M: (.*?)\n', result, re.DOTALL)
     corrections_match = re.findall(r'C: (.*?)\n', result, re.DOTALL)
@@ -102,14 +105,12 @@ def process_initial_result(result):
     return mistakes, corrections, explanations, corrected_text
 
 def process_further_result(result):
-    # Extract feedback (mistakes, corrections, explanations) from the result
     feedback = {
         "mistakes": [],
         "corrections": [],
         "explanations": []
     }
 
-    # Use regex to find mistakes, corrections, and explanations
     fine_match = re.search(r'The submitted writing is fine.', result)
     mistakes_match = re.findall(r'M: (.*?)\n', result, re.DOTALL)
     corrections_match = re.findall(r'C: (.*?)\n', result, re.DOTALL)

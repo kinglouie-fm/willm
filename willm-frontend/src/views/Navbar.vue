@@ -1,5 +1,12 @@
 <script setup>
+import { ref } from 'vue'
 import { auth } from '../stores/auth'
+
+const mode = ref('productive')
+
+const handleSwitchChange = (event) => {
+    mode.value = event.target.checked ? 'learning' : 'productive'
+}
 
 const logout = async () => {
     await auth.logout()
@@ -11,12 +18,11 @@ const logout = async () => {
         <div class="container-fluid d-flex flex-column align-items-stretch my-0 mx-3">
             <div class="row align-items-center justify-content-between">
                 <div class="col-4 text-start mt-1">
-                    <a-popover title="Information" placement="bottomRight">
-                        <template #content>
-                            <p>Information</p>
-                        </template>
-                        <img class="item-popover" src="/images/icons/icon-info-01.svg" />
-                    </a-popover>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault"
+                            @change="handleSwitchChange">
+                        <label class="form-check-label" for="flexSwitchCheckDefault">{{ mode }}</label>
+                    </div>
                 </div>
                 <div class="col-4 text-center mt-2">
                     <h1 class="title">WILLM</h1>

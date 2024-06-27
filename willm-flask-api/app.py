@@ -21,7 +21,7 @@ def handle_correction():
 
     prompt = GRAMMAR_VOCAB_PROMPT.format(text=data)
     response = openai.chat.completions.create(
-        model="gpt-4",
+        model="gpt-4o",
         messages=[
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": prompt}
@@ -60,7 +60,7 @@ def handle_further_correction():
     for key, prompt_template in prompts.items():
         prompt = prompt_template.format(text=data)
         response = openai.chat.completions.create(
-            model="gpt-4",
+            model="gpt-4o",
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": prompt}

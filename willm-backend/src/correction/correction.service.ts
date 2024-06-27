@@ -8,9 +8,9 @@ export class CorrectionService {
   async callPythonService(text: string, phase: string) {
     let apiUrl;
     if (phase === 'initial') {
-      apiUrl = 'http://localhost:8000/handle-correction';
+      apiUrl = 'http://flask-api:8000/handle-correction';
     } else {
-      apiUrl = 'http://localhost:8000/handle-further-correction';
+      apiUrl = 'http://flask-api:8000/handle-further-correction';
     }
 
     const response = await this.httpService.post(apiUrl, { text }).toPromise();

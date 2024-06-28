@@ -7,12 +7,12 @@ import { Issue } from './schema/issue.schema';
 export class IssueService {
   constructor(@InjectModel(Issue.name) private issueModel: Model<Issue>) {}
 
-  async addIssue(userId: string, issueData: any): Promise<void> {
+  async addIssue(userId: string, issueData: any): Promise<Issue> {
     const issue = new this.issueModel({
       ...issueData,
       user_id: userId,
       issue_id: new Types.ObjectId().toString(),
     });
-    await issue.save();
+    return issue.save();
   }
 }

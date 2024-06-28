@@ -3,10 +3,9 @@ import openai
 from dotenv import load_dotenv
 import os
 import re
-import json
 import asyncio
 import aiohttp
-from prompts import SYSTEM_PROMPT, GRAMMAR_VOCAB_PROMPT, ORGANIZATION_PROMPT, COHERENCE_PROMPT, WRITING_STYLE_PROMPT
+from prompts import SYSTEM_PROMPT, GRAMMAR_PROMPT, VOCAB_PROMPT, ORGANIZATION_PROMPT, COHERENCE_PROMPT, WRITING_STYLE_PROMPT
 
 load_dotenv()
 
@@ -34,6 +33,21 @@ async def fetch_openai_response(session, prompt_template, data):
         response_json = await response.json()
         return response_json['choices'][0]['message']['content']
 
+async def handle_grammar(session, data):
+    return await fetch_openai_response(session, GRAMMAR_PROMPT, data)
+
+async def handle_vocabulary(session, data):
+    return await fetch_openai_response(session, VOCAB_PROMPT, data)
+
+async def handle_organization(session, data):
+    return await fetch_openai_response(session, ORGANIZATION_PROMPT, data)
+
+async def handle_coherence(session, data):
+    return await fetch_openai_response(session, COHERENCE_PROMPT, data)
+
+async def handle_writing_style(session, data):
+    return await fetch_openai_response(session, WRITING_STYLE_PROMPT, data)
+
 @app.route('/handle-correction', methods=['POST'])
 async def handle_correction():
     data = request.json.get('text')
@@ -42,12 +56,12 @@ async def handle_correction():
         return jsonify({"error": "No text provided"}), 400
 
     async with aiohttp.ClientSession() as session:
-        result = await fetch_openai_response(session, GRAMMAR_VOCAB_PROMPT, data)
+        grammar_result = await handle_grammar(session, data)
+        vocab_result = await handle_vocabulary(session, data)
 
-    print(result)
-
-    # Process result to extract mistakes, corrections, explanations, and corrected text
-    mistakes, corrections, explanations, corrected_text = process_initial_result(result)
+    # Process and merge results to extract mistakes, corrections, explanations, and corrected text
+    merged_result = merge_results(grammar_result, vocab_result)
+    mistakes, corrections, explanations, corrected_text = process_initial_result(merged_result)
 
     return jsonify({
         "mistakes": mistakes,
@@ -63,19 +77,43 @@ async def handle_further_correction():
     if not data:
         return jsonify({"error": "No text provided"}), 400
 
-    prompts = {
-        "organization": ORGANIZATION_PROMPT,
-        "coherence": COHERENCE_PROMPT,
-        "writingStyle": WRITING_STYLE_PROMPT
-    }
-
     async with aiohttp.ClientSession() as session:
-        tasks = [fetch_openai_response(session, prompt_template, data) for prompt_template in prompts.values()]
+        tasks = [
+            handle_organization(session, data),
+            handle_coherence(session, data),
+            handle_writing_style(session, data)
+        ]
         results = await asyncio.gather(*tasks)
 
-    feedback = {key: process_further_result(result) for key, result in zip(prompts.keys(), results)}
+    feedback = {key: process_further_result(result) for key, result in zip(["organization", "coherence", "writingStyle"], results)}
 
     return jsonify(feedback)
+
+def merge_results(grammar_result, vocab_result):
+    grammar_issues = extract_issues(grammar_result)
+    vocab_issues = extract_issues(vocab_result)
+
+    merged_issues = {issue['mistake']: issue for issue in grammar_issues}
+    for issue in vocab_issues:
+        if issue['mistake'] not in merged_issues:
+            merged_issues[issue['mistake']] = issue
+
+    return "\n".join([f"M: {issue['mistake']}\nC: {issue['correction']}\nE: {issue['explanation']}" for issue in merged_issues.values()])
+
+def extract_issues(result):
+    mistakes = re.findall(r'M: (.*?)\n', result, re.DOTALL)
+    corrections = re.findall(r'C: (.*?)\n', result, re.DOTALL)
+    explanations = re.findall(r'E: (.*?)(?=\nM:|$)', result, re.DOTALL)
+
+    issues = []
+    for mistake, correction, explanation in zip(mistakes, corrections, explanations):
+        issues.append({
+            "mistake": mistake.strip(),
+            "correction": correction.strip(),
+            "explanation": explanation.strip()
+        })
+
+    return issues
 
 def process_initial_result(result):
     mistakes = []
@@ -94,13 +132,13 @@ def process_initial_result(result):
         corrections.append("The submitted writing is fine.")
         explanations.append("The submitted writing is fine.")
     if mistakes_match:
-        mistakes = [m.strip().replace("'", "").replace('"', "") for m in mistakes_match]
+        mistakes = [m.strip() for m in mistakes_match]
     if corrections_match:
-        corrections = [c.strip().replace("'", "").replace('"', "") for c in corrections_match]
+        corrections = [c.strip() for c in corrections_match]
     if explanations_match:
-        explanations = [e.strip().replace("'", "").replace('"', "") for e in explanations_match]
+        explanations = [e.strip() for e in explanations_match]
     if corrected_text_match:
-        corrected_text = corrected_text_match.group(1).strip().replace("'", "").replace('"', "")
+        corrected_text = corrected_text_match.group(1).strip()
 
     return mistakes, corrections, explanations, corrected_text
 
@@ -121,11 +159,11 @@ def process_further_result(result):
         feedback["corrections"].append("The submitted writing is fine.")
         feedback["explanations"].append("The submitted writing is fine.")
     if mistakes_match:
-        feedback["mistakes"] = [m.strip().replace("'", "").replace('"', "") for m in mistakes_match]
+        feedback["mistakes"] = [m.strip() for m in mistakes_match]
     if corrections_match:
-        feedback["corrections"] = [c.strip().replace("'", "").replace('"', "") for c in corrections_match]
+        feedback["corrections"] = [c.strip() for c in corrections_match]
     if explanations_match:
-        feedback["explanations"] = [e.strip().replace("'", "").replace('"', "") for e in explanations_match]
+        feedback["explanations"] = [e.strip() for e in explanations_match]
 
     return feedback
 

@@ -29,6 +29,10 @@ export class CorrectionController {
     const session = await this.sessionService.getCurrentSession(userId);
 
     for (let i = 0; i < mistakes.length; i++) {
+      if (mistakes[i] === "The submitted writing is fine.") {
+        continue;
+      }
+
       const issue = await this.issueService.addIssue(userId, {
         section: "some_section_id",
         type: 'grammar_vocab',
@@ -66,6 +70,10 @@ export class CorrectionController {
     ];
 
     for (let i = 0; i < combinedMistakes.length; i++) {
+      if (combinedMistakes[i].mistake === "The submitted writing is fine.") {
+        continue;
+      }
+      
       const issue = await this.issueService.addIssue(userId, {
         section: "some_section_id",
         type: combinedMistakes[i].type,

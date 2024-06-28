@@ -80,13 +80,30 @@ const handleCorrect = async () => {
 const highlightMistakes = () => {
   let htmlContent = editableDiv.value.innerHTML;
   mistakes.value.forEach((mistake, index) => {
-    const regex = new RegExp(`(${mistake})`, 'gi');
+    // Escape content before assigning it to data-bs-content because of the way it handles special characters and escaping in HTML
+    const regex = new RegExp(`(${escapeRegExp(mistake)})`, 'gi');
     htmlContent = htmlContent.replace(regex,
-      `<span class="mistake" data-bs-toggle="popover" data-bs-html="true" data-bs-content="<b>Correction</b>: ${corrections.value[index]}<br><b>Explanation</b>: ${explanations.value[index]}">$1</span>`);
+      `<span class="mistake" data-bs-toggle="popover" data-bs-html="true" data-bs-content="${escapeHTML(`<b>Correction</b>: ${corrections.value[index]}<br><b>Explanation</b>: ${explanations.value[index]}`)}">$1</span>`);
   });
   editableDiv.value.innerHTML = htmlContent;
   activatePopovers();
 };
+
+// Escape special characters
+const escapeRegExp = (string) => {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+};
+
+// Escape HTML characters
+const escapeHTML = (string) => {
+  return string
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+};
+
 
 
 const activatePopovers = () => {

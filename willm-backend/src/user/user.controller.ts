@@ -2,11 +2,15 @@
 import { Controller, Post, Body, Res, UnauthorizedException, Get, Req } from '@nestjs/common';
 import { Response, Request } from 'express';
 import { UserService } from './user.service';
+import { SessionService } from '../session/session.service';
 
 @Controller('user')
 export class UserController {
 
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly sessionService: SessionService
+  ) {}
 
   @Post('register')
   async register(@Body('username') username: string, @Body('password') password: string): Promise<{ message: string }> {
@@ -20,9 +24,13 @@ export class UserController {
     if (!isValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
+    const user = await this.userService.findUserByUsername(username);
     const token = this.userService.generateJwtToken(username);
     res.cookie('auth_token', token, { httpOnly: true, secure: false });
-    return res.status(200).json({ message: 'Login successful' });
+
+    const session = await this.sessionService.getCurrentSession(user._id.toString());
+
+    return res.status(200).json({ message: 'Login successful', session });
   }
 
   @Post('logout')

@@ -20,9 +20,6 @@ export class Issue extends Document {
 
   @Prop({ required: true })
   corrected_text: string;
-
-  @Prop({ required: true })
-  explanation: string;
 }
 
 export const IssueSchema = SchemaFactory.createForClass(Issue);

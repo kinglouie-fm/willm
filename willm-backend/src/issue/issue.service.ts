@@ -1,16 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Issue } from './schema/issue.schema';
 
 @Injectable()
 export class IssueService {
   constructor(@InjectModel(Issue.name) private issueModel: Model<Issue>) {}
 
-  async addIssue(user_id: string, issueData: any): Promise<void> {
+  async addIssue(userId: string, issueData: any): Promise<void> {
     const issue = new this.issueModel({
       ...issueData,
-      user_id,
+      user_id: userId,
+      issue_id: new Types.ObjectId().toString(),
     });
     await issue.save();
   }

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
+import { lastValueFrom } from 'rxjs';
 
 @Injectable()
 export class CorrectionService {
@@ -13,7 +14,7 @@ export class CorrectionService {
       apiUrl = 'http://flask-api:8000/handle-further-correction';
     }
 
-    const response = await this.httpService.post(apiUrl, { text }).toPromise();
+    const response = await lastValueFrom(this.httpService.post(apiUrl, { text }));
     return response.data;
   }
 }

@@ -31,19 +31,8 @@ export class SessionService {
       });
       const savedSession = await session.save();
       await this.userModel.findByIdAndUpdate(userId, { $push: { sessions: savedSession._id } });
-      return savedSession;
     }
 
     return session;
-  }
-
-  async createSession(userId: string, sessionData: any): Promise<void> {
-    const session = new this.sessionModel({
-      user_id: userId,
-      date_created: new Date(),
-      ...sessionData,
-    });
-    const savedSession = await session.save();
-    await this.userModel.findByIdAndUpdate(userId, { $push: { sessions: savedSession._id } });
   }
 }

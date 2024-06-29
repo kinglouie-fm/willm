@@ -35,6 +35,7 @@ export class CorrectionController {
     if (!section) {
       section = await this.sectionService.addSection(userId, {
         payload: body.section,
+        date_created: new Date(),
       });
     }
 
@@ -78,6 +79,7 @@ export class CorrectionController {
     if (!section) {
       section = await this.sectionService.addSection(userId, {
         payload: body.section,
+        date_created: new Date(),
       });
     }
 

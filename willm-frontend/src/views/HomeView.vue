@@ -27,8 +27,17 @@ const toggleSidebar = () => {
   }
 };
 
+const stripHtmlTags = (html) => {
+  let div = document.createElement('div');
+  div.innerHTML = html;
+  return div.textContent || div.innerText || '';
+};
+
 const handleCorrect = async () => {
-  const textToCorrect = editableDiv.value.innerText;
+  let textToCorrect = editableDiv.value.innerText;
+  textToCorrect = stripHtmlTags(textToCorrect);
+  editableDiv.value.innerText = textToCorrect;
+  
   mistakes.value = [];
   corrections.value = [];
   explanations.value = [];

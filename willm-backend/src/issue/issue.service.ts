@@ -11,7 +11,6 @@ export class IssueService {
     const issue = new this.issueModel({
       ...issueData,
       user_id: userId,
-      issue_id: new Types.ObjectId().toString(),
     });
     return issue.save();
   }

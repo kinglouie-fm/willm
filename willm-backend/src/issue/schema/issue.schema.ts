@@ -3,9 +3,6 @@ import { Document, Types } from 'mongoose';
 
 @Schema()
 export class Issue extends Document {
-  @Prop({ required: true, unique: true })
-  issue_id: string;
-
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   user_id: Types.ObjectId;
 

@@ -39,7 +39,6 @@ export class SessionService {
 
   async createSession(userId: string, sessionData: any): Promise<void> {
     const session = new this.sessionModel({
-      session_id: new Types.ObjectId().toString(),
       user_id: userId,
       date_created: new Date(),
       ...sessionData,

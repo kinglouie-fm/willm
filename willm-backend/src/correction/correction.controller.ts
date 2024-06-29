@@ -1,10 +1,10 @@
-import { Controller, Post, Body, UseGuards, Req } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Req, Res } from '@nestjs/common';
 import { CorrectionService } from './correction.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { IssueService } from '../issue/issue.service';
 import { SessionService } from '../session/session.service';
 import { SectionService } from '../section/section.service';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 import { Types } from 'mongoose';
 
 @Controller('correct')
@@ -110,5 +110,68 @@ export class CorrectionController {
       coherence: coherence,
       writingStyle: writingStyle
     };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('improve')
+  async handleImprovementRequest(@Req() req: Request, @Res() res: Response) {
+    const userId = req.user._id;
+
+    // Check if the user has more than 2 sessions
+    const sessions = await this.sessionService.getSessionsByUserId(userId);
+    if (sessions.length < 3) {
+      return res.status(200).send('<2');
+    }
+
+    // Retrieve the last 5 sessions and their associated issues
+    const lastFiveSessions = sessions.slice(-5);
+    const sessionIds = lastFiveSessions.map(s => s._id) as Types.ObjectId[];
+    const issues = await this.issueService.getIssuesBySessions(sessionIds);
+
+    // Categorize issues
+    const sameSectionIssues: { [key: string]: any[] } = {};
+    const differentSectionIssues: any[] = [];
+
+    issues.forEach(issue => {
+      const sectionId = issue.section.toHexString();
+      if (!sameSectionIssues[sectionId]) {
+        sameSectionIssues[sectionId] = [];
+      }
+      sameSectionIssues[sectionId].push(issue);
+    });
+
+    Object.keys(sameSectionIssues).forEach(sectionId => {
+      if (sameSectionIssues[sectionId].length === 1) {
+        differentSectionIssues.push(...sameSectionIssues[sectionId]);
+        delete sameSectionIssues[sectionId];
+      }
+    });
+
+    // Generate prompts
+    const prompts = [];
+
+    Object.keys(sameSectionIssues).forEach(sectionId => {
+      const sectionIssues = sameSectionIssues[sectionId].map(issue => issue.original_text).join('\n- ');
+      prompts.push({
+        prompt: 'DETAILED_IMPROVEMENTS',
+        data: {
+          section_name: sectionId,
+          issues: sectionIssues
+        }
+      });
+    });
+
+    if (differentSectionIssues.length > 0) {
+      const issuesText = differentSectionIssues.map(issue => issue.original_text).join('\n- ');
+      prompts.push({
+        prompt: 'GENERAL_IMPROVEMENT',
+        data: { issues: issuesText }
+      });
+    }
+
+    // Call the Flask API
+    const improvements = await this.correctionService.getImprovementsFromFlaskAPI(prompts);
+
+    return res.status(200).json(improvements);
   }
 }

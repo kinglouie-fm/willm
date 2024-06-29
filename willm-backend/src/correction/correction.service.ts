@@ -17,4 +17,10 @@ export class CorrectionService {
     const response = await lastValueFrom(this.httpService.post(apiUrl, { text }));
     return response.data;
   }
+
+  async getImprovementsFromFlaskAPI(prompts: any[]) {
+    const apiUrl = 'http://flask-api:8000/generate-improvements';
+    const response = await lastValueFrom(this.httpService.post(apiUrl, { prompts }));
+    return response.data;
+  }
 }

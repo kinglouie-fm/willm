@@ -22,4 +22,8 @@ export class IssueService {
 
     return savedIssue;
   }
+
+  async getIssuesBySessions(sessionIds: Types.ObjectId[]): Promise<Issue[]> {
+    return this.issueModel.find({ session: { $in: sessionIds } }).exec();
+  }
 }

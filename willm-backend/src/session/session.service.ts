@@ -35,4 +35,8 @@ export class SessionService {
 
     return session;
   }
+
+  async getSessionsByUserId(userId: string): Promise<Session[]> {
+    return this.sessionModel.find({ user_id: new Types.ObjectId(userId) }).sort({ date_created: -1 }).exec();
+  }
 }

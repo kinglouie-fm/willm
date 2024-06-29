@@ -29,7 +29,7 @@ const toggleSidebar = () => {
 
 const generateImprovements = async () => {
   try {
-    const response = await axios.post('http://localhost:3000/improvements');
+    const response = await axios.post('http://localhost:3000/correct/improve');
     if (response.data === "<2") {
       console.log("Not enough sessions to generate improvements.");
       return;

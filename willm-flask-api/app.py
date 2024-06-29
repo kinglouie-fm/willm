@@ -5,7 +5,7 @@ import os
 import re
 import asyncio
 import aiohttp
-from prompts import SYSTEM_PROMPT, GRAMMAR_PROMPT, VOCAB_PROMPT, ORGANIZATION_PROMPT, COHERENCE_PROMPT, WRITING_STYLE_PROMPT
+from prompts import SYSTEM_PROMPT, GRAMMAR_PROMPT, VOCAB_PROMPT, ORGANIZATION_PROMPT, COHERENCE_PROMPT, WRITING_STYLE_PROMPT, DETAILED_IMPROVEMENTS, GENERAL_IMPROVEMENT
 
 load_dotenv()
 
@@ -88,6 +88,25 @@ async def handle_further_correction():
     feedback = {key: process_further_result(result) for key, result in zip(["organization", "coherence", "writingStyle"], results)}
 
     return jsonify(feedback)
+
+@app.route('/generate-improvements', methods=['POST'])
+async def generate_improvements():
+    data = request.json.get('prompts')
+
+    if not data:
+        return jsonify({"error": "No prompts provided"}), 400
+
+    async with aiohttp.ClientSession() as session:
+        tasks = []
+        for prompt in data:
+            if prompt['prompt'] == 'DETAILED_IMPROVEMENTS':
+                tasks.append(fetch_openai_response(session, DETAILED_IMPROVEMENTS, prompt['data']))
+            elif prompt['prompt'] == 'GENERAL_IMPROVEMENT':
+                tasks.append(fetch_openai_response(session, GENERAL_IMPROVEMENT, prompt['data']))
+
+        results = await asyncio.gather(*tasks)
+
+    return jsonify(results)
 
 def merge_results(grammar_result, vocab_result):
     grammar_issues = extract_issues(grammar_result)

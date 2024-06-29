@@ -13,6 +13,6 @@ import { SessionModule } from '../session/session.module';
   ],
   controllers: [UserController],
   providers: [UserService, JwtAuthGuard],
-  exports: [UserService, MongooseModule]
+  exports: [UserService, MongooseModule.forFeature([{ name: User.name, schema: UserSchema }])]
 })
 export class UserModule {}

@@ -2,10 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Section } from './schema/section.schema';
+import { User } from '../user/schema/user.schema';
 
 @Injectable()
 export class SectionService {
-  constructor(@InjectModel(Section.name) private sectionModel: Model<Section>) {}
+  constructor(
+    @InjectModel(Section.name) private sectionModel: Model<Section>,
+    @InjectModel(User.name) private userModel: Model<User>,
+  ) {}
 
   async addSection(userId: string, sectionData: any): Promise<Section> {
     const section = new this.sectionModel({
@@ -13,7 +17,11 @@ export class SectionService {
       user_id: userId,
       date_created: new Date(),
     });
-    return section.save();
+    const savedSection = await section.save();
+
+    await this.userModel.findByIdAndUpdate(userId, { $push: { sections: savedSection._id } });
+
+    return savedSection;
   }
 
   async findSectionsByUserId(userId: string): Promise<Section[]> {

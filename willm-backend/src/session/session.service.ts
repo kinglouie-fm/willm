@@ -25,13 +25,13 @@ export class SessionService {
 
     if (!session) {
       session = new this.sessionModel({
-        session_id: new Types.ObjectId().toString(),
         user_id: userId,
         date_created: new Date(),
         issues: [],
       });
-      await session.save();
-      await this.userModel.findByIdAndUpdate(userId, { $push: { sessions: session._id } });
+      const savedSession = await session.save();
+      await this.userModel.findByIdAndUpdate(userId, { $push: { sessions: savedSession._id } });
+      return savedSession;
     }
 
     return session;
@@ -43,7 +43,7 @@ export class SessionService {
       date_created: new Date(),
       ...sessionData,
     });
-    await session.save();
-    await this.userModel.findByIdAndUpdate(userId, { $push: { sessions: session._id } });
+    const savedSession = await session.save();
+    await this.userModel.findByIdAndUpdate(userId, { $push: { sessions: savedSession._id } });
   }
 }

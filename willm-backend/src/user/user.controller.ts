@@ -1,4 +1,3 @@
-// src/user/user.controller.ts
 import { Controller, Post, Body, Res, UnauthorizedException, Get, Req } from '@nestjs/common';
 import { Response, Request } from 'express';
 import { UserService } from './user.service';

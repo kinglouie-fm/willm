@@ -129,3 +129,31 @@ Don't add anything else to the output.
 
 Now, correct the following submitted writing: {text}
 """
+
+GENERAL_IMPROVEMENT = """
+The following issues are listed in chronological order from oldest to newest:
+- {issues}
+
+Generate improvements highlighting:
+1. Grammar and Vocabulary Improvements
+2. Organization and Coherence
+3. Writing Style
+
+The improvements should include:
+- Frequency and types of errors.
+- Reductions in specific error types over sessions.
+- Changes in the structure and flow of sections.
+- Improvements in style, such as varied sentence structures and tone.
+"""
+
+DETAILED_IMPROVEMENTS = """
+The following issues are listed in chronological order from oldest to newest for section {section_name}:
+- {issues}
+
+Generate detailed improvements highlighting:
+1. Grammar and Vocabulary Improvements
+2. Organization and Coherence
+3. Writing Style
+
+The improvements should compare errors across sessions and highlight specific improvements made in this section.
+"""

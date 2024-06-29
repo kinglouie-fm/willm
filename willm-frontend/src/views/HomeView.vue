@@ -27,6 +27,20 @@ const toggleSidebar = () => {
   }
 };
 
+const generateImprovements = async () => {
+  try {
+    const response = await axios.post('http://localhost:3000/improvements');
+    if (response.data === "<2") {
+      console.log("Not enough sessions to generate improvements.");
+      return;
+    }
+
+    console.log(response.data);
+  } catch (error) {
+    console.error('Error generating improvements:', error);
+  }
+};
+
 const stripHtmlTags = (html) => {
   let div = document.createElement('div');
   div.innerHTML = html;
@@ -37,7 +51,7 @@ const handleCorrect = async () => {
   let textToCorrect = editableDiv.value.innerText;
   textToCorrect = stripHtmlTags(textToCorrect);
   editableDiv.value.innerText = textToCorrect;
-  
+
   mistakes.value = [];
   corrections.value = [];
   explanations.value = [];
@@ -195,6 +209,7 @@ const updateText = () => {
       <div class="col-6">
         <div class="mx-5">
           <button type="button" class="btn btn-md" @click="handleCorrect">Correct</button>
+          <button type="button" class="btn btn-md" @click="generateImprovements">Generate Improvements</button>
         </div>
       </div>
     </div>

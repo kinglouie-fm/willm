@@ -19,4 +19,8 @@ export class SectionService {
   async findSectionsByUserId(userId: string): Promise<Section[]> {
     return this.sectionModel.find({ user_id: userId }).exec();
   }
+
+  async findSectionByPayload(userId: string, payload: string): Promise<Section | null> {
+    return this.sectionModel.findOne({ user_id: userId, payload }).exec();
+  }
 }

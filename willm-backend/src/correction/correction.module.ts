@@ -6,13 +6,15 @@ import { UserModule } from '../user/user.module';
 import { IssueModule } from '../issue/issue.module';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { SessionModule } from '../session/session.module';
+import { SectionModule } from '../section/section.module';
 
 @Module({
   imports: [
     UserModule, 
     HttpModule,
     IssueModule,
-    SessionModule
+    SessionModule,
+    SectionModule
   ],
   controllers: [CorrectionController],
   providers: [CorrectionService, JwtAuthGuard],

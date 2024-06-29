@@ -45,6 +45,7 @@ const handleCorrect = async () => {
   try {
     const response = await axios.post('http://localhost:3000/correct', {
       text: textToCorrect,
+      section: textareaSmall.value,
     });
     console.log(response.data)
 
@@ -56,7 +57,8 @@ const handleCorrect = async () => {
 
     // After initial feedback, get further analysis
     const furtherResponse = await axios.post('http://localhost:3000/correct/further-correct', {
-      text: response.data.correctedText,
+      text: textToCorrect,
+      section: textareaSmall.value,
     });
 
     console.log(furtherResponse.data)

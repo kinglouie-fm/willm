@@ -5,7 +5,7 @@ import os
 import re
 import asyncio
 import aiohttp
-from prompts import SYSTEM_PROMPT, GRAMMAR_PROMPT, VOCAB_PROMPT, ORGANIZATION_PROMPT, COHERENCE_PROMPT, WRITING_STYLE_PROMPT, DETAILED_IMPROVEMENTS, GENERAL_IMPROVEMENT
+from prompts import SYSTEM_PROMPT_1, SYSTEM_PROMPT_2, SYSTEM_PROMPT_3, GRAMMAR_PROMPT, VOCAB_PROMPT, ORGANIZATION_PROMPT, COHERENCE_PROMPT, WRITING_STYLE_PROMPT, DETAILED_IMPROVEMENTS, GENERAL_IMPROVEMENT
 
 load_dotenv()
 
@@ -13,7 +13,7 @@ app = Flask(__name__)
 
 openai.api_key = os.getenv('FLASK_API_KEY')
 
-async def fetch_openai_response(session, prompt_template, data, section=None):
+async def fetch_openai_response(session, system_prompt, prompt_template, data, section=None):
     prompt = prompt_template.format(text=data, section=section)
     async with session.post(
         'https://api.openai.com/v1/chat/completions',
@@ -24,7 +24,7 @@ async def fetch_openai_response(session, prompt_template, data, section=None):
         json={
             "model": "gpt-4o",
             "messages": [
-                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "system", "content": system_prompt},
                 {"role": "user", "content": prompt}
             ],
             "max_tokens": 2000
@@ -44,7 +44,7 @@ async def fetch_improvements(session, prompt_template, data):
         json={
             "model": "gpt-4o",
             "messages": [
-                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "system", "content": SYSTEM_PROMPT_3},
                 {"role": "user", "content": prompt}
             ],
             "max_tokens": 2000
@@ -53,20 +53,20 @@ async def fetch_improvements(session, prompt_template, data):
         response_json = await response.json()
         return response_json['choices'][0]['message']['content']
 
-async def handle_grammar(session, data, section):
-    return await fetch_openai_response(session, GRAMMAR_PROMPT, data)
+async def handle_grammar(session, data):
+    return await fetch_openai_response(session, SYSTEM_PROMPT_1, GRAMMAR_PROMPT, data)
 
-async def handle_vocabulary(session, data, section):
-    return await fetch_openai_response(session, VOCAB_PROMPT, data)
+async def handle_vocabulary(session, data):
+    return await fetch_openai_response(session, SYSTEM_PROMPT_1, VOCAB_PROMPT, data)
 
 async def handle_organization(session, data, section):
-    return await fetch_openai_response(session, ORGANIZATION_PROMPT, data, section)
+    return await fetch_openai_response(session, SYSTEM_PROMPT_2, ORGANIZATION_PROMPT, data, section)
 
 async def handle_coherence(session, data, section):
-    return await fetch_openai_response(session, COHERENCE_PROMPT, data, section)
+    return await fetch_openai_response(session, SYSTEM_PROMPT_2, COHERENCE_PROMPT, data, section)
 
 async def handle_writing_style(session, data, section):
-    return await fetch_openai_response(session, WRITING_STYLE_PROMPT, data, section)
+    return await fetch_openai_response(session, SYSTEM_PROMPT_2, WRITING_STYLE_PROMPT, data, section)
 
 
 @app.route('/handle-correction', methods=['POST'])

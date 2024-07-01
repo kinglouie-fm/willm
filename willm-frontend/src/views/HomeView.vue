@@ -51,6 +51,7 @@ const handleCorrect = async () => {
   let textToCorrect = editableDiv.value.innerText;
   textToCorrect = stripHtmlTags(textToCorrect);
   editableDiv.value.innerText = textToCorrect;
+  console.log(textToCorrect);
 
   mistakes.value = [];
   corrections.value = [];

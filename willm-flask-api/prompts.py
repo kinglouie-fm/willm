@@ -60,6 +60,7 @@ Now, correct the following submitted writing: {text}
 
 ORGANIZATION_PROMPT = """
 Identify problems with the logical flow of ideas, such as sudden shifts in topic, redundancy, or deviations from the main topic.
+Specifically focus on the section {section}.
 
 For each mistake, you should provide the following:
 
@@ -84,6 +85,7 @@ Now, correct the following submitted writing: {text}
 
 COHERENCE_PROMPT = """
 Point out issues that affect the overall coherence of the writing, such as unclear references or lack of logical connections between sentences or paragraphs.
+Specifically focus on the section {section}.
 
 For each mistake, you should provide the following:
 
@@ -108,6 +110,7 @@ Now, correct the following submitted writing: {text}
 
 WRITING_STYLE_PROMPT = """
 Suggest improvements related to writing style, including the use of active/passive voice, formal tone, clarity, and conciseness. Highlight only the words or phrases that need stylistic improvement and explain why the suggested style is preferable.
+Specifically focus on the section {section}.
 
 For each mistake, you should provide the following:
 

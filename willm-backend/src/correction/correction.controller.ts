@@ -19,7 +19,7 @@ export class CorrectionController {
   @UseGuards(JwtAuthGuard)
   @Post()
   async handleCorrection(@Body() body: { text: string, section: string }, @Req() req: Request) {
-    const initialResult = await this.correctionService.callPythonService(body.text, 'initial');
+    const initialResult = await this.correctionService.callPythonService(body.text, body.section, 'initial');
     const correctedText = initialResult.correctedText;
 
     const mistakes = initialResult.mistakes || [];
@@ -67,7 +67,7 @@ export class CorrectionController {
   @UseGuards(JwtAuthGuard)
   @Post('further-correct')
   async handleFurtherCorrection(@Body() body: { text: string, section: string }, @Req() req: Request) {
-    const furtherResult = await this.correctionService.callPythonService(body.text, 'further');
+    const furtherResult = await this.correctionService.callPythonService(body.text, body.section, 'further');
 
     const { organization, coherence, writingStyle } = furtherResult;
 

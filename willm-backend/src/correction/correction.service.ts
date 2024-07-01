@@ -6,7 +6,7 @@ import { lastValueFrom } from 'rxjs';
 export class CorrectionService {
   constructor(private readonly httpService: HttpService) {}
 
-  async callPythonService(text: string, phase: string) {
+  async callPythonService(text: string, section: string, phase: string) {
     let apiUrl;
     if (phase === 'initial') {
       apiUrl = 'http://flask-api:8000/handle-correction';
@@ -14,7 +14,7 @@ export class CorrectionService {
       apiUrl = 'http://flask-api:8000/handle-further-correction';
     }
 
-    const response = await lastValueFrom(this.httpService.post(apiUrl, { text }));
+    const response = await lastValueFrom(this.httpService.post(apiUrl, { text, section }));
     return response.data;
   }
 

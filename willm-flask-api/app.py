@@ -13,8 +13,8 @@ app = Flask(__name__)
 
 openai.api_key = os.getenv('FLASK_API_KEY')
 
-async def fetch_openai_response(session, prompt_template, data):
-    prompt = prompt_template.format(text=data)
+async def fetch_openai_response(session, prompt_template, data, section=None):
+    prompt = prompt_template.format(text=data, section=section)
     async with session.post(
         'https://api.openai.com/v1/chat/completions',
         headers={
@@ -53,20 +53,21 @@ async def fetch_improvements(session, prompt_template, data):
         response_json = await response.json()
         return response_json['choices'][0]['message']['content']
 
-async def handle_grammar(session, data):
+async def handle_grammar(session, data, section):
     return await fetch_openai_response(session, GRAMMAR_PROMPT, data)
 
-async def handle_vocabulary(session, data):
+async def handle_vocabulary(session, data, section):
     return await fetch_openai_response(session, VOCAB_PROMPT, data)
 
-async def handle_organization(session, data):
-    return await fetch_openai_response(session, ORGANIZATION_PROMPT, data)
+async def handle_organization(session, data, section):
+    return await fetch_openai_response(session, ORGANIZATION_PROMPT, data, section)
 
-async def handle_coherence(session, data):
-    return await fetch_openai_response(session, COHERENCE_PROMPT, data)
+async def handle_coherence(session, data, section):
+    return await fetch_openai_response(session, COHERENCE_PROMPT, data, section)
 
-async def handle_writing_style(session, data):
-    return await fetch_openai_response(session, WRITING_STYLE_PROMPT, data)
+async def handle_writing_style(session, data, section):
+    return await fetch_openai_response(session, WRITING_STYLE_PROMPT, data, section)
+
 
 @app.route('/handle-correction', methods=['POST'])
 async def handle_correction():
@@ -93,15 +94,16 @@ async def handle_correction():
 @app.route('/handle-further-correction', methods=['POST'])
 async def handle_further_correction():
     data = request.json.get('text')
+    section = request.json.get('section')
 
     if not data:
         return jsonify({"error": "No text provided"}), 400
 
     async with aiohttp.ClientSession() as session:
         tasks = [
-            handle_organization(session, data),
-            handle_coherence(session, data),
-            handle_writing_style(session, data)
+            handle_organization(session, data, section),
+            handle_coherence(session, data, section),
+            handle_writing_style(session, data, section)
         ]
         results = await asyncio.gather(*tasks)
 

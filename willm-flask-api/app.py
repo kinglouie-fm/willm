@@ -32,6 +32,26 @@ async def fetch_openai_response(session, prompt_template, data):
     ) as response:
         response_json = await response.json()
         return response_json['choices'][0]['message']['content']
+    
+async def fetch_improvements(session, prompt_template, data):
+    prompt = prompt_template.format(**data)
+    async with session.post(
+        'https://api.openai.com/v1/chat/completions',
+        headers={
+            'Authorization': f'Bearer {openai.api_key}',
+            'Content-Type': 'application/json'
+        },
+        json={
+            "model": "gpt-4o",
+            "messages": [
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": prompt}
+            ],
+            "max_tokens": 2000
+        }
+    ) as response:
+        response_json = await response.json()
+        return response_json['choices'][0]['message']['content']
 
 async def handle_grammar(session, data):
     return await fetch_openai_response(session, GRAMMAR_PROMPT, data)
@@ -99,10 +119,11 @@ async def generate_improvements():
     async with aiohttp.ClientSession() as session:
         tasks = []
         for prompt in data:
+            print(f"Processing prompt: {prompt}")
             if prompt['prompt'] == 'DETAILED_IMPROVEMENTS':
-                tasks.append(fetch_openai_response(session, DETAILED_IMPROVEMENTS, prompt['data']))
+                tasks.append(fetch_improvements(session, DETAILED_IMPROVEMENTS, prompt['data']))
             elif prompt['prompt'] == 'GENERAL_IMPROVEMENT':
-                tasks.append(fetch_openai_response(session, GENERAL_IMPROVEMENT, prompt['data']))
+                tasks.append(fetch_improvements(session, GENERAL_IMPROVEMENT, prompt['data']))
 
         results = await asyncio.gather(*tasks)
 

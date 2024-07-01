@@ -9,6 +9,9 @@ export class Issue extends Document {
   @Prop({ type: Types.ObjectId, ref: 'Section', required: true })
   section: Types.ObjectId;
 
+  @Prop({ type: Types.ObjectId, ref: 'Session', required: true })
+  session: Types.ObjectId;
+
   @Prop({ required: true })
   type: string;
 

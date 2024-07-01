@@ -46,6 +46,7 @@ export class CorrectionController {
 
       const issue = await this.issueService.addIssue(userId, {
         section: section._id,
+        session: session._id,
         type: 'grammar_vocab',
         original_text: mistakes[i],
         corrected_text: corrections[i],
@@ -96,6 +97,7 @@ export class CorrectionController {
 
       const issue = await this.issueService.addIssue(userId, {
         section: section._id,
+        session: session._id,
         type: combinedMistakes[i].type,
         original_text: combinedMistakes[i].mistake,
         corrected_text: combinedMistakes[i].correction,
@@ -168,6 +170,8 @@ export class CorrectionController {
         data: { issues: issuesText }
       });
     }
+
+    console.log(prompts);
 
     // Call the Flask API
     const improvements = await this.correctionService.getImprovementsFromFlaskAPI(prompts);

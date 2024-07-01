@@ -221,7 +221,6 @@ const toggleCollapse = (index, category) => {
       </div>
     </div>
 
-    <!-- Sidebar Component -->
     <Sidebar :isOpen="isSidebarOpen" @close="isSidebarOpen = false">
       <div class="d-flex justify-content-center mb-4">
         <button type="button" class="btn btn-md" @click="selectedFeedback = 'organization'"

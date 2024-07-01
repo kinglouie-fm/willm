@@ -49,6 +49,7 @@ export class CorrectionController {
       issues: []
     });
 
+    // Add issues
     for (let i = 0; i < mistakes.length; i++) {
       if (mistakes[i] === "The submitted writing is fine.") {
         continue;
@@ -109,6 +110,7 @@ export class CorrectionController {
       ...writingStyle.mistakes.map((mistake, i) => ({ mistake, correction: writingStyle.corrections[i], type: 'writingStyle' }))
     ];
 
+    // Add issues
     for (let i = 0; i < combinedMistakes.length; i++) {
       if (combinedMistakes[i].mistake === "The submitted writing is fine.") {
         continue;
@@ -169,7 +171,6 @@ export class CorrectionController {
       }
     });
 
-    // Generate prompts
     const prompts = [];
 
     Object.keys(sameSectionIssues).forEach(sectionId => {
@@ -193,7 +194,6 @@ export class CorrectionController {
 
     console.log(prompts);
 
-    // Call the Flask API
     const improvements = await this.correctionService.getImprovementsFromFlaskAPI(prompts);
 
     return res.status(200).json(improvements);

@@ -175,6 +175,13 @@ const activatePopovers = () => {
 const updateText = () => {
   textareaBig.value = editableDiv.value.innerText;
 };
+
+const toggleCollapse = (index, category) => {
+  const collapseElement = document.getElementById(`${category}-collapse-${index}`);
+  const bsCollapse = new bootstrap.Collapse(collapseElement, {
+    toggle: true
+  });
+};
 </script>
 
 <template>
@@ -216,7 +223,7 @@ const updateText = () => {
 
     <!-- Sidebar Component -->
     <Sidebar :isOpen="isSidebarOpen" @close="isSidebarOpen = false">
-      <div class="d-flex justify-content-around mb-4">
+      <div class="d-flex justify-content-center mb-4">
         <button type="button" class="btn btn-md" @click="selectedFeedback = 'organization'"
           :class="{ active: selectedFeedback === 'organization' }">Organization</button>
         <button type="button" class="btn btn-md" @click="selectedFeedback = 'coherence'"
@@ -226,33 +233,48 @@ const updateText = () => {
       </div>
       <div v-if="selectedFeedback === 'organization'">
         <h4>Organization Feedback</h4>
-        <ul>
-          <li v-for="(mistake, index) in organizationMistakes" :key="index">
-            <strong>M:</strong> {{ mistake }} <br>
-            <strong>C:</strong> {{ organizationCorrections[index] }} <br>
-            <strong>E:</strong> {{ organizationExplanations[index] }}
-          </li>
-        </ul>
+        <!-- <ul> -->
+        <div v-for="(mistake, index) in organizationMistakes" :key="index">
+          <a @click="toggleCollapse(index, 'organization')" href="javascript:void(0)">
+            <strong>Feedback {{ index + 1 }}</strong>
+          </a>
+          <ul :id="'organization-collapse-' + index" class="collapse mt-2" :class="{ show: index === 0 }">
+            <li><strong>Mistake:</strong> {{ mistake }} </li>
+            <li><strong>Correction:</strong> {{ organizationCorrections[index] }}</li>
+            <li><strong>Explanation:</strong> {{ organizationExplanations[index] }}</li>
+          </ul>
+        </div>
+        <!-- </ul> -->
       </div>
       <div v-if="selectedFeedback === 'coherence'">
         <h4>Coherence Feedback</h4>
-        <ul>
-          <li v-for="(mistake, index) in coherenceMistakes" :key="index">
-            <strong>M:</strong> {{ mistake }} <br>
-            <strong>C:</strong> {{ coherenceCorrections[index] }} <br>
-            <strong>E:</strong> {{ coherenceExplanations[index] }}
-          </li>
-        </ul>
+        <!-- <ul> -->
+        <div v-for="(mistake, index) in coherenceMistakes" :key="index">
+          <a @click="toggleCollapse(index, 'coherence')" href="javascript:void(0)">
+            <strong>Feedback {{ index + 1 }}</strong>
+          </a>
+          <ul :id="'coherence-collapse-' + index" class="collapse mt-2" :class="{ show: index === 0 }">
+            <li><strong>Mistake:</strong> {{ mistake }}</li>
+            <li><strong>Correction:</strong> {{ coherenceCorrections[index] }}</li>
+            <li><strong>Explanation:</strong> {{ coherenceExplanations[index] }}</li>
+          </ul>
+        </div>
+        <!-- </ul> -->
       </div>
       <div v-if="selectedFeedback === 'writingStyle'">
         <h4>Writing Style Feedback</h4>
-        <ul>
-          <li v-for="(mistake, index) in writingStyleMistakes" :key="index">
-            <strong>M:</strong> {{ mistake }} <br>
-            <strong>C:</strong> {{ writingStyleCorrections[index] }} <br>
-            <strong>E:</strong> {{ writingStyleExplanations[index] }}
-          </li>
-        </ul>
+        <!-- <ul> -->
+        <div v-for="(mistake, index) in writingStyleMistakes" :key="index">
+          <a @click="toggleCollapse(index, 'writingStyle')" href="javascript:void(0)">
+            <strong>Feedback {{ index + 1 }}</strong>
+          </a>
+          <ul :id="'writingStyle-collapse-' + index" class="collapse mt-2" :class="{ show: index === 0 }">
+            <li><strong>Mistake:</strong> {{ mistake }}</li>
+            <li><strong>Correction:</strong> {{ writingStyleCorrections[index] }}</li>
+            <li><strong>Explanation:</strong> {{ writingStyleExplanations[index] }}</li>
+          </ul>
+        </div>
+        <!-- </ul> -->
       </div>
     </Sidebar>
   </div>
@@ -282,5 +304,15 @@ const updateText = () => {
   height: 50px;
   line-height: 1.5rem;
   font-size: 1.1rem;
+}
+
+a {
+  cursor: pointer;
+  font-size: 1.2rem;
+  color: #eabc7c;
+}
+
+a:hover {
+  text-decoration: underline;
 }
 </style>

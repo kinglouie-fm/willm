@@ -11,6 +11,9 @@ export class Section extends Document {
 
   @Prop({ required: true })
   payload: string;
+
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Text' }] })
+  texts: Types.ObjectId[];
 }
 
 export const SectionSchema = SchemaFactory.createForClass(Section);

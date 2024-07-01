@@ -7,6 +7,7 @@ import { IssueModule } from '../issue/issue.module';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { SessionModule } from '../session/session.module';
 import { SectionModule } from '../section/section.module';
+import { TextModule } from '../text/text.module';
 
 @Module({
   imports: [
@@ -14,7 +15,8 @@ import { SectionModule } from '../section/section.module';
     HttpModule,
     IssueModule,
     SessionModule,
-    SectionModule
+    SectionModule,
+    TextModule
   ],
   controllers: [CorrectionController],
   providers: [CorrectionService, JwtAuthGuard],

@@ -6,6 +6,7 @@ import { SessionService } from '../session/session.service';
 import { SectionService } from '../section/section.service';
 import { Request, Response } from 'express';
 import { Types } from 'mongoose';
+import { TextService } from '../text/text.service';
 
 @Controller('correct')
 export class CorrectionController {
@@ -13,7 +14,8 @@ export class CorrectionController {
     private readonly correctionService: CorrectionService,
     private readonly issueService: IssueService,
     private readonly sessionService: SessionService,
-    private readonly sectionService: SectionService
+    private readonly sectionService: SectionService,
+    private readonly textService: TextService
   ) {}
 
   @UseGuards(JwtAuthGuard)
@@ -39,6 +41,14 @@ export class CorrectionController {
       });
     }
 
+    // Create a new Text document
+    const text = await this.textService.addText(userId, {
+      session_id: session._id,
+      section_id: section._id,
+      content: body.text,
+      issues: []
+    });
+
     for (let i = 0; i < mistakes.length; i++) {
       if (mistakes[i] === "The submitted writing is fine.") {
         continue;
@@ -47,6 +57,7 @@ export class CorrectionController {
       const issue = await this.issueService.addIssue(userId, {
         section: section._id,
         session: session._id,
+        text: text._id,
         type: 'grammar_vocab',
         original_text: mistakes[i],
         corrected_text: corrections[i],
@@ -84,6 +95,14 @@ export class CorrectionController {
       });
     }
 
+    // Create a new Text document
+    const text = await this.textService.addText(userId, {
+      session_id: session._id,
+      section_id: section._id,
+      content: body.text,
+      issues: []
+    });
+
     const combinedMistakes = [
       ...organization.mistakes.map((mistake, i) => ({ mistake, correction: organization.corrections[i], type: 'organization' })),
       ...coherence.mistakes.map((mistake, i) => ({ mistake, correction: coherence.corrections[i], type: 'coherence' })),
@@ -98,6 +117,7 @@ export class CorrectionController {
       const issue = await this.issueService.addIssue(userId, {
         section: section._id,
         session: session._id,
+        text: text._id,
         type: combinedMistakes[i].type,
         original_text: combinedMistakes[i].mistake,
         corrected_text: combinedMistakes[i].correction,

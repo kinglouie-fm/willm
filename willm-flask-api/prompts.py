@@ -63,7 +63,11 @@ Now, correct the following submitted writing: {text}
 """
 
 ORGANIZATION_PROMPT = """
-Identify problems with the logical flow of ideas, such as sudden shifts in topic, redundancy, or deviations from the main topic.
+Identify problems with the logical flow of ideas, such as sudden shifts in topic, redundancy, or deviations from the main topic. 
+Use formal english only. 
+Tend to use common and easy-to-understand words or phrases.
+Avoid wordy sentences.
+Avoid using the same words or phrases repeatedly.
 Ignore grammar or vocabulary mistakes.
 Specifically focus on the section {section}.
 
@@ -90,6 +94,12 @@ Now, correct the following submitted writing: {text}
 
 COHERENCE_PROMPT = """
 Point out issues that affect the overall coherence of the writing, such as unclear references or lack of logical connections between sentences or paragraphs.
+Use formal english only. 
+Tend to use common and easy-to-understand words or phrases.
+Avoid wordy sentences.
+Avoid trivial statements.
+Avoid using the same words or phrases repeatedly.
+Ignore grammar or vocabulary mistakes.
 Ignore grammar or vocabulary mistakes.
 Specifically focus on the section {section}.
 
@@ -116,6 +126,10 @@ Now, correct the following submitted writing: {text}
 
 WRITING_STYLE_PROMPT = """
 Suggest improvements related to writing style, including the use of active/passive voice, formal tone, clarity, and conciseness. Highlight only the words or phrases that need stylistic improvement and explain why the suggested style is preferable.
+Use formal english only. 
+Tend to use common and easy-to-understand words or phrases.
+Avoid wordy sentences.
+Avoid using the same words or phrases repeatedly.
 Ignore grammar or vocabulary mistakes.
 Specifically focus on the section {section}.
 

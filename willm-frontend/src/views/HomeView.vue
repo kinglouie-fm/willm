@@ -21,6 +21,8 @@ const writingStyleCorrections = ref([]);
 const writingStyleExplanations = ref([]);
 const editableDiv = ref(null);
 
+const selectedFeedback = ref('organization');
+
 const toggleSidebar = () => {
   if (!isSidebarOpen.value) {
     isSidebarOpen.value = true;
@@ -51,7 +53,6 @@ const handleCorrect = async () => {
   let textToCorrect = editableDiv.value.innerText;
   textToCorrect = stripHtmlTags(textToCorrect);
   editableDiv.value.innerText = textToCorrect;
-  console.log(textToCorrect);
 
   mistakes.value = [];
   corrections.value = [];
@@ -129,8 +130,6 @@ const escapeHTML = (string) => {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
 };
-
-
 
 const activatePopovers = () => {
   const popoverElements = editableDiv.value.querySelectorAll('.mistake');
@@ -217,34 +216,44 @@ const updateText = () => {
 
     <!-- Sidebar Component -->
     <Sidebar :isOpen="isSidebarOpen" @close="isSidebarOpen = false">
-      <!-- <h4>Explanations</h4>
-      <ul>
-        <li v-for="explanation in explanations" :key="explanation">{{ explanation }}</li>
-      </ul> -->
-      <h4>Organization Feedback</h4>
-      <ul>
-        <li v-for="(mistake, index) in organizationMistakes" :key="index">
-          <strong>M:</strong> {{ mistake }} <br>
-          <strong>C:</strong> {{ organizationCorrections[index] }} <br>
-          <strong>E:</strong> {{ organizationExplanations[index] }}
-        </li>
-      </ul>
-      <h4>Coherence Feedback</h4>
-      <ul>
-        <li v-for="(mistake, index) in coherenceMistakes" :key="index">
-          <strong>M:</strong> {{ mistake }} <br>
-          <strong>C:</strong> {{ coherenceCorrections[index] }} <br>
-          <strong>E:</strong> {{ coherenceExplanations[index] }}
-        </li>
-      </ul>
-      <h4>Writing Style Feedback</h4>
-      <ul>
-        <li v-for="(mistake, index) in writingStyleMistakes" :key="index">
-          <strong>M:</strong> {{ mistake }} <br>
-          <strong>C:</strong> {{ writingStyleCorrections[index] }} <br>
-          <strong>E:</strong> {{ writingStyleExplanations[index] }}
-        </li>
-      </ul>
+      <div class="d-flex justify-content-around mb-4">
+        <button type="button" class="btn btn-md" @click="selectedFeedback = 'organization'"
+          :class="{ active: selectedFeedback === 'organization' }">Organization</button>
+        <button type="button" class="btn btn-md" @click="selectedFeedback = 'coherence'"
+          :class="{ active: selectedFeedback === 'coherence' }">Coherence</button>
+        <button type="button" class="btn btn-md" @click="selectedFeedback = 'writingStyle'"
+          :class="{ active: selectedFeedback === 'writingStyle' }">Writing Style</button>
+      </div>
+      <div v-if="selectedFeedback === 'organization'">
+        <h4>Organization Feedback</h4>
+        <ul>
+          <li v-for="(mistake, index) in organizationMistakes" :key="index">
+            <strong>M:</strong> {{ mistake }} <br>
+            <strong>C:</strong> {{ organizationCorrections[index] }} <br>
+            <strong>E:</strong> {{ organizationExplanations[index] }}
+          </li>
+        </ul>
+      </div>
+      <div v-if="selectedFeedback === 'coherence'">
+        <h4>Coherence Feedback</h4>
+        <ul>
+          <li v-for="(mistake, index) in coherenceMistakes" :key="index">
+            <strong>M:</strong> {{ mistake }} <br>
+            <strong>C:</strong> {{ coherenceCorrections[index] }} <br>
+            <strong>E:</strong> {{ coherenceExplanations[index] }}
+          </li>
+        </ul>
+      </div>
+      <div v-if="selectedFeedback === 'writingStyle'">
+        <h4>Writing Style Feedback</h4>
+        <ul>
+          <li v-for="(mistake, index) in writingStyleMistakes" :key="index">
+            <strong>M:</strong> {{ mistake }} <br>
+            <strong>C:</strong> {{ writingStyleCorrections[index] }} <br>
+            <strong>E:</strong> {{ writingStyleExplanations[index] }}
+          </li>
+        </ul>
+      </div>
     </Sidebar>
   </div>
 </template>

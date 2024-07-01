@@ -2,7 +2,8 @@
 import { ref } from 'vue';
 
 const props = defineProps({
-    isOpen: Boolean
+    isOpen: Boolean,
+    selectedFeedback: String
 });
 
 const emit = defineEmits(['close']);
@@ -17,7 +18,7 @@ const closeSidebar = () => {
         <div class="sidebar-content d-flex flex-column align-items-end">
             <button class="btn-close m-2" @click="closeSidebar"></button>
             <div class="w-100 mt-2">
-                <h1 class="text-center">Feedback</h1>
+                <!-- <h1 class="text-center">Feedback</h1> -->
                 <slot></slot>
             </div>
         </div>

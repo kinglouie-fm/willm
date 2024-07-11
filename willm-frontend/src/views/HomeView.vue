@@ -27,6 +27,8 @@ const furtherCorrectionData = ref({
   writingStyle: { mistakes: [], corrections: [], explanations: [] },
 });
 
+const selectedTab = ref('Correction');
+
 const toggleSidebar = () => {
   if (!isSidebarOpen.value) {
     isSidebarOpen.value = true;
@@ -41,6 +43,8 @@ const generateReview = async () => {
     } else {
       reviewData.value = response.data.reviewData;
     }
+    selectedTab.value = 'Review'; // Set the tab to Review
+    isSidebarOpen.value = true;   // Open the sidebar
   } catch (error) {
     console.error('Error generating review:', error);
   }
@@ -241,7 +245,7 @@ const updateText = () => {
     </div>
 
     <Sidebar :isOpen="isSidebarOpen" @close="isSidebarOpen = false" :review-data="reviewData"
-      :furtherCorrectionData="furtherCorrectionData" />
+      :furtherCorrectionData="furtherCorrectionData" :selectedTab="selectedTab" />
   </div>
 </template>
 

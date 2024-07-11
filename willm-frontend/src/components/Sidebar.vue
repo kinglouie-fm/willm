@@ -1,12 +1,13 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import Correction from './Correction.vue';
 import Review from './Review.vue';
 
 const props = defineProps({
     isOpen: Boolean,
     reviewData: [Object, String],
-    furtherCorrectionData: Object
+    furtherCorrectionData: Object,
+    selectedTab: String
 });
 
 const emit = defineEmits(['close']);
@@ -15,7 +16,11 @@ const closeSidebar = () => {
     emit('close');
 };
 
-const selectedTab = ref('Correction');
+const selectedTab = ref(props.selectedTab);
+
+watch(() => props.selectedTab, (newTab) => {
+    selectedTab.value = newTab;
+});
 </script>
 
 <template>
@@ -24,13 +29,15 @@ const selectedTab = ref('Correction');
             <button class="btn-close m-2" @click="closeSidebar"></button>
             <div class="w-100 mt-2 d-flex justify-content-center">
                 <button class="tab-button btn-lg" @click="selectedTab = 'Correction'"
-                    :class="{ active: selectedTab === 'Correction' }">Correction</button>
+                    :class="{ active: selectedTab === 'Correction' }">Correction
+                </button>
                 <button class="tab-button btn-lg" @click="selectedTab = 'Review'"
-                    :class="{ active: selectedTab === 'Review' }">Review</button>
+                    :class="{ active: selectedTab === 'Review' }">Review
+                </button>
             </div>
             <div class="content-container border rounded w-100">
-                <component class="m-4" :is="selectedTab === 'Correction' ? Correction : Review"
-                    :reviewData="props.reviewData" :furtherCorrectionData="props.furtherCorrectionData" />
+                <component class="m-4" :is="selectedTab === 'Correction' ? Correction : Review" :reviewData="reviewData"
+                    :furtherCorrectionData="furtherCorrectionData" />
             </div>
         </div>
     </div>

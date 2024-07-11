@@ -22,8 +22,6 @@ const writingStyleExplanations = ref([]);
 const editableDiv = ref(null);
 const reviewData = ref(null);
 
-const selectedFeedback = ref('organization');
-
 const toggleSidebar = () => {
   if (!isSidebarOpen.value) {
     isSidebarOpen.value = true;

@@ -7,10 +7,10 @@ You are an assistant designed to help improve academic writing by providing deta
 """
 
 UNIFIED_PROMPT = """
-Regarding grammar and vocabulary, look for issues with sentence structure, verb tense, subject-verb agreement, punctuation, inappropriate word choice, redundancy, and other grammatical errors. Provide the grammatical rule or reasoning when explaining the mistake. Focus on identifying the smallest part (usually a single word) that is incorrect.
+Regarding grammar and vocabulary, look for issues with misspelling, subject-verb agreement, tense consistency, pronoun agreement, incorrect use of articles, incorrect prepositions, inappropriate word choice, redundancy and other grammatical errors. Provide the grammatical rule or reasoning when explaining the mistake. Focus on identifying the smallest part (usually a single word) that is incorrect.
 
 Categorize each mistake into one of the following categories:
-- subject-verb agreement, tense consistency, pronoun agreement, incorrect use of articles, incorrect prepositions, inappropriate word choice, redundancy
+- misspelling, subject-verb agreement, tense consistency, pronoun agreement, incorrect use of articles, incorrect prepositions, inappropriate word choice, redundancy
 
 For each mistake, you should provide the following:
 

@@ -20,6 +20,7 @@ const writingStyleMistakes = ref([]);
 const writingStyleCorrections = ref([]);
 const writingStyleExplanations = ref([]);
 const editableDiv = ref(null);
+const reviewData = ref(null);
 
 const selectedFeedback = ref('organization');
 
@@ -29,17 +30,12 @@ const toggleSidebar = () => {
   }
 };
 
-const generateImprovements = async () => {
+const generateReview = async () => {
   try {
     const response = await axios.post('http://localhost:3000/correct/improve');
-    if (response.data === "<2") {
-      console.log("Not enough sessions to generate improvements.");
-      return;
-    }
-
-    console.log(response.data);
+    reviewData.value = response.data;
   } catch (error) {
-    console.error('Error generating improvements:', error);
+    console.error('Error generating review:', error);
   }
 };
 
@@ -79,8 +75,27 @@ const handleCorrect = async () => {
     explanations.value = response.data.explanations;
 
     highlightMistakes();
+  } catch (error) {
+    console.error('Error correcting text:', error);
+  }
+};
 
-    // After initial feedback, get further analysis
+const handleFurtherCorrect = async () => {
+  let textToCorrect = editableDiv.value.innerText;
+  textToCorrect = stripHtmlTags(textToCorrect);
+  editableDiv.value.innerText = textToCorrect;
+
+  organizationMistakes.value = [];
+  organizationCorrections.value = [];
+  organizationExplanations.value = [];
+  coherenceMistakes.value = [];
+  coherenceCorrections.value = [];
+  coherenceExplanations.value = [];
+  writingStyleMistakes.value = [];
+  writingStyleCorrections.value = [];
+  writingStyleExplanations.value = [];
+
+  try {
     const furtherResponse = await axios.post('http://localhost:3000/correct/further-correct', {
       text: textToCorrect,
       section: textareaSmall.value,
@@ -97,11 +112,10 @@ const handleCorrect = async () => {
     writingStyleMistakes.value = furtherResponse.data.writingStyle.mistakes;
     writingStyleCorrections.value = furtherResponse.data.writingStyle.corrections;
     writingStyleExplanations.value = furtherResponse.data.writingStyle.explanations;
-  } catch (error) {
-    console.error('Error correcting text:', error);
   }
-
-  toggleSidebar();
+  catch (error) {
+    console.error('Error getting further corrections:', error);
+  }
 };
 
 const highlightMistakes = () => {
@@ -175,13 +189,6 @@ const activatePopovers = () => {
 const updateText = () => {
   textareaBig.value = editableDiv.value.innerText;
 };
-
-const toggleCollapse = (index, category) => {
-  const collapseElement = document.getElementById(`${category}-collapse-${index}`);
-  const bsCollapse = new bootstrap.Collapse(collapseElement, {
-    toggle: true
-  });
-};
 </script>
 
 <template>
@@ -204,10 +211,15 @@ const toggleCollapse = (index, category) => {
         </div>
       </div>
       <!-- Upper Right -->
-      <div class="col-5 d-flex ml-5">
-        <div>
-          <h3>Past Reviews</h3>
-          <p>Some text here</p>
+      <div class="col-5 d-flex flex-column ml-5">
+        <div class="d-flex justify-content-end align-items-center">
+          <button type="button" class="btn" @click="toggleSidebar">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-list"
+              viewBox="0 0 16 16">
+              <path fill-rule="evenodd"
+                d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5" />
+            </svg>
+          </button>
         </div>
       </div>
     </div>
@@ -216,66 +228,13 @@ const toggleCollapse = (index, category) => {
       <div class="col-6">
         <div class="mx-5">
           <button type="button" class="btn btn-md" @click="handleCorrect">Correct</button>
-          <button type="button" class="btn btn-md" @click="generateImprovements">Generate Improvements</button>
+          <button type="button" class="btn btn-md" @click="handleFurtherCorrect">Get further feedback</button>
+          <button type="button" class="btn btn-md" @click="generateReview">Generate Review</button>
         </div>
       </div>
     </div>
 
-    <Sidebar :isOpen="isSidebarOpen" @close="isSidebarOpen = false">
-      <div class="d-flex justify-content-center mb-4">
-        <button type="button" class="btn btn-md" @click="selectedFeedback = 'organization'"
-          :class="{ active: selectedFeedback === 'organization' }">Organization</button>
-        <button type="button" class="btn btn-md" @click="selectedFeedback = 'coherence'"
-          :class="{ active: selectedFeedback === 'coherence' }">Coherence</button>
-        <button type="button" class="btn btn-md" @click="selectedFeedback = 'writingStyle'"
-          :class="{ active: selectedFeedback === 'writingStyle' }">Writing Style</button>
-      </div>
-      <div v-if="selectedFeedback === 'organization'">
-        <h4>Organization Feedback</h4>
-        <!-- <ul> -->
-        <div v-for="(mistake, index) in organizationMistakes" :key="index">
-          <a @click="toggleCollapse(index, 'organization')" href="javascript:void(0)">
-            <strong>Feedback {{ index + 1 }}</strong>
-          </a>
-          <ul :id="'organization-collapse-' + index" class="collapse mt-2" :class="{ show: index === 0 }">
-            <li><strong>Mistake:</strong> {{ mistake }} </li>
-            <li><strong>Correction:</strong> {{ organizationCorrections[index] }}</li>
-            <li><strong>Explanation:</strong> {{ organizationExplanations[index] }}</li>
-          </ul>
-        </div>
-        <!-- </ul> -->
-      </div>
-      <div v-if="selectedFeedback === 'coherence'">
-        <h4>Coherence Feedback</h4>
-        <!-- <ul> -->
-        <div v-for="(mistake, index) in coherenceMistakes" :key="index">
-          <a @click="toggleCollapse(index, 'coherence')" href="javascript:void(0)">
-            <strong>Feedback {{ index + 1 }}</strong>
-          </a>
-          <ul :id="'coherence-collapse-' + index" class="collapse mt-2" :class="{ show: index === 0 }">
-            <li><strong>Mistake:</strong> {{ mistake }}</li>
-            <li><strong>Correction:</strong> {{ coherenceCorrections[index] }}</li>
-            <li><strong>Explanation:</strong> {{ coherenceExplanations[index] }}</li>
-          </ul>
-        </div>
-        <!-- </ul> -->
-      </div>
-      <div v-if="selectedFeedback === 'writingStyle'">
-        <h4>Writing Style Feedback</h4>
-        <!-- <ul> -->
-        <div v-for="(mistake, index) in writingStyleMistakes" :key="index">
-          <a @click="toggleCollapse(index, 'writingStyle')" href="javascript:void(0)">
-            <strong>Feedback {{ index + 1 }}</strong>
-          </a>
-          <ul :id="'writingStyle-collapse-' + index" class="collapse mt-2" :class="{ show: index === 0 }">
-            <li><strong>Mistake:</strong> {{ mistake }}</li>
-            <li><strong>Correction:</strong> {{ writingStyleCorrections[index] }}</li>
-            <li><strong>Explanation:</strong> {{ writingStyleExplanations[index] }}</li>
-          </ul>
-        </div>
-        <!-- </ul> -->
-      </div>
-    </Sidebar>
+    <Sidebar :isOpen="isSidebarOpen" @close="isSidebarOpen = false" :review-data="reviewData" />
   </div>
 </template>
 

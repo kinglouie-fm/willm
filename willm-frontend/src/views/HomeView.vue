@@ -35,8 +35,12 @@ const toggleSidebar = () => {
 
 const generateReview = async () => {
   try {
-    const response = await axios.post('http://localhost:3000/correct/improve');
-    reviewData.value = response.data;
+    const response = await axios.post('http://localhost:3000/review/generate');
+    if (response.data.reviewData === '<2') {
+      reviewData.value = 'Not enough sessions to generate the review';
+    } else {
+      reviewData.value = response.data.reviewData;
+    }
   } catch (error) {
     console.error('Error generating review:', error);
   }

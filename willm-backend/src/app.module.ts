@@ -10,6 +10,7 @@ import { SessionModule } from './session/session.module';
 import { ImprovementModule } from './improvement/improvement.module';
 import { SectionModule } from './section/section.module';
 import { ScoreModule } from './score/score.module';
+import { ReviewModule } from './review/review.module';
 
 @Module({
   imports: [
@@ -20,7 +21,8 @@ import { ScoreModule } from './score/score.module';
     SessionModule,
     ImprovementModule,
     SectionModule,
-    ScoreModule
+    ScoreModule,
+    ReviewModule
   ],
   controllers: [AppController],
   providers: [AppService],

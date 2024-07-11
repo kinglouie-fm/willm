@@ -5,7 +5,7 @@ import Review from './Review.vue';
 
 const props = defineProps({
     isOpen: Boolean,
-    reviewData: Object,
+    reviewData: [Object, String],
     furtherCorrectionData: Object
 });
 
@@ -30,7 +30,7 @@ const selectedTab = ref('Correction');
             </div>
             <div class="content-container border rounded w-100">
                 <component class="m-4" :is="selectedTab === 'Correction' ? Correction : Review"
-                    :review-data="props.reviewData" :furtherCorrectionData="props.furtherCorrectionData" />
+                    :reviewData="props.reviewData" :furtherCorrectionData="props.furtherCorrectionData" />
             </div>
         </div>
     </div>

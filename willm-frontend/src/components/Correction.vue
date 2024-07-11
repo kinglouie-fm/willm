@@ -1,17 +1,11 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, defineProps } from 'vue';
 import * as bootstrap from 'bootstrap';
+const props = defineProps({
+    furtherCorrectionData: Object
+});
 
 const selectedFeedback = ref('organization');
-const organizationMistakes = ref([]);
-const organizationCorrections = ref([]);
-const organizationExplanations = ref([]);
-const coherenceMistakes = ref([]);
-const coherenceCorrections = ref([]);
-const coherenceExplanations = ref([]);
-const writingStyleMistakes = ref([]);
-const writingStyleCorrections = ref([]);
-const writingStyleExplanations = ref([]);
 
 const toggleCollapse = (index, category) => {
     const collapseElement = document.getElementById(`${category}-collapse-${index}`);
@@ -33,42 +27,50 @@ const toggleCollapse = (index, category) => {
         </div>
         <div v-if="selectedFeedback === 'organization'">
             <h4>Organization Feedback</h4>
-            <div v-for="(mistake, index) in organizationMistakes" :key="index">
+            <div v-for="(mistake, index) in props.furtherCorrectionData.organization.mistakes" :key="index">
                 <a @click="toggleCollapse(index, 'organization')" href="javascript:void(0)">
                     <strong>Feedback {{ index + 1 }}</strong>
                 </a>
                 <ul :id="'organization-collapse-' + index" class="collapse mt-2" :class="{ show: index === 0 }">
                     <li><strong>Mistake:</strong> {{ mistake }} </li>
-                    <li><strong>Correction:</strong> {{ organizationCorrections[index] }}</li>
-                    <li><strong>Explanation:</strong> {{ organizationExplanations[index] }}</li>
+                    <li><strong>Correction:</strong> {{ props.furtherCorrectionData.organization.corrections[index] }}
+                    </li>
+                    <li><strong>Explanation:</strong> {{ props.furtherCorrectionData.organization.explanations[index] }}
+                    </li>
                 </ul>
             </div>
         </div>
         <div v-if="selectedFeedback === 'coherence'">
             <h4>Coherence Feedback</h4>
-            <div v-for="(mistake, index) in coherenceMistakes" :key="index">
+            <div v-for="(mistake, index) in props.furtherCorrectionData.coherence.mistakes" :key="index">
                 <a @click="toggleCollapse(index, 'coherence')" href="javascript:void(0)">
                     <strong>Feedback {{ index + 1 }}</strong>
                 </a>
                 <ul :id="'coherence-collapse-' + index" class="collapse mt-2" :class="{ show: index === 0 }">
                     <li><strong>Mistake:</strong> {{ mistake }}</li>
-                    <li><strong>Correction:</strong> {{ coherenceCorrections[index] }}</li>
-                    <li><strong>Explanation:</strong> {{ coherenceExplanations[index] }}</li>
+                    <li><strong>Correction:</strong> {{ props.furtherCorrectionData.coherence.corrections[index] }}</li>
+                    <li><strong>Explanation:</strong> {{ props.furtherCorrectionData.coherence.explanations[index] }}
+                    </li>
                 </ul>
             </div>
         </div>
         <div v-if="selectedFeedback === 'writingStyle'">
             <h4>Writing Style Feedback</h4>
-            <div v-for="(mistake, index) in writingStyleMistakes" :key="index">
+            <div v-for="(mistake, index) in props.furtherCorrectionData.writingStyle.mistakes" :key="index">
                 <a @click="toggleCollapse(index, 'writingStyle')" href="javascript:void(0)">
                     <strong>Feedback {{ index + 1 }}</strong>
                 </a>
                 <ul :id="'writingStyle-collapse-' + index" class="collapse mt-2" :class="{ show: index === 0 }">
                     <li><strong>Mistake:</strong> {{ mistake }}</li>
-                    <li><strong>Correction:</strong> {{ writingStyleCorrections[index] }}</li>
-                    <li><strong>Explanation:</strong> {{ writingStyleExplanations[index] }}</li>
+                    <li><strong>Correction:</strong> {{ props.furtherCorrectionData.writingStyle.corrections[index] }}
+                    </li>
+                    <li><strong>Explanation:</strong> {{ props.furtherCorrectionData.writingStyle.explanations[index] }}
+                    </li>
                 </ul>
             </div>
+        </div>
+        <div v-if="props.furtherCorrectionData === 'Not enough sessions to generate review.'">
+            <p>{{ props.furtherCorrectionData }}</p>
         </div>
     </div>
 </template>

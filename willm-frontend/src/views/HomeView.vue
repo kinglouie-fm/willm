@@ -21,6 +21,11 @@ const writingStyleCorrections = ref([]);
 const writingStyleExplanations = ref([]);
 const editableDiv = ref(null);
 const reviewData = ref(null);
+const furtherCorrectionData = ref({
+  organization: { mistakes: [], corrections: [], explanations: [] },
+  coherence: { mistakes: [], corrections: [], explanations: [] },
+  writingStyle: { mistakes: [], corrections: [], explanations: [] },
+});
 
 const toggleSidebar = () => {
   if (!isSidebarOpen.value) {
@@ -72,6 +77,10 @@ const handleCorrect = async () => {
     corrections.value = response.data.corrections;
     explanations.value = response.data.explanations;
 
+    explanations.value = response.data.explanations.map(explanation => {
+      return explanation.replace(/(\nT:.*)/g, '').trim();
+    });
+
     highlightMistakes();
   } catch (error) {
     console.error('Error correcting text:', error);
@@ -98,18 +107,10 @@ const handleFurtherCorrect = async () => {
       text: textToCorrect,
       section: textareaSmall.value,
     });
+    furtherCorrectionData.value = furtherResponse.data;
 
     console.log(furtherResponse.data)
-
-    organizationMistakes.value = furtherResponse.data.organization.mistakes;
-    organizationCorrections.value = furtherResponse.data.organization.corrections;
-    organizationExplanations.value = furtherResponse.data.organization.explanations;
-    coherenceMistakes.value = furtherResponse.data.coherence.mistakes;
-    coherenceCorrections.value = furtherResponse.data.coherence.corrections;
-    coherenceExplanations.value = furtherResponse.data.coherence.explanations;
-    writingStyleMistakes.value = furtherResponse.data.writingStyle.mistakes;
-    writingStyleCorrections.value = furtherResponse.data.writingStyle.corrections;
-    writingStyleExplanations.value = furtherResponse.data.writingStyle.explanations;
+    toggleSidebar();
   }
   catch (error) {
     console.error('Error getting further corrections:', error);
@@ -119,16 +120,19 @@ const handleFurtherCorrect = async () => {
 const highlightMistakes = () => {
   let htmlContent = editableDiv.value.innerHTML;
   mistakes.value.forEach((mistake, index) => {
-    // Escape content before assigning it to data-bs-content because of the way it handles special characters and escaping in HTML
-    const regex = new RegExp(`(${escapeRegExp(mistake)})`, 'gi');
-    htmlContent = htmlContent.replace(regex,
-      `<span class="mistake" data-bs-toggle="popover" data-bs-html="true" data-bs-content="${escapeHTML(`<b>Correction</b>: ${corrections.value[index]}<br><b>Explanation</b>: ${explanations.value[index]}`)}">$1</span>`);
+    // Create a safe regex to find the exact mistake word
+    const regex = new RegExp(`\\b${escapeRegExp(mistake)}\\b`, 'gi');
+
+    // Use replace function to replace the mistake with a highlighted version
+    htmlContent = htmlContent.replace(regex, (match) => {
+      return `<span class="mistake" data-bs-toggle="popover" data-bs-html="true" data-bs-content="${escapeHTML(`<b>Correction</b>: ${corrections.value[index]}<br><b>Explanation</b>: ${explanations.value[index]}`)}">${match}</span>`;
+    });
   });
   editableDiv.value.innerHTML = htmlContent;
   activatePopovers();
 };
 
-// Escape special characters
+// Escape special characters for regex
 const escapeRegExp = (string) => {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 };
@@ -226,13 +230,14 @@ const updateText = () => {
       <div class="col-6">
         <div class="mx-5">
           <button type="button" class="btn btn-md" @click="handleCorrect">Correct</button>
-          <button type="button" class="btn btn-md" @click="handleFurtherCorrect">Get further feedback</button>
+          <button type="button" class="btn btn-md" @click="handleFurtherCorrect">Get further Feedback</button>
           <button type="button" class="btn btn-md" @click="generateReview">Generate Review</button>
         </div>
       </div>
     </div>
 
-    <Sidebar :isOpen="isSidebarOpen" @close="isSidebarOpen = false" :review-data="reviewData" />
+    <Sidebar :isOpen="isSidebarOpen" @close="isSidebarOpen = false" :review-data="reviewData"
+      :furtherCorrectionData="furtherCorrectionData" />
   </div>
 </template>
 

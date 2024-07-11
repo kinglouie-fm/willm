@@ -27,6 +27,7 @@ export class CorrectionController {
     const mistakes = initialResult.mistakes || [];
     const corrections = initialResult.corrections || [];
     const explanations = initialResult.explanations || [];
+    const categories = initialResult.categories || [];
 
     const userId = req.user._id;
 
@@ -62,6 +63,7 @@ export class CorrectionController {
         type: 'grammar_vocab',
         original_text: mistakes[i],
         corrected_text: corrections[i],
+        category: categories[i] || 'Uncategorized'
       });
       session.issues.push(issue._id as Types.ObjectId);
     }
@@ -72,6 +74,7 @@ export class CorrectionController {
       mistakes: mistakes,
       corrections: corrections,
       explanations: explanations,
+      categories: categories,
       correctedText: correctedText
     };
   }
@@ -105,9 +108,9 @@ export class CorrectionController {
     });
 
     const combinedMistakes = [
-      ...organization.mistakes.map((mistake, i) => ({ mistake, correction: organization.corrections[i], type: 'organization' })),
-      ...coherence.mistakes.map((mistake, i) => ({ mistake, correction: coherence.corrections[i], type: 'coherence' })),
-      ...writingStyle.mistakes.map((mistake, i) => ({ mistake, correction: writingStyle.corrections[i], type: 'writingStyle' }))
+      ...organization.mistakes.map((mistake, i) => ({ mistake, correction: organization.corrections[i], type: 'organization', category: organization.categories[i] })),
+      ...coherence.mistakes.map((mistake, i) => ({ mistake, correction: coherence.corrections[i], type: 'coherence', category: coherence.categories[i] })),
+      ...writingStyle.mistakes.map((mistake, i) => ({ mistake, correction: writingStyle.corrections[i], type: 'writingStyle', category: writingStyle.categories[i] }))
     ];
 
     // Add issues
@@ -123,6 +126,7 @@ export class CorrectionController {
         type: combinedMistakes[i].type,
         original_text: combinedMistakes[i].mistake,
         corrected_text: combinedMistakes[i].correction,
+        category: combinedMistakes[i].category || 'Uncategorized'
       });
       session.issues.push(issue._id as Types.ObjectId);
     }

@@ -23,6 +23,9 @@ export class Issue extends Document {
 
   @Prop({ required: true })
   corrected_text: string;
+
+  @Prop({ required: true })
+  category: string;
 }
 
 export const IssueSchema = SchemaFactory.createForClass(Issue);

@@ -58,6 +58,11 @@ const stripHtmlTags = (html) => {
 
 const handleCorrect = async () => {
   let textToCorrect = editableDiv.value.innerText;
+  if (!textToCorrect) {
+    alert('Please enter some text to correct');
+    return;
+  }
+
   textToCorrect = stripHtmlTags(textToCorrect);
   editableDiv.value.innerText = textToCorrect;
 
@@ -97,6 +102,10 @@ const handleCorrect = async () => {
 
 const handleFurtherCorrect = async () => {
   let textToCorrect = editableDiv.value.innerText;
+  if (!textToCorrect) {
+    alert('Please enter some text to correct');
+    return;
+  }
   textToCorrect = stripHtmlTags(textToCorrect);
   editableDiv.value.innerText = textToCorrect;
 

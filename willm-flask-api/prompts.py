@@ -26,7 +26,7 @@ C: [Provide the corrected word or smallest possible segment]
 E: [Explain why the grammar or vocabulary is problematic and how to improve it]
 T: [Category]
 
-Separate each set of mistakes/corrections/explanations with a blank line.
+Don't use bullet points or any other sort of list. Separate each set of mistakes/corrections/explanations with a blank line.
 
 Provide the corrected version of the text with the necessary changes after "Correction:".
 

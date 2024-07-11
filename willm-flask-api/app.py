@@ -5,7 +5,7 @@ import os
 import re
 import asyncio
 import aiohttp
-from prompts import SYSTEM_PROMPT_1, SYSTEM_PROMPT_2, SYSTEM_PROMPT_3, GRAMMAR_PROMPT, VOCAB_PROMPT, ORGANIZATION_PROMPT, COHERENCE_PROMPT, WRITING_STYLE_PROMPT, DETAILED_IMPROVEMENTS, GENERAL_IMPROVEMENT
+from prompts import SYSTEM_PROMPT_1, SYSTEM_PROMPT_2, SYSTEM_PROMPT_3, UNIFIED_PROMPT, ORGANIZATION_PROMPT, COHERENCE_PROMPT, WRITING_STYLE_PROMPT, DETAILED_IMPROVEMENTS, GENERAL_IMPROVEMENT
 
 load_dotenv()
 
@@ -53,11 +53,14 @@ async def fetch_improvements(session, prompt_template, data):
         response_json = await response.json()
         return response_json['choices'][0]['message']['content']
 
-async def handle_grammar(session, data):
-    return await fetch_openai_response(session, SYSTEM_PROMPT_1, GRAMMAR_PROMPT, data)
+# async def handle_grammar(session, data):
+#     return await fetch_openai_response(session, SYSTEM_PROMPT_1, GRAMMAR_PROMPT, data)
 
-async def handle_vocabulary(session, data):
-    return await fetch_openai_response(session, SYSTEM_PROMPT_1, VOCAB_PROMPT, data)
+# async def handle_vocabulary(session, data):
+#     return await fetch_openai_response(session, SYSTEM_PROMPT_1, VOCAB_PROMPT, data)
+
+async def handle_unified(session, data):
+    return await fetch_openai_response(session, SYSTEM_PROMPT_1, UNIFIED_PROMPT, data)
 
 async def handle_organization(session, data, section):
     return await fetch_openai_response(session, SYSTEM_PROMPT_2, ORGANIZATION_PROMPT, data, section)
@@ -77,12 +80,14 @@ async def handle_correction():
         return jsonify({"error": "No text provided"}), 400
 
     async with aiohttp.ClientSession() as session:
-        grammar_result = await handle_grammar(session, data)
-        vocab_result = await handle_vocabulary(session, data)
+        # grammar_result = await handle_grammar(session, data)
+        # vocab_result = await handle_vocabulary(session, data)
+        unified_result = await handle_unified(session, data)
 
     # Process and merge results to extract mistakes, corrections, explanations, and corrected text
-    merged_result = merge_results(grammar_result, vocab_result)
-    mistakes, corrections, explanations, categories, corrected_text = process_initial_result(merged_result)
+    # merged_result = merge_results(grammar_result, vocab_result)
+    # mistakes, corrections, explanations, categories, corrected_text = process_initial_result(merged_result)
+    mistakes, corrections, explanations, categories, corrected_text = process_initial_result(unified_result)
 
     return jsonify({
         "mistakes": mistakes,
@@ -132,16 +137,16 @@ async def generate_improvements():
 
     return jsonify(results)
 
-def merge_results(grammar_result, vocab_result):
-    grammar_issues = extract_issues(grammar_result)
-    vocab_issues = extract_issues(vocab_result)
+# def merge_results(grammar_result, vocab_result):
+#     grammar_issues = extract_issues(grammar_result)
+#     vocab_issues = extract_issues(vocab_result)
 
-    merged_issues = {issue['mistake']: issue for issue in vocab_issues}
-    for issue in grammar_issues:
-        if issue['mistake'] not in merged_issues:
-            merged_issues[issue['mistake']] = issue
+#     merged_issues = {issue['mistake']: issue for issue in grammar_issues}
+#     for issue in vocab_issues:
+#         if issue['mistake'] not in merged_issues:
+#             merged_issues[issue['mistake']] = issue
 
-    return "\n".join([f"M: {issue['mistake']}\nC: {issue['correction']}\nE: {issue['explanation']}\nT: {issue['category']}" for issue in merged_issues.values()])
+#     return "\n".join([f"M: {issue['mistake']}\nC: {issue['correction']}\nE: {issue['explanation']}\nT: {issue['category']}" for issue in merged_issues.values()])
 
 def extract_issues(result):
     mistakes = re.findall(r'M: (.*?)\n', result, re.DOTALL)
@@ -217,9 +222,6 @@ def process_further_result(result):
         feedback["explanations"] = [e.strip() for e in explanations_match]
     if categories_match:
         feedback["categories"] = [t.strip() for t in categories_match]
-
-    while len(feedback["categories"]) < len(feedback["mistakes"]):
-        feedback["categories"].append("Uncategorized")
 
     return feedback
 

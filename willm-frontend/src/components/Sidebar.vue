@@ -2,12 +2,14 @@
 import { ref, watch } from 'vue';
 import Correction from './Correction.vue';
 import Review from './Review.vue';
+import Scores from './Scores.vue';
 
 const props = defineProps({
     isOpen: Boolean,
     reviewData: [Object, String],
     furtherCorrectionData: Object,
-    selectedTab: String
+    selectedTab: String,
+    scores: Object
 });
 
 const emit = defineEmits(['close']);
@@ -28,6 +30,9 @@ watch(() => props.selectedTab, (newTab) => {
         <div class="sidebar-content d-flex flex-column align-items-end">
             <button class="btn-close m-2" @click="closeSidebar"></button>
             <div class="w-100 mt-2 d-flex justify-content-center">
+                <button class="tab-button btn-lg" @click="selectedTab = 'Scores'"
+                    :class="{ active: selectedTab === 'Scores' }">Scores
+                </button>
                 <button class="tab-button btn-lg" @click="selectedTab = 'Correction'"
                     :class="{ active: selectedTab === 'Correction' }">Correction
                 </button>
@@ -36,8 +41,9 @@ watch(() => props.selectedTab, (newTab) => {
                 </button>
             </div>
             <div class="content-container border rounded w-100">
-                <component class="m-4" :is="selectedTab === 'Correction' ? Correction : Review" :reviewData="reviewData"
-                    :furtherCorrectionData="furtherCorrectionData" />
+                <component class="m-4"
+                    :is="selectedTab === 'Correction' ? Correction : selectedTab === 'Review' ? Review : Scores"
+                    :reviewData="reviewData" :furtherCorrectionData="furtherCorrectionData" :scores="scores" />
             </div>
         </div>
     </div>

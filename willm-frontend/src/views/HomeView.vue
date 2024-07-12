@@ -21,6 +21,13 @@ const writingStyleCorrections = ref([]);
 const writingStyleExplanations = ref([]);
 const editableDiv = ref(null);
 const reviewData = ref(null);
+const scores = ref({
+  grammar: 85,
+  vocabulary: 90,
+  organization: 75,
+  coherence: 80,
+  writingStyle: 88,
+});
 const furtherCorrectionData = ref({
   organization: { mistakes: [], corrections: [], explanations: [] },
   coherence: { mistakes: [], corrections: [], explanations: [] },
@@ -44,8 +51,8 @@ const generateReview = async () => {
       reviewData.value = response.data.reviewData;
       console.log(response.data)
     }
-    selectedTab.value = 'Review'; // Set the tab to Review
-    isSidebarOpen.value = true;   // Open the sidebar
+    selectedTab.value = 'Review';
+    toggleSidebar();
   } catch (error) {
     console.error('Error generating review:', error);
   }
@@ -81,23 +88,35 @@ const handleCorrect = async () => {
   writingStyleExplanations.value = [];
 
   try {
-    const response = await axios.post('http://localhost:3000/correct', {
-      text: textToCorrect,
-      section: textareaSmall.value,
-    });
-    console.log(response.data)
+    const [correctionResponse, scoresResponse] = await Promise.all([
+      axios.post('http://localhost:3000/correct', {
+        text: textToCorrect,
+        section: textareaSmall.value,
+      }),
+      // axios.post('http://localhost:3000/scores/generate', {
+      //   text: textToCorrect,
+      // })
+    ]);
 
-    mistakes.value = response.data.mistakes;
-    corrections.value = response.data.corrections;
-    explanations.value = response.data.explanations;
+    // Handle correction response
+    mistakes.value = correctionResponse.data.mistakes;
+    corrections.value = correctionResponse.data.corrections;
+    explanations.value = correctionResponse.data.explanations;
 
-    explanations.value = response.data.explanations.map(explanation => {
+    explanations.value = correctionResponse.data.explanations.map(explanation => {
       return explanation.replace(/(\nT:.*)/g, '').trim();
     });
 
+    // Handle scores response
+    // if (scoresResponse.data.scores) {
+    //   scores.value = scoresResponse.data.scores;
+    // }
+
     highlightMistakes();
+    selectedTab.value = 'Scores';
+    toggleSidebar();
   } catch (error) {
-    console.error('Error correcting text:', error);
+    console.error('Error processing requests:', error);
   }
 };
 

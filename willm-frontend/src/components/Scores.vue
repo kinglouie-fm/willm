@@ -1,35 +1,20 @@
 <script setup>
 import { defineProps } from 'vue';
 
-// const props = defineProps({
-//     scores: {
-//         type: Object,
-//         default: () => ({
-//             grammar: 85,
-//             vocabulary: 90,
-//             organization: 75,
-//             coherence: 80,
-//             writingStyle: 88
-//         })
-//     }
-// });
-const scores = {
-    grammar: 85,
-    vocabulary: 90,
-    organization: 75,
-    coherence: 80,
-    writingStyle: 88
-}
+const props = defineProps({
+    scores: Object
+});
 </script>
 
 <template>
     <div class="scores-container">
-        <div class="score-card" v-for="(score, category) in scores" :key="category">
+        <div class="score-card" v-for="(data, category) in scores" :key="category">
             <h3>{{ category.charAt(0).toUpperCase() + category.slice(1) }}</h3>
             <div class="score-bar">
-                <div class="score-bar-fill" :style="{ width: score + '%' }"></div>
+                <div class="score-bar-fill" :style="{ width: (data.score / 9) * 100 + '%' }"></div>
             </div>
-            <div class="score-label">{{ score }}%</div>
+            <div class="score-label">{{ data.score }} / 9</div>
+            <p>{{ data.explanation }}</p>
         </div>
     </div>
 </template>

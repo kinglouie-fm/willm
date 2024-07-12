@@ -21,13 +21,7 @@ const writingStyleCorrections = ref([]);
 const writingStyleExplanations = ref([]);
 const editableDiv = ref(null);
 const reviewData = ref(null);
-const scores = ref({
-  grammar: 85,
-  vocabulary: 90,
-  organization: 75,
-  coherence: 80,
-  writingStyle: 88,
-});
+const scores = ref({});
 const furtherCorrectionData = ref({
   organization: { mistakes: [], corrections: [], explanations: [] },
   coherence: { mistakes: [], corrections: [], explanations: [] },
@@ -93,9 +87,10 @@ const handleCorrect = async () => {
         text: textToCorrect,
         section: textareaSmall.value,
       }),
-      // axios.post('http://localhost:3000/scores/generate', {
-      //   text: textToCorrect,
-      // })
+      axios.post('http://localhost:3000/score/generate', {
+        text: textToCorrect,
+        section: textareaSmall.value,
+      })
     ]);
 
     // Handle correction response
@@ -107,10 +102,7 @@ const handleCorrect = async () => {
       return explanation.replace(/(\nT:.*)/g, '').trim();
     });
 
-    // Handle scores response
-    // if (scoresResponse.data.scores) {
-    //   scores.value = scoresResponse.data.scores;
-    // }
+    scores.value = scoresResponse.data;
 
     highlightMistakes();
     selectedTab.value = 'Scores';
@@ -274,7 +266,7 @@ const updateText = () => {
     </div>
 
     <Sidebar :isOpen="isSidebarOpen" @close="isSidebarOpen = false" :review-data="reviewData"
-      :furtherCorrectionData="furtherCorrectionData" :selectedTab="selectedTab" />
+      :furtherCorrectionData="furtherCorrectionData" :selectedTab="selectedTab" :scores="scores" />
   </div>
 </template>
 

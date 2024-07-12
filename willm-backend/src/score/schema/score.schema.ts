@@ -10,7 +10,19 @@ export class Score extends Document {
   section_id: Types.ObjectId;
 
   @Prop({ required: true })
-  score: number;
+  grammar: number;
+
+  @Prop({ required: true })
+  vocabulary: number;
+
+  @Prop({ required: true })
+  organization: number;
+
+  @Prop({ required: true })
+  coherence: number;
+
+  @Prop({ required: true })
+  writing_style: number;
 
   @Prop({ required: true })
   date_created: Date;

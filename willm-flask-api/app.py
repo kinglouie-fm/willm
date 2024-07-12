@@ -1,3 +1,4 @@
+import json
 from flask import Flask, request, jsonify
 import openai
 from dotenv import load_dotenv
@@ -5,11 +6,15 @@ import os
 import re
 import asyncio
 import aiohttp
-from prompts import SYSTEM_PROMPT_1, SYSTEM_PROMPT_2, SYSTEM_PROMPT_3, UNIFIED_PROMPT, ORGANIZATION_PROMPT, COHERENCE_PROMPT, WRITING_STYLE_PROMPT, DETAILED_IMPROVEMENTS, GENERAL_IMPROVEMENT
+from prompts import SYSTEM_PROMPT_1, SYSTEM_PROMPT_2, SYSTEM_PROMPT_3, SYSTEM_PROMPT_4, UNIFIED_PROMPT, ORGANIZATION_PROMPT, COHERENCE_PROMPT, WRITING_STYLE_PROMPT, DETAILED_IMPROVEMENTS, GENERAL_IMPROVEMENT, SCORES
+import logging
 
 load_dotenv()
 
 app = Flask(__name__)
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 openai.api_key = os.getenv('FLASK_API_KEY')
 
@@ -71,6 +76,9 @@ async def handle_coherence(session, data, section):
 async def handle_writing_style(session, data, section):
     return await fetch_openai_response(session, SYSTEM_PROMPT_2, WRITING_STYLE_PROMPT, data, section)
 
+async def handle_scores(session, data):
+    return await fetch_openai_response(session, SYSTEM_PROMPT_4, SCORES, data)
+
 
 @app.route('/handle-correction', methods=['POST'])
 async def handle_correction():
@@ -116,6 +124,55 @@ async def handle_further_correction():
     feedback = {key: process_further_result(result) for key, result in zip(["organization", "coherence", "writingStyle"], results)}
 
     return jsonify(feedback)
+
+@app.route('/generate-scores', methods=['POST'])
+async def generate_scores():
+    data = request.json.get('text')
+
+    if not data:
+        return jsonify({"error": "No text provided"}), 400
+
+    try:
+        async with aiohttp.ClientSession() as session:
+            scores_result = await handle_scores(session, data)
+        logger.info("LLM Response: %s", scores_result)  # Log the raw response from the LLM
+        scores = parse_scores(scores_result)
+        logger.info("Parsed Scores: %s", scores)  # Log the parsed scores
+        return jsonify(scores)
+    except Exception as e:
+        logger.error(f"Error generating scores: {e}")
+        return jsonify({"error": str(e)}), 500
+
+def parse_scores(response_text):
+    # Initialize a dictionary to hold the scores and explanations
+    scores = {
+        "grammar": {"score": None, "explanation": ""},
+        "vocabulary": {"score": None, "explanation": ""},
+        "organization": {"score": None, "explanation": ""},
+        "coherence": {"score": None, "explanation": ""},
+        "writing_style": {"score": None, "explanation": ""}
+    }
+
+    # Define regex patterns for each score and its explanation
+    patterns = {
+        'grammar': r'Grammar:\s*(\d+)\s*Explanation:\s*(.*?)(?=\n\s*Vocabulary:|$)',
+        'vocabulary': r'Vocabulary:\s*(\d+)\s*Explanation:\s*(.*?)(?=\n\s*Organization:|$)',
+        'organization': r'Organization:\s*(\d+)\s*Explanation:\s*(.*?)(?=\n\s*Coherence:|$)',
+        'coherence': r'Coherence:\s*(\d+)\s*Explanation:\s*(.*?)(?=\n\s*Writing Style:|$)',
+        'writing_style': r'Writing Style:\s*(\d+)\s*Explanation:\s*(.*?)(?=$)'
+    }
+
+    # Loop over each pattern to extract the score and explanation
+    for key, pattern in patterns.items():
+        match = re.search(pattern, response_text, re.DOTALL)
+        if match:
+            scores[key] = {
+                'score': int(match.group(1).strip()),
+                'explanation': match.group(2).strip()
+            }
+
+    return scores
+
 
 @app.route('/generate-improvements', methods=['POST'])
 async def generate_improvements():

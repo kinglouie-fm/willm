@@ -1,6 +1,9 @@
 <script setup>
 import { defineProps } from 'vue';
 
+// Define the expected order of the scores
+const scoreOrder = ['grammar', 'vocabulary', 'organization', 'coherence', 'writing_style'];
+
 const props = defineProps({
     scores: Object
 });
@@ -8,13 +11,13 @@ const props = defineProps({
 
 <template>
     <div class="scores-container">
-        <div class="score-card" v-for="(data, category) in scores" :key="category">
-            <h3>{{ category.charAt(0).toUpperCase() + category.slice(1) }}</h3>
+        <div class="score-card" v-for="category in scoreOrder" :key="category">
+            <h3>{{ category.charAt(0).toUpperCase() + category.slice(1).replace('_', ' ') }}</h3>
             <div class="score-bar">
-                <div class="score-bar-fill" :style="{ width: (data.score / 9) * 100 + '%' }"></div>
+                <div class="score-bar-fill" :style="{ width: (props.scores[category].score / 9) * 100 + '%' }"></div>
             </div>
-            <div class="score-label">{{ data.score }} / 9</div>
-            <p>{{ data.explanation }}</p>
+            <div class="score-label">{{ props.scores[category].score }} / 9</div>
+            <p>{{ props.scores[category].explanation }}</p>
         </div>
     </div>
 </template>

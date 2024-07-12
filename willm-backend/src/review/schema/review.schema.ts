@@ -21,8 +21,7 @@ export class Review extends Document {
 
   @Prop({
     type: {
-      grammar: { type: ImprovementTipSchema, default: () => ({}) },
-      vocabulary: { type: ImprovementTipSchema, default: () => ({}) },
+      grammar_vocab: { type: ImprovementTipSchema, default: () => ({}) },
       organization: { type: ImprovementTipSchema, default: () => ({}) },
       coherence: { type: ImprovementTipSchema, default: () => ({}) },
       writingStyle: { type: ImprovementTipSchema, default: () => ({}) },
@@ -30,8 +29,7 @@ export class Review extends Document {
     default: {},
   })
   review_data: {
-    grammar: ImprovementTip;
-    vocabulary: ImprovementTip;
+    grammar_vocab: ImprovementTip;
     organization: ImprovementTip;
     coherence: ImprovementTip;
     writingStyle: ImprovementTip;

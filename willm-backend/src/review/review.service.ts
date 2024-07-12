@@ -21,8 +21,10 @@ export class ReviewService {
       return { reviewData: 'Not enough sessions to generate review.' };
     }
 
+    console.log('Retrieved issues:', issues);
+
     // Separate issues into two groups
-    const grammarVocabIssues = issues.filter(issue => issue.type === 'grammar' || issue.type === 'vocabulary');
+    const grammarVocabIssues = issues.filter(issue => issue.type === 'grammar_vocab');
     const orgCohWritingIssues = issues.filter(issue => ['organization', 'coherence', 'writingStyle'].includes(issue.type));
 
     // Calculate the frequency of each category in both groups
@@ -34,7 +36,9 @@ export class ReviewService {
     };
 
     const grammarVocabFrequency = getCategoryFrequency(grammarVocabIssues);
+    console.log('Grammar/Vocab Frequency:', grammarVocabFrequency);
     const orgCohWritingFrequency = getCategoryFrequency(orgCohWritingIssues);
+    console.log('Org/Coh/Writing Frequency:', orgCohWritingFrequency);
 
     // Sort categories by frequency and get the top 3 for each group
     const getTopCategories = (frequency) => {
@@ -42,7 +46,9 @@ export class ReviewService {
     };
 
     const topGrammarVocabCategories = getTopCategories(grammarVocabFrequency);
+    console.log('Top Grammar/Vocab Categories:', topGrammarVocabCategories);
     const topOrgCohWritingCategories = getTopCategories(orgCohWritingFrequency);
+    console.log('Top Org/Coh/Writing Categories:', topOrgCohWritingCategories);
 
     // Create a mapping of categories to their types
     const getCategoryTypeMap = (issues) => {
@@ -55,60 +61,58 @@ export class ReviewService {
     };
 
     const grammarVocabTypeMap = getCategoryTypeMap(grammarVocabIssues);
+    console.log('Grammar/Vocab Type Map:', grammarVocabTypeMap);
     const orgCohWritingTypeMap = getCategoryTypeMap(orgCohWritingIssues);
+    console.log('Org/Coh/Writing Type Map:', orgCohWritingTypeMap);
 
-    // Distribute top categories into their respective types
-    const reviewData = {
-      grammar: { improvements: [], tips: [] },
-      vocabulary: { improvements: [], tips: [] },
-      organization: { improvements: [], tips: [] },
-      coherence: { improvements: [], tips: [] },
-      writingStyle: { improvements: [], tips: [] },
-    };
-
-    topGrammarVocabCategories.forEach(category => {
-      const type = grammarVocabTypeMap[category];
-      if (type in reviewData) {
-        reviewData[type].tips.push(category);
-      }
-    });
-
-    topOrgCohWritingCategories.forEach(category => {
-      const type = orgCohWritingTypeMap[category];
-      if (type in reviewData) {
-        reviewData[type].tips.push(category);
-      }
-    });
-
-    // Check for a previous review
-    const previousReview = await this.reviewModel.findOne({ user_id: userId }).sort({ date_created: -1 }).exec();
+    // Retrieve all reviews sorted by date in descending order
+    const allReviews = await this.reviewModel.find({ user_id: userId }).sort({ date_created: -1 }).limit(25).exec();
     const today = new Date();
     const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
-    if (previousReview && previousReview.date_created < startOfToday) {
-      const previousTopCategories = Object.values(previousReview.review_data).flatMap(section => section.tips);
+    // Find the first review that is older than today
+    const previousReview = allReviews.find(review => review.date_created < startOfToday);
 
-      // Determine if there are improvements
-      const improvements = [...topGrammarVocabCategories, ...topOrgCohWritingCategories].filter(category => !previousTopCategories.includes(category));
-      const tips = [...topGrammarVocabCategories, ...topOrgCohWritingCategories].filter(category => previousTopCategories.includes(category));
+    if (previousReview) {
+      // Check for frequency improvements
+      const previousFrequencies = {
+        ...getCategoryFrequency(previousReview.review_data.grammar_vocab.tips.map(tip => ({ category: tip }))),
+        ...getCategoryFrequency(previousReview.review_data.organization.tips.map(tip => ({ category: tip }))),
+        ...getCategoryFrequency(previousReview.review_data.coherence.tips.map(tip => ({ category: tip }))),
+        ...getCategoryFrequency(previousReview.review_data.writingStyle.tips.map(tip => ({ category: tip })))
+      };
+
+      const frequencyImprovements = Object.keys(previousFrequencies).filter(category => {
+        const prevFreq = previousFrequencies[category];
+        const currFreq = grammarVocabFrequency[category] || orgCohWritingFrequency[category] || 0;
+        return currFreq < prevFreq;
+      });
+
+      console.log('Frequency Improvements:', frequencyImprovements);
 
       const reviewData = {
-        grammar: { improvements: [], tips: [] },
-        vocabulary: { improvements: [], tips: [] },
+        grammar_vocab: { improvements: [], tips: [] },
         organization: { improvements: [], tips: [] },
         coherence: { improvements: [], tips: [] },
         writingStyle: { improvements: [], tips: [] },
       };
 
-      improvements.forEach(category => {
+      frequencyImprovements.forEach(category => {
         const type = grammarVocabTypeMap[category] || orgCohWritingTypeMap[category];
         if (type in reviewData) {
           reviewData[type].improvements.push(category);
         }
       });
 
-      tips.forEach(category => {
-        const type = grammarVocabTypeMap[category] || orgCohWritingTypeMap[category];
+      topGrammarVocabCategories.forEach(category => {
+        const type = grammarVocabTypeMap[category];
+        if (type in reviewData) {
+          reviewData.grammar_vocab.tips.push(category);
+        }
+      });
+
+      topOrgCohWritingCategories.forEach(category => {
+        const type = orgCohWritingTypeMap[category];
         if (type in reviewData) {
           reviewData[type].tips.push(category);
         }
@@ -127,7 +131,10 @@ export class ReviewService {
 
     // Check if there are at least two different sessions with different dates
     const sessions = await this.sessionService.getSessionsByUserId(userId.toHexString());
-    const distinctDates = new Set(sessions.map(session => session.date_created.toDateString()));
+    const distinctDates = new Set(sessions.map(session => {
+      const date = new Date(session.date_created);
+      return date.toISOString();
+    }));
 
     if (distinctDates.size < 2) {
       return { reviewData: '<2' };
@@ -135,8 +142,7 @@ export class ReviewService {
 
     // Store the initial review
     const initialReviewData = {
-      grammar: { improvements: [], tips: [] },
-      vocabulary: { improvements: [], tips: [] },
+      grammar_vocab: { improvements: [], tips: [] },
       organization: { improvements: [], tips: [] },
       coherence: { improvements: [], tips: [] },
       writingStyle: { improvements: [], tips: [] },
@@ -145,7 +151,7 @@ export class ReviewService {
     topGrammarVocabCategories.forEach(category => {
       const type = grammarVocabTypeMap[category];
       if (type in initialReviewData) {
-        initialReviewData[type].tips.push(category);
+        initialReviewData.grammar_vocab.tips.push(category);
       }
     });
 
@@ -155,6 +161,8 @@ export class ReviewService {
         initialReviewData[type].tips.push(category);
       }
     });
+
+    console.log('Initial Review Data:', initialReviewData);
 
     const newReview = new this.reviewModel({
       user_id: userId,

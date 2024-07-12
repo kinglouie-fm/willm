@@ -1,20 +1,38 @@
 <script setup>
-import { defineProps } from 'vue';
+import { defineProps, computed } from 'vue';
 
 const props = defineProps({
     reviewData: [Object, String]  // Allow both Object and String types
+});
+
+const getDisplayKey = (key) => {
+    if (key === 'grammar_vocab') {
+        return 'Grammar and Vocabulary';
+    }
+    return key.charAt(0).toUpperCase() + key.slice(1);
+};
+
+// Filter out keys with empty improvements and tips arrays
+const filteredReviewData = computed(() => {
+    if (typeof props.reviewData === 'string') {
+        return {};
+    }
+    return Object.fromEntries(
+        Object.entries(props.reviewData).filter(([key, value]) => {
+            return (value.improvements && value.improvements.length) || (value.tips && value.tips.length);
+        })
+    );
 });
 </script>
 
 <template>
     <div>
-        <h4>Review Section</h4>
         <div v-if="typeof props.reviewData === 'string'">
             <p>{{ props.reviewData }}</p>
         </div>
-        <div v-else-if="props.reviewData">
-            <div v-for="(categoryData, key) in props.reviewData" :key="key">
-                <h3>{{ key.charAt(0).toUpperCase() + key.slice(1) }}</h3>
+        <div v-else-if="Object.keys(filteredReviewData).length">
+            <div v-for="(categoryData, key) in filteredReviewData" :key="key">
+                <h3>{{ getDisplayKey(key) }}</h3>
                 <div v-if="categoryData.improvements && categoryData.improvements.length">
                     <h4>Improvements</h4>
                     <ul>

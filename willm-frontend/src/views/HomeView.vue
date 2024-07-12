@@ -42,6 +42,7 @@ const generateReview = async () => {
       reviewData.value = 'Not enough sessions to generate the review';
     } else {
       reviewData.value = response.data.reviewData;
+      console.log(response.data)
     }
     selectedTab.value = 'Review'; // Set the tab to Review
     isSidebarOpen.value = true;   // Open the sidebar

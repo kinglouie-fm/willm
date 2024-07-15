@@ -76,9 +76,9 @@ export class ScoreService {
   async compareScores(userId: string, section: string): Promise<any> {
     const latestScore = await this.findLatestScoreBySection(userId, section);
 
-    if (!latestScore) {
-      return { message: "No scores available for the selected section." };
-    }
+    // if (!latestScore) {
+    //   return { message: "No scores available for the selected section." };
+    // }
 
     const dateThreshold = new Date(latestScore.date_created);
     dateThreshold.setDate(dateThreshold.getDate() - 5);
@@ -97,7 +97,9 @@ export class ScoreService {
       writing_style: this.calculateImprovement(latestScore.writing_style, olderScore.writing_style),
     };
 
-    return { latestScore, comparison };
+    const daysDifference = this.calculateDaysDifference(latestScore.date_created, olderScore.date_created);
+
+    return { latestScore, comparison, daysDifference };
   }
 
   private async findLatestScoreBySection(userId: string, section: string): Promise<Score> {
@@ -111,4 +113,11 @@ export class ScoreService {
   private calculateImprovement(latest: number, older: number): number {
     return ((latest - older) / older) * 100;
   }
+
+  private calculateDaysDifference(date1: Date, date2: Date): number {
+    const diffTime = Math.abs(date2.getTime() - date1.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  }
+
 }

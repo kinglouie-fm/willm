@@ -1,6 +1,8 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
+import ScoreProgressBar from '../components/ScoreProgressBar.vue';
+import * as bootstrap from 'bootstrap';
 
 const sections = ref([]);
 const selectedSection = ref('');
@@ -44,14 +46,33 @@ const selectSection = (section) => {
     fetchComparison();
 };
 
-onMounted(getSections);
+const initPopover = () => {
+    const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+    popoverTriggerList.forEach((popoverTriggerEl) => {
+        new bootstrap.Popover(popoverTriggerEl, {
+            trigger: 'hover',
+            html: true,
+            content: document.querySelector('#popover-content').innerHTML,
+            customClass: 'wide-popover'
+        });
+    });
+};
+
+onMounted(() => {
+    getSections();
+    initPopover();
+});
 </script>
 
 <template>
     <div>
         <div class="container border mt-5 rounded p-3">
             <div>
-                <h3>Comparison of your scores</h3>
+                <h3>
+                    Comparison of your scores
+                    <img class="info-icon" src="/icons/icon-info-01.svg" data-bs-toggle="popover"
+                        data-bs-placement="right" />
+                </h3>
                 <p>Select a section for which you want to compare your scores. </p>
                 <div class="d-flex flex-wrap">
                     <button v-for="section in sections" :key="section" type="button" class="btn me-2 section-button"
@@ -65,23 +86,42 @@ onMounted(getSections);
                 <p>{{ message }}</p>
             </div>
             <div class="container" v-if="comparisonData">
-                <p>You improved your score from before {{ comparisonData.daysDifference }} days by the
-                    following
-                    amount:</p>
                 <div class="d-flex flex-wrap">
                     <div v-for="(value, key) in comparisonData.comparison" :key="key" class="me-3">
-                        <p>{{ key.charAt(0).toUpperCase() + key.slice(1) }}: {{ value.toFixed(2) }}%</p>
+                        <p>{{ key.charAt(0).toUpperCase() + key.slice(1) }}:</p>
+                        <ScoreProgressBar :latestScore="comparisonData.latestScore[key]"
+                            :medianScore="comparisonData.medianOlderScore[key]" />
                     </div>
                 </div>
             </div>
         </div>
-        <div class="container border rounded mt-3">
-            <h3>Gamification</h3>
-            <p>Below you can see your gamification progress.</p>
+
+        <div id="popover-content" style="display: none;">
+            <div class="explanation">
+                <h4>How the scores are calculated:</h4>
+                <p>
+                    The median of all older scores for the selected section is calculated and compared to your
+                    latest score.
+                    The progress bar represents the comparison:
+                </p>
+                <ul>
+                    <li><strong class="median">Median Color:</strong> The median score of all
+                        previous
+                        scores.
+                    </li>
+                    <li><strong class="green">Green:</strong> Improvement above the median score.</li>
+                    <li><strong class="red">Red:</strong> Decline below the median score.</li>
+                </ul>
+                <p>
+                    If your latest score is higher than the median, the bar from the median to the latest score is
+                    green.
+                    If your latest score is lower than the median, the bar up to the latest score is the median
+                    color, and the rest is red.
+                </p>
+            </div>
         </div>
     </div>
 </template>
-
 
 <style scoped>
 .btn-selected {
@@ -105,5 +145,11 @@ onMounted(getSections);
 
 .container {
     padding: 20px;
+}
+
+.info-icon {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
 }
 </style>

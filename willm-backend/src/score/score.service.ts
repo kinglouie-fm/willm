@@ -41,23 +41,18 @@ export class ScoreService {
   }
 
   async getUniqueSections(userId: string): Promise<string[]> {
-    console.log(`Fetching unique sections for user: ${userId}`);
     try {
       const allSections = await this.scoreModel.distinct('section', { user_id: userId }).exec();
-      console.log(`All sections: ${allSections}`);
       const validSections = [];
 
       for (const section of allSections) {
         const latestScore = await this.scoreModel.findOne({ user_id: userId, section: section }).sort({ date_created: -1 }).exec();
-        console.log(`Checking section: ${section}`);
-        console.log(`Latest score: ${latestScore}`);
 
         if (latestScore) {
           const dateThreshold = new Date(latestScore.date_created);
           dateThreshold.setDate(dateThreshold.getDate() - 5);
 
           const olderScore = await this.scoreModel.findOne({ user_id: userId, section: section, date_created: { $lt: dateThreshold } }).sort({ date_created: -1 }).exec();
-          console.log(`Older score: ${olderScore}`);
 
           if (olderScore) {
             validSections.push(section);
@@ -65,7 +60,6 @@ export class ScoreService {
         }
       }
 
-      console.log("Valid sections: ", validSections);
       return validSections;
     } catch (error) {
       console.error("Error fetching unique sections:", error);
@@ -76,42 +70,44 @@ export class ScoreService {
   async compareScores(userId: string, section: string): Promise<any> {
     const latestScore = await this.findLatestScoreBySection(userId, section);
 
-    // if (!latestScore) {
-    //   return { message: "No scores available for the selected section." };
-    // }
+    if (!latestScore) {
+      return { message: "No scores available for the selected section." };
+    }
 
     const dateThreshold = new Date(latestScore.date_created);
     dateThreshold.setDate(dateThreshold.getDate() - 5);
 
-    const olderScore = await this.findOlderScoreBySection(userId, section, dateThreshold);
+    const olderScores = await this.findOlderScoresBySection(userId, section, dateThreshold);
 
-    if (!olderScore) {
+    if (!olderScores.length) {
       return { message: "No older scores available for comparison. Please try again later." };
     }
 
+    console.log('Scores used for median calculation:', olderScores);
+    const medianOlderScore = this.calculateMedianScore(olderScores);
     const comparison = {
-      grammar: this.calculateImprovement(latestScore.grammar, olderScore.grammar),
-      vocabulary: this.calculateImprovement(latestScore.vocabulary, olderScore.vocabulary),
-      organization: this.calculateImprovement(latestScore.organization, olderScore.organization),
-      coherence: this.calculateImprovement(latestScore.coherence, olderScore.coherence),
-      writing_style: this.calculateImprovement(latestScore.writing_style, olderScore.writing_style),
+      grammar: this.calculateImprovement(latestScore.grammar, medianOlderScore.grammar),
+      vocabulary: this.calculateImprovement(latestScore.vocabulary, medianOlderScore.vocabulary),
+      organization: this.calculateImprovement(latestScore.organization, medianOlderScore.organization),
+      coherence: this.calculateImprovement(latestScore.coherence, medianOlderScore.coherence),
+      writing_style: this.calculateImprovement(latestScore.writing_style, medianOlderScore.writing_style),
     };
 
-    const daysDifference = this.calculateDaysDifference(latestScore.date_created, olderScore.date_created);
+    const daysDifference = this.calculateDaysDifference(latestScore.date_created, olderScores[olderScores.length - 1].date_created);
 
-    return { latestScore, comparison, daysDifference };
+    return { latestScore, comparison, daysDifference, medianOlderScore };
   }
 
   private async findLatestScoreBySection(userId: string, section: string): Promise<Score> {
     return this.scoreModel.findOne({ user_id: userId, section: section }).sort({ date_created: -1 }).exec();
   }
 
-  private async findOlderScoreBySection(userId: string, section: string, date: Date): Promise<Score> {
-    return this.scoreModel.findOne({ user_id: userId, section: section, date_created: { $lt: date } }).sort({ date_created: -1 }).exec();
+  private async findOlderScoresBySection(userId: string, section: string, date: Date): Promise<Score[]> {
+    return this.scoreModel.find({ user_id: userId, section: section, date_created: { $lt: date } }).sort({ date_created: -1 }).exec();
   }
 
   private calculateImprovement(latest: number, older: number): number {
-    return ((latest - older) / older) * 100;
+    return ((latest - older) / older);
   }
 
   private calculateDaysDifference(date1: Date, date2: Date): number {
@@ -120,4 +116,27 @@ export class ScoreService {
     return diffDays;
   }
 
+  private calculateMedianScore(scores: Score[]): any {
+    const scoresToCalculate = scores.map(score => ({
+      grammar: score.grammar,
+      vocabulary: score.vocabulary,
+      organization: score.organization,
+      coherence: score.coherence,
+      writing_style: score.writing_style,
+    }));
+
+    const median = (arr: number[]): number => {
+      const sorted = arr.slice().sort((a, b) => a - b);
+      const mid = Math.floor(sorted.length / 2);
+      return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+    };
+
+    return {
+      grammar: median(scoresToCalculate.map(score => score.grammar)),
+      vocabulary: median(scoresToCalculate.map(score => score.vocabulary)),
+      organization: median(scoresToCalculate.map(score => score.organization)),
+      coherence: median(scoresToCalculate.map(score => score.coherence)),
+      writing_style: median(scoresToCalculate.map(score => score.writing_style)),
+    };
+  }
 }

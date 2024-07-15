@@ -1,6 +1,4 @@
 <script setup>
-import { defineProps } from 'vue';
-
 // Define the expected order of the scores
 const scoreOrder = ['grammar', 'vocabulary', 'organization', 'coherence', 'writing_style'];
 

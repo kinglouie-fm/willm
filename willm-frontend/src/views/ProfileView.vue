@@ -45,8 +45,6 @@ onMounted(getSections);
 
 <template>
     <div>
-        <h1>Profile Page</h1>
-        <button class="btn btn-primary" @click="getSections">Fetch Comparison</button>
         <div>
             <label for="sections">Select Section:</label>
             <select id="sections" v-model="selectedSection" @change="fetchComparison">

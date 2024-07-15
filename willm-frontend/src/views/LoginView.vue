@@ -1,13 +1,14 @@
 <script setup>
-import { ref } from 'vue'
-import { auth } from '../stores/auth'
+import { ref } from 'vue';
+import { useAuthStore } from '../stores/auth';
 
-const username = ref('')
-const password = ref('')
+const authStore = useAuthStore();
+const username = ref('');
+const password = ref('');
 
 const login = async () => {
-    await auth.login(username.value, password.value)
-}
+    await authStore.login(username.value, password.value);
+};
 </script>
 
 <template>

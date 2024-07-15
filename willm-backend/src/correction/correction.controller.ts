@@ -21,6 +21,7 @@ export class CorrectionController {
   @UseGuards(JwtAuthGuard)
   @Post()
   async handleCorrection(@Body() body: { text: string, section: string }, @Req() req: Request) {
+    console.log("Handling correction request");
     const initialResult = await this.correctionService.callPythonService(body.text, body.section, 'initial');
     const correctedText = initialResult.correctedText;
 

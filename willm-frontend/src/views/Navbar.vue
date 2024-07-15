@@ -1,6 +1,9 @@
 <script setup>
 import { ref } from 'vue'
-import { auth } from '../stores/auth'
+import { useRoute, useRouter } from 'vue-router'
+
+const route = useRoute()
+const router = useRouter()
 
 const mode = ref('productive')
 
@@ -10,6 +13,11 @@ const handleSwitchChange = (event) => {
 
 const logout = async () => {
     await auth.logout()
+    router.push('/login')
+}
+
+const navigateTo = (path) => {
+    router.push(path)
 }
 </script>
 
@@ -17,11 +25,17 @@ const logout = async () => {
     <nav class="navbar navbar-expand">
         <div class="container-fluid d-flex flex-column align-items-stretch my-0 mx-3">
             <div class="row align-items-center justify-content-between">
-                <div class="col-4 text-start mt-1">
-                    <div class="form-check form-switch">
+                <div class="col-4 text-start mt-1 d-flex align-items-center">
+                    <button class="btn me-2" v-if="route.path !== '/profile'" @click="navigateTo('/profile')">
+                        Profile Page
+                    </button>
+                    <button class="btn me-2" v-if="route.path !== '/'" @click="navigateTo('/')">
+                        Home
+                    </button>
+                    <div class="form-check form-switch d-flex align-items-center">
                         <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault"
                             @change="handleSwitchChange">
-                        <label class="form-check-label" for="flexSwitchCheckDefault">{{ mode }}</label>
+                        <label class="form-check-label ms-2" for="flexSwitchCheckDefault">{{ mode }}</label>
                     </div>
                 </div>
                 <div class="col-4 text-center mt-2">
@@ -48,9 +62,7 @@ const logout = async () => {
     white-space: nowrap;
 }
 
-.item-popover {
-    cursor: pointer;
-    font-size: 14pt;
-    height: 35px;
+.btn {
+    margin: 0 5px;
 }
 </style>

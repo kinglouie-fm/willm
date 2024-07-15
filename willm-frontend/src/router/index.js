@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import MainView from '../views/MainView.vue';
 import LoginView from '../views/LoginView.vue';
+import ProfileView from '../views/ProfileView.vue';
 
 const routes = [
   {
@@ -13,6 +14,12 @@ const routes = [
     path: '/login',
     name: 'login',
     component: LoginView
+  },
+  {
+    path: '/profile',
+    name: 'profile',
+    component: ProfileView,
+    meta: { requiresAuth: true }
   }
 ];
 
@@ -23,12 +30,8 @@ const router = createRouter({
 
 router.beforeEach(async (to, from, next) => {
   if (to.matched.some(record => record.meta.requiresAuth)) {
-    // Frontend does not directly check the token in the cookie immediately after login 
-    // but relies on the server-side validation for protected routes.
     try {
-      const response = await fetch('http://localhost:3000/user/profile', {
-        credentials: 'include'
-      });
+      const response = await fetch('http://localhost:3000/user/profile', { credentials: 'include' });
       if (response.status === 200) {
         next();
       } else {

@@ -135,9 +135,9 @@ async def generate_scores():
     try:
         async with aiohttp.ClientSession() as session:
             scores_result = await handle_scores(session, data)
-        logger.info("LLM Response: %s", scores_result)  # Log the raw response from the LLM
+        # logger.info("LLM Response: %s", scores_result)  # Log the raw response from the LLM
         scores = parse_scores(scores_result)
-        logger.info("Parsed Scores: %s", scores)  # Log the parsed scores
+        # logger.info("Parsed Scores: %s", scores)  # Log the parsed scores
         return jsonify(scores)
     except Exception as e:
         logger.error(f"Error generating scores: {e}")

@@ -14,22 +14,35 @@ export class ScoreController {
     @Req() req: Request
   ) {
     const userId = req.user._id;
+    console.log('Generating score for user:', userId, 'section:', body.section);
     const scoreData = await this.scoreService.generateScore(body.text, userId, body.section);
     return scoreData;
   }
 
-  @Post()
-  async addScore(
-    @Body('user_id') user_id: string, 
-    @Body('section_id') section_id: string, 
-    @Body() scoreData: any
-  ): Promise<{ message: string }> {
-    await this.scoreService.addScore(user_id, section_id, scoreData);
-    return { message: 'Score added successfully' };
+  @UseGuards(JwtAuthGuard)
+  @Get('sections')
+  async getSections(@Req() req: Request) {
+    const userId = req.user._id;
+    console.log('Fetching unique sections for user:', userId);
+    const sections = await this.scoreService.getUniqueSections(userId);
+    console.log('Fetched sections:', sections);
+    return sections;
   }
 
-  @Get(':user_id')
+  @UseGuards(JwtAuthGuard)
+  @Get('comparison/:section')
+  async compareScores(@Param('section') section: string, @Req() req: Request) {
+    const userId = req.user._id;
+    console.log('Comparing scores for section:', section, 'user:', userId);
+    const comparisonResult = await this.scoreService.compareScores(userId, section);
+    console.log('Comparison result:', comparisonResult);
+    return comparisonResult;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('user/:user_id')
   async getScores(@Param('user_id') user_id: string) {
+    console.log('Fetching scores for user:', user_id);
     return this.scoreService.findScoresByUserId(user_id);
   }
 }

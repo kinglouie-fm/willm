@@ -6,8 +6,8 @@ export class Score extends Document {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   user_id: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, ref: 'Section', required: true })
-  section_id: Types.ObjectId;
+  @Prop({ required: true })
+  section: string;
 
   @Prop({ required: true })
   grammar: number;

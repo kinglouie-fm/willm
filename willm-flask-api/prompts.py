@@ -331,6 +331,10 @@ Scoring Criteria:
 Ensure the output is properly formatted and includes all necessary keys.
 """
 
+SYSTEM_PROMPT_5 = """
+Your task is to generate various types of questions for academic writing improvement. Each question type has a specific format and requirement. Please follow the guidelines below to create each question type.
+"""
+
 REVISION_PROMPT = """
 Generate a text with errors for a revision type question. The text should have grammatical, vocabulary, organization, coherence, or writing style errors. There should be no two possible answers to correct the errors. The text should be max 100 words. Provide the question and the corresponding correct text.
 

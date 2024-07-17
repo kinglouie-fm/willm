@@ -7,7 +7,7 @@ import os
 import re
 import asyncio
 import aiohttp
-from prompts import (SYSTEM_PROMPT_1, SYSTEM_PROMPT_2, SYSTEM_PROMPT_3, SYSTEM_PROMPT_4, 
+from prompts import (SYSTEM_PROMPT_1, SYSTEM_PROMPT_2, SYSTEM_PROMPT_3, SYSTEM_PROMPT_4, SYSTEM_PROMPT_5,
                      UNIFIED_PROMPT, ORGANIZATION_PROMPT, COHERENCE_PROMPT, WRITING_STYLE_PROMPT, 
                      DETAILED_IMPROVEMENTS, GENERAL_IMPROVEMENT, SCORES, 
                      REVISION_PROMPT, SYNONYMS_PROMPT, ANTONYMS_PROMPT, ACADEMIC_SENTENCE_PROMPT, 
@@ -310,7 +310,7 @@ def suggest_question_type():
     response = openai.chat.completions.create(
         model="gpt-4o",
         messages=[
-            {"role": "system", "content": "Suggest a question type based on the following text."},
+            {"role": "system", "content": SYSTEM_PROMPT_5},
             {"role": "user", "content": text}
         ],
         max_tokens=50
@@ -325,7 +325,6 @@ def suggest_question_type():
 @app.route('/question/generate', methods=['POST'])
 def generate_question():
     data = request.json
-    text = data['text']
     question_type = data['type']
     
     if question_type not in question_prompts:
@@ -336,8 +335,8 @@ def generate_question():
     response = openai.chat.completions.create(
         model="gpt-4o",
         messages=[
-            {"role": "system", "content": prompt},
-            {"role": "user", "content": text}
+            {"role": "system", "content": SYSTEM_PROMPT_5},
+            {"role": "user", "content": prompt}
         ],
         max_tokens=2000
     )

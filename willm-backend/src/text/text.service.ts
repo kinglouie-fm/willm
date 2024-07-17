@@ -19,15 +19,11 @@ export class TextService {
 
     const savedText = await text.save();
 
-    // Count the total submissions for the user
     const submissionCount = await this.textModel.countDocuments({ user_id: userId });
 
-    // Trigger question generation every 3 submissions
+    // Trigger question generation every 3 submissions.
     if (submissionCount % 3 === 0) {
-      console.log('Generating questions');
-      await this.questionService.generateQuestions(userId);
-    } else {
-      console.log('Not generating questions');
+      this.triggerQuestionGeneration(userId);
     }
 
     return savedText;
@@ -35,5 +31,12 @@ export class TextService {
 
   async findLastSubmissions(userId: Types.ObjectId, limit: number): Promise<Text[]> {
     return this.textModel.find({ user_id: userId }).sort({ createdAt: -1 }).limit(limit).exec();
+  }
+
+  private async triggerQuestionGeneration(userId: Types.ObjectId): Promise<void> {
+    // Don't wait for the question generation
+    setImmediate(async () => {
+      await this.questionService.generateQuestions(userId);
+    });
   }
 }

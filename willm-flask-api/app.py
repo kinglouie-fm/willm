@@ -13,7 +13,8 @@ from prompts import (SYSTEM_PROMPT_1, SYSTEM_PROMPT_2, SYSTEM_PROMPT_3, SYSTEM_P
                      REVISION_PROMPT, SYNONYMS_PROMPT, ANTONYMS_PROMPT, ACADEMIC_SENTENCE_PROMPT, 
                      ARGUMENT_STRENGTHENING_PROMPT, PEER_REVIEW_PROMPT, SYNTHESIS_PROMPT)
 import logging
-from langchain_community.embeddings import OpenAIEmbeddings
+# from langchain_community.embeddings import OpenAIEmbeddings
+from langchain_openai import OpenAIEmbeddings
 import chromadb
 
 load_dotenv()
@@ -302,12 +303,12 @@ question_prompts = {
 }
 
 @app.route('/question/suggest-type', methods=['POST'])
-async def suggest_question_type():
+def suggest_question_type():
     data = request.json
     text = data['text']
 
-    response = await openai.Completion.create(
-        model="gpt-4",
+    response = openai.chat.completions.create(
+        model="gpt-4o",
         messages=[
             {"role": "system", "content": "Suggest a question type based on the following text."},
             {"role": "user", "content": text}
@@ -315,13 +316,14 @@ async def suggest_question_type():
         max_tokens=50
     )
 
-    question_type = response.choices[0].message['content'].strip()
+    question_type = response.choices[0].message.content.strip()
     if question_type in question_prompts:
+        logger.info(f"Suggested question type from LLM: {question_type}")
         return jsonify({"type": question_type})
     return jsonify({"type": None})
 
 @app.route('/question/generate', methods=['POST'])
-async def generate_question():
+def generate_question():
     data = request.json
     text = data['text']
     question_type = data['type']
@@ -331,8 +333,8 @@ async def generate_question():
 
     prompt = question_prompts[question_type]
 
-    response = await openai.Completion.create(
-        model="gpt-4",
+    response = openai.chat.completions.create(
+        model="gpt-4o",
         messages=[
             {"role": "system", "content": prompt},
             {"role": "user", "content": text}
@@ -340,21 +342,24 @@ async def generate_question():
         max_tokens=2000
     )
 
-    output = response.choices[0].message['content']
+    output = response.choices[0].message.content
 
     # Extract the generated question and answer
     generated_question = output.split("Question: ")[1].split("Answer: ")[0].strip()
     generated_answer = output.split("Answer: ")[1].strip()
 
+    logger.info(f"Generated pair: {generated_question}, {generated_answer}")
+
     # Embed the generated question using Langchain
-    embeddings = OpenAIEmbeddings()
-    embedded_question = embeddings.embed_text(generated_question)
+    embeddings = OpenAIEmbeddings(api_key=os.getenv('FLASK_API_KEY'))
+    embedded_question = embeddings.embed_query(generated_question)
 
     # Store the embedded question in ChromaDB
+    document_id = str(uuid.uuid4())
     collection.add(
         documents=[generated_question],
         embeddings=[embedded_question],
-        ids=[str(uuid.uuid4())],
+        ids=[document_id],
         metadatas=[{
             'question': generated_question,
             'answer': generated_answer,
@@ -362,10 +367,15 @@ async def generate_question():
         }]
     )
 
+    # Verify document addition
+    added_document = collection.get()
+    logger.info(f"Added document: {added_document}")
+
     return jsonify({
         "type": question_type,
         "question": generated_question,
-        "answer": generated_answer
+        "answer": generated_answer,
+        "document_id": document_id
     })
 
 if __name__ == '__main__':

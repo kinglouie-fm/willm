@@ -21,6 +21,7 @@ export class QuestionService {
 
   constructor(
     private readonly httpService: HttpService,
+    // TODO: not sure if this is good practice
     @Inject(forwardRef(() => TextService))
     private readonly textService: TextService,
     @InjectModel(QuestionCount.name) private questionCountModel: Model<QuestionCount>,
@@ -39,7 +40,9 @@ export class QuestionService {
 
     const questionType = await this.selectQuestionType(suggestedQuestionType);
 
-    const response = await lastValueFrom(this.httpService.post('http://localhost:8000/question/generate', {
+    console.log("Making request to flask-api for question generation")
+
+    const response = await lastValueFrom(this.httpService.post('http://flask-api:8000/question/generate', {
       text: combinedText,
       type: questionType,
     }));
@@ -50,17 +53,20 @@ export class QuestionService {
   }
 
   private async suggestQuestionType(text: string): Promise<string> {
-    const response = await lastValueFrom(this.httpService.post('http://localhost:8000/question/suggest-type', { text }));
+    console.log("Making request to flask-api for question type suggestion")
+    const response = await lastValueFrom(this.httpService.post('http://flask-api:8000/question/suggest-type', { text }));
     const questionType = response.data.type;
     return this.questionTypes.includes(questionType) ? questionType : null;
   }
 
   private async selectQuestionType(suggestedType: string): Promise<string> {
     if (suggestedType && await this.isBalanced(suggestedType)) {
+      console.log(`Suggested question type ${suggestedType} is balanced`);
       return suggestedType;
     }
     const questionType = this.questionTypes[this.currentQuestionIndex];
     this.currentQuestionIndex = (this.currentQuestionIndex + 1) % this.questionTypes.length;
+    console.log(`Selected question type ${questionType} with round robin`);
     return questionType;
   }
 

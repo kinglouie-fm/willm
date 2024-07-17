@@ -24,7 +24,10 @@ export class TextService {
 
     // Trigger question generation every 3 submissions
     if (submissionCount % 3 === 0) {
+      console.log('Generating questions');
       await this.questionService.generateQuestions(userId);
+    } else {
+      console.log('Not generating questions');
     }
 
     return savedText;

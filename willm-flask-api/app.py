@@ -1,4 +1,5 @@
 import json
+import uuid
 from flask import Flask, request, jsonify
 import openai
 from dotenv import load_dotenv
@@ -6,8 +7,14 @@ import os
 import re
 import asyncio
 import aiohttp
-from prompts import SYSTEM_PROMPT_1, SYSTEM_PROMPT_2, SYSTEM_PROMPT_3, SYSTEM_PROMPT_4, UNIFIED_PROMPT, ORGANIZATION_PROMPT, COHERENCE_PROMPT, WRITING_STYLE_PROMPT, DETAILED_IMPROVEMENTS, GENERAL_IMPROVEMENT, SCORES
+from prompts import (SYSTEM_PROMPT_1, SYSTEM_PROMPT_2, SYSTEM_PROMPT_3, SYSTEM_PROMPT_4, 
+                     UNIFIED_PROMPT, ORGANIZATION_PROMPT, COHERENCE_PROMPT, WRITING_STYLE_PROMPT, 
+                     DETAILED_IMPROVEMENTS, GENERAL_IMPROVEMENT, SCORES, 
+                     REVISION_PROMPT, SYNONYMS_PROMPT, ANTONYMS_PROMPT, ACADEMIC_SENTENCE_PROMPT, 
+                     ARGUMENT_STRENGTHENING_PROMPT, PEER_REVIEW_PROMPT, SYNTHESIS_PROMPT)
 import logging
+from langchain_community.embeddings import OpenAIEmbeddings
+import chromadb
 
 load_dotenv()
 
@@ -17,6 +24,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 openai.api_key = os.getenv('FLASK_API_KEY')
+chromadb_client = chromadb.Client()
+collection = chromadb_client.get_or_create_collection(name='questions')
 
 async def fetch_openai_response(session, system_prompt, prompt_template, data, section=None):
     prompt = prompt_template.format(text=data, section=section)
@@ -281,6 +290,83 @@ def process_further_result(result):
         feedback["categories"] = [t.strip() for t in categories_match]
 
     return feedback
+
+question_prompts = {
+    'revision': REVISION_PROMPT,
+    'synonyms': SYNONYMS_PROMPT,
+    'antonyms': ANTONYMS_PROMPT,
+    'academic_sentence': ACADEMIC_SENTENCE_PROMPT,
+    'argument_strengthening': ARGUMENT_STRENGTHENING_PROMPT,
+    'peer_review': PEER_REVIEW_PROMPT,
+    'synthesis': SYNTHESIS_PROMPT,
+}
+
+@app.route('/question/suggest-type', methods=['POST'])
+async def suggest_question_type():
+    data = request.json
+    text = data['text']
+
+    response = await openai.Completion.create(
+        model="gpt-4",
+        messages=[
+            {"role": "system", "content": "Suggest a question type based on the following text."},
+            {"role": "user", "content": text}
+        ],
+        max_tokens=50
+    )
+
+    question_type = response.choices[0].message['content'].strip()
+    if question_type in question_prompts:
+        return jsonify({"type": question_type})
+    return jsonify({"type": None})
+
+@app.route('/question/generate', methods=['POST'])
+async def generate_question():
+    data = request.json
+    text = data['text']
+    question_type = data['type']
+    
+    if question_type not in question_prompts:
+        return jsonify({"error": "Invalid question type"}), 400
+
+    prompt = question_prompts[question_type]
+
+    response = await openai.Completion.create(
+        model="gpt-4",
+        messages=[
+            {"role": "system", "content": prompt},
+            {"role": "user", "content": text}
+        ],
+        max_tokens=2000
+    )
+
+    output = response.choices[0].message['content']
+
+    # Extract the generated question and answer
+    generated_question = output.split("Question: ")[1].split("Answer: ")[0].strip()
+    generated_answer = output.split("Answer: ")[1].strip()
+
+    # Embed the generated question using Langchain
+    embeddings = OpenAIEmbeddings()
+    embedded_question = embeddings.embed_text(generated_question)
+
+    # Store the embedded question in ChromaDB
+    collection.add(
+        documents=[generated_question],
+        embeddings=[embedded_question],
+        ids=[str(uuid.uuid4())],
+        metadatas=[{
+            'question': generated_question,
+            'answer': generated_answer,
+            'type': question_type,
+        }]
+    )
+
+    return jsonify({
+        "type": question_type,
+        "question": generated_question,
+        "answer": generated_answer
+    })
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000)

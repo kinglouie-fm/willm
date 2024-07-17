@@ -330,3 +330,66 @@ Scoring Criteria:
 
 Ensure the output is properly formatted and includes all necessary keys.
 """
+
+REVISION_PROMPT = """
+Generate a text with errors for a revision type question. The text should have grammatical, vocabulary, organization, coherence, or writing style errors. There should be no two possible answers to correct the errors. The text should be max 100 words. Provide the question and the corresponding correct text.
+
+Output format:
+Type: revision
+Question: [The text with errors]
+Answer: [The correct text]
+"""
+
+SYNONYMS_PROMPT = """
+Generate a multiple choice question for identifying synonyms. Provide a word and five options, with only one correct synonym.
+
+Output format:
+Type: synonyms
+Question: [The word and options]
+Answer: [The correct synonym]
+"""
+
+ANTONYMS_PROMPT = """
+Generate a multiple choice question for identifying antonyms. Provide a word and five options, with only one correct antonym.
+
+Output format:
+Type: antonyms
+Question: [The word and options]
+Answer: [The correct antonym]
+"""
+
+ACADEMIC_SENTENCE_PROMPT = """
+Generate a sentence that needs to be paraphrased into a more academic style. Provide the original sentence and the more academic version of it.
+
+Output format:
+Type: academic_sentence
+Question: [The original sentence]
+Answer: [The academic version]
+"""
+
+ARGUMENT_STRENGTHENING_PROMPT = """
+Generate a multiple choice question to strengthen an argument. Provide the argument and five options, with only one correct option to strengthen the argument.
+
+Output format:
+Type: argument_strengthening
+Question: [The argument and options]
+Answer: [The correct option]
+"""
+
+PEER_REVIEW_PROMPT = """
+Generate a multiple choice question for peer review feedback. Provide a section of a text and five options for feedback, with only one correct feedback option.
+
+Output format:
+Type: peer_review
+Question: [The section and options]
+Answer: [The correct feedback]
+"""
+
+SYNTHESIS_PROMPT = """
+Generate a synthesis question that requires combining two or more concepts or pieces of information. Provide the concepts and the synthesized idea.
+
+Output format:
+Type: synthesis
+Question: [The concepts]
+Answer: [The synthesized idea]
+"""

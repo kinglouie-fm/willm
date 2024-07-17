@@ -1,6 +1,4 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './user/user.module';
@@ -11,20 +9,25 @@ import { ImprovementModule } from './improvement/improvement.module';
 import { SectionModule } from './section/section.module';
 import { ScoreModule } from './score/score.module';
 import { ReviewModule } from './review/review.module';
+import { QuestionModule } from './question/question.module';
+import { TextModule } from './text/text.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(), MongooseModule.forRoot(process.env.MONGO_CONNECTION_STRING), 
+    ConfigModule.forRoot(),
+    MongooseModule.forRoot(process.env.MONGO_CONNECTION_STRING),
     UserModule,
-    CorrectionModule, 
+    CorrectionModule,
     IssueModule,
     SessionModule,
     ImprovementModule,
     SectionModule,
     ScoreModule,
-    ReviewModule
+    ReviewModule,
+    QuestionModule,
+    TextModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}

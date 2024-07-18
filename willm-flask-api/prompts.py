@@ -336,7 +336,7 @@ Your task is to generate various types of questions for academic writing improve
 """
 
 REVISION_PROMPT = """
-Generate a text with errors for a revision type question. The text should have grammatical, vocabulary, organization, coherence, or writing style errors. There should be no two possible answers to correct the errors. The text should be max 100 words. Provide the question and the corresponding correct text.
+Generate an academic text with errors for a revision type question. The text should have grammatical errors. There should be no two possible answers to correct the errors. The text should be max 100 words. Provide the question and the corresponding correct text.
 
 Output format:
 Type: revision
@@ -345,11 +345,12 @@ Answer: [The correct text]
 """
 
 SYNONYMS_PROMPT = """
-Generate a multiple choice question for identifying synonyms. Provide a word and five options, with only one correct synonym.
+Generate a multiple choice question for identifying academic synonyms. Provide an word and five options, with only one correct synonym. The difficulty should be medium.
 
 Output format:
 Type: synonyms
-Question: [The word and options]
+Question: [The word]
+Options: [The options enumerated with A, B, C, D, E]
 Answer: [The correct synonym]
 """
 
@@ -363,7 +364,7 @@ Answer: [The correct antonym]
 """
 
 ACADEMIC_SENTENCE_PROMPT = """
-Generate a sentence that needs to be paraphrased into a more academic style. Provide the original sentence and the more academic version of it.
+Generate a sentence that needs to be paraphrased into academic style. Provide the original sentence and the academic version of it.
 
 Output format:
 Type: academic_sentence
@@ -372,16 +373,17 @@ Answer: [The academic version]
 """
 
 ARGUMENT_STRENGTHENING_PROMPT = """
-Generate a multiple choice question to strengthen an argument. Provide the argument and five options, with only one correct option to strengthen the argument.
+Generate a multiple choice question to strengthen an academic argument. Provide the argument and five options, with only one correct option to strengthen the argument.
 
 Output format:
 Type: argument_strengthening
-Question: [The argument and options]
+Question: [The argument]
+Options: [The options enumerated with A, B, C, D, E]
 Answer: [The correct option]
 """
 
 PEER_REVIEW_PROMPT = """
-Generate a multiple choice question for peer review feedback. Provide a section of a text and five options for feedback, with only one correct feedback option.
+Generate a multiple choice question for peer review feedback. Provide a section of an academic text and five options for feedback, with only one correct feedback option.
 
 Output format:
 Type: peer_review

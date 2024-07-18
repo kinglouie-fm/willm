@@ -11,7 +11,7 @@ export class QuestionService {
   private questionTypes = [
     'revision',
     'synonyms',
-    'antonyms',
+    // 'antonyms',
     'academic_sentence',
     'argument_strengthening',
     'peer_review',

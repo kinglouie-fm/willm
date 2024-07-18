@@ -295,7 +295,7 @@ def process_further_result(result):
 question_prompts = {
     'revision': REVISION_PROMPT,
     'synonyms': SYNONYMS_PROMPT,
-    'antonyms': ANTONYMS_PROMPT,
+    # 'antonyms': ANTONYMS_PROMPT,
     'academic_sentence': ACADEMIC_SENTENCE_PROMPT,
     'argument_strengthening': ARGUMENT_STRENGTHENING_PROMPT,
     'peer_review': PEER_REVIEW_PROMPT,
@@ -341,17 +341,49 @@ def generate_question():
         max_tokens=2000
     )
 
+    logger.info(f"Generated question response: {response}")
+
     output = response.choices[0].message.content
 
-    # Extract the generated question and answer
-    generated_question = output.split("Question: ")[1].split("Answer: ")[0].strip()
-    generated_answer = output.split("Answer: ")[1].strip()
-
-    logger.info(f"Generated pair: {generated_question}, {generated_answer}")
+    # Extract the generated question and answer based on question type
+    generated_question = None
+    generated_answer = None
+    options = None
+    
+    if question_type == 'synonyms' or question_type == 'argument_strengthening':
+        question_match = re.search(r'Question:\s*(.*?)\nOptions:', output, re.DOTALL)
+        options_match = re.search(r'Options:\s*(A\..*?B\..*?C\..*?D\..*?E\..*)\nAnswer:', output, re.DOTALL)
+        answer_match = re.search(r'Answer:\s*(.*)', output, re.DOTALL)
+        
+        if question_match and options_match and answer_match:
+            generated_question = question_match.group(1).strip()
+            options = options_match.group(1).strip()
+            generated_answer = answer_match.group(1).strip()
+            logger.info(f"Generated triple: {generated_question}, {options}, {generated_answer}")
+        else:
+            return jsonify({"error": "Failed to parse the generated output"}), 500
+    else:
+        question_match = re.search(r'Question:\s*(.*?)\nAnswer:', output, re.DOTALL)
+        answer_match = re.search(r'Answer:\s*(.*)', output, re.DOTALL)
+        
+        if question_match and answer_match:
+            generated_question = question_match.group(1).strip()
+            generated_answer = answer_match.group(1).strip()
+            logger.info(f"Generated pair: {generated_question}, {generated_answer}")
+        else:
+            return jsonify({"error": "Failed to parse the generated output"}), 500
 
     # Embed the generated question using Langchain
     embeddings = OpenAIEmbeddings(api_key=os.getenv('FLASK_API_KEY'))
     embedded_question = embeddings.embed_query(generated_question)
+
+    # Prepare metadata ensuring no None values
+    metadata = {
+        'question': generated_question,
+        'options': options if options else "",
+        'answer': generated_answer,
+        'type': question_type,
+    }
 
     # Store the embedded question in ChromaDB
     document_id = str(uuid.uuid4())
@@ -359,20 +391,17 @@ def generate_question():
         documents=[generated_question],
         embeddings=[embedded_question],
         ids=[document_id],
-        metadatas=[{
-            'question': generated_question,
-            'answer': generated_answer,
-            'type': question_type,
-        }]
+        metadatas=[{k: (v if v is not None else "") for k, v in metadata.items()}]
     )
 
     # Verify document addition
-    added_document = collection.get()
-    logger.info(f"Added document: {added_document}")
+    documents = collection.get()
+    logger.info(f"Documents: {documents}")
 
     return jsonify({
         "type": question_type,
         "question": generated_question,
+        "options": options,
         "answer": generated_answer,
         "document_id": document_id
     })

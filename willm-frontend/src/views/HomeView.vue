@@ -10,6 +10,8 @@ const textareaBig = ref();
 const mistakes = ref([]);
 const corrections = ref([]);
 const explanations = ref([]);
+const categories = ref([]);
+const contexts = ref([]);
 const organizationMistakes = ref([]);
 const organizationCorrections = ref([]);
 const organizationExplanations = ref([]);
@@ -71,6 +73,8 @@ const handleCorrect = async () => {
   mistakes.value = [];
   corrections.value = [];
   explanations.value = [];
+  categories.value = [];
+  contexts.value = [];
   organizationMistakes.value = [];
   organizationCorrections.value = [];
   organizationExplanations.value = [];
@@ -97,6 +101,8 @@ const handleCorrect = async () => {
     mistakes.value = correctionResponse.data.mistakes;
     corrections.value = correctionResponse.data.corrections;
     explanations.value = correctionResponse.data.explanations;
+    categories.value = correctionResponse.data.categories;
+    contexts.value = correctionResponse.data.contexts;
 
     explanations.value = correctionResponse.data.explanations.map(explanation => {
       return explanation.replace(/(\nT:.*)/g, '').trim();
@@ -152,13 +158,14 @@ const handleFurtherCorrect = async () => {
 
 const highlightMistakes = () => {
   let htmlContent = editableDiv.value.innerHTML;
-  mistakes.value.forEach((mistake, index) => {
-    // Create a safe regex to find the exact mistake word
-    const regex = new RegExp(`\\b${escapeRegExp(mistake)}\\b`, 'gi');
+  contexts.value.forEach((context, index) => {
+    const mistake = mistakes.value[index];
+    // Create a safe regex to find the exact mistake word within the context
+    const regex = new RegExp(`(${context.replace(/\s+/g, '\\s+')})`, 'gi');
 
     // Use replace function to replace the mistake with a highlighted version
     htmlContent = htmlContent.replace(regex, (match) => {
-      return `<span class="mistake" data-bs-toggle="popover" data-bs-html="true" data-bs-content="${escapeHTML(`<b>Correction</b>: ${corrections.value[index]}<br><b>Explanation</b>: ${explanations.value[index]}`)}">${match}</span>`;
+      return match.replace(new RegExp(`\\b${escapeRegExp(mistake)}\\b`, 'gi'), `<span class="mistake" data-bs-toggle="popover" data-bs-html="true" data-bs-content="${escapeHTML(`<b>Correction</b>: ${corrections.value[index]}<br><b>Explanation</b>: ${explanations.value[index]}`)}">${mistake}</span>`);
     });
   });
   editableDiv.value.innerHTML = htmlContent;

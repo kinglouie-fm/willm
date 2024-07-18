@@ -29,6 +29,7 @@ export class CorrectionController {
     const corrections = initialResult.corrections || [];
     const explanations = initialResult.explanations || [];
     const categories = initialResult.categories || [];
+    const contexts = initialResult.contexts || [];
 
     const userId = req.user._id;
 
@@ -76,7 +77,7 @@ export class CorrectionController {
       corrections: corrections,
       explanations: explanations,
       categories: categories,
-      correctedText: correctedText
+      contexts: contexts
     };
   }
 

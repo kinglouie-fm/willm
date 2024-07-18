@@ -105,14 +105,14 @@ async def handle_correction():
     # Process and merge results to extract mistakes, corrections, explanations, and corrected text
     # merged_result = merge_results(grammar_result, vocab_result)
     # mistakes, corrections, explanations, categories, corrected_text = process_initial_result(merged_result)
-    mistakes, corrections, explanations, categories, corrected_text = process_initial_result(unified_result)
+    mistakes, corrections, explanations, categories, contexts = process_initial_result(unified_result)
 
     return jsonify({
         "mistakes": mistakes,
         "corrections": corrections,
         "explanations": explanations,
         "categories": categories,
-        "correctedText": corrected_text
+        "contexts": contexts
     })
 
 @app.route('/handle-further-correction', methods=['POST'])
@@ -220,36 +220,41 @@ def extract_issues(result):
     corrections = re.findall(r'C: (.*?)\n', result, re.DOTALL)
     explanations = re.findall(r'E: (.*?)(?=\nM:|$)', result, re.DOTALL)
     categories = re.findall(r'T: (.*?)\n', result, re.DOTALL)
+    contexts = re.findall(r'X: (.*?)\n', result, re.DOTALL)
 
     issues = []
-    for mistake, correction, explanation, category in zip(mistakes, corrections, explanations, categories):
+    for mistake, correction, explanation, category, context in zip(mistakes, corrections, explanations, categories, contexts):
         issues.append({
             "mistake": mistake.strip(),
             "correction": correction.strip(),
             "explanation": explanation.strip(),
-            "category": category.strip()
+            "category": category.strip(),
+            "context": context.strip()
         })
 
     return issues
+
 
 def process_initial_result(result):
     mistakes = []
     corrections = []
     explanations = []
     categories = []
-    corrected_text = ""
+    contexts = []
 
     fine_match = re.search(r'The submitted writing is fine.', result)
     mistakes_match = re.findall(r'M: (.*?)\n', result, re.DOTALL)
     corrections_match = re.findall(r'C: (.*?)\n', result, re.DOTALL)
     explanations_match = re.findall(r'E: (.*?)(?=\nM:|Correction:|$)', result, re.DOTALL)
     categories_match = re.findall(r'T: (.*?)\n', result, re.DOTALL)
-    corrected_text_match = re.search(r'Correction:(.*)', result, re.DOTALL)
+    contexts_match = re.findall(r'X: (.*?)\n', result, re.DOTALL)
 
     if fine_match:
         mistakes.append("The submitted writing is fine.")
         corrections.append("The submitted writing is fine.")
         explanations.append("The submitted writing is fine.")
+        categories.append("The submitted writing is fine.")
+        contexts.append("The submitted writing is fine.")
     if mistakes_match:
         mistakes = [m.strip() for m in mistakes_match]
     if corrections_match:
@@ -258,10 +263,10 @@ def process_initial_result(result):
         explanations = [e.strip() for e in explanations_match]
     if categories_match:
         categories = [t.strip() for t in categories_match]
-    if corrected_text_match:
-        corrected_text = corrected_text_match.group(1).strip()
+    if contexts_match:
+        contexts = [x.strip() for x in contexts_match]
 
-    return mistakes, corrections, explanations, categories, corrected_text
+    return mistakes, corrections, explanations, categories, contexts
 
 def process_further_result(result):
     feedback = {

@@ -70,7 +70,7 @@ export class QuestionService {
     return questionType;
   }
 
-  // question type's generation count is within a balanced range by comparing it to the average count 
+  // checks if question type's generation count is within a balanced range by comparing it to the average count 
   // of all question types plus a threshold.
   private async isBalanced(questionType: string): Promise<boolean> {
     const counts = await this.questionCountModel.find().exec();

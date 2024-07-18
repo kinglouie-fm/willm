@@ -1,9 +1,17 @@
 <script setup>
-// Define the expected order of the scores
 const scoreOrder = ['grammar', 'vocabulary', 'organization', 'coherence', 'writing_style'];
 
 const props = defineProps({
-    scores: Object
+    scores: {
+        type: Object,
+        default: () => ({
+            grammar: { score: 0, explanation: 'N/A' },
+            vocabulary: { score: 0, explanation: 'N/A' },
+            organization: { score: 0, explanation: 'N/A' },
+            coherence: { score: 0, explanation: 'N/A' },
+            writing_style: { score: 0, explanation: 'N/A' }
+        })
+    }
 });
 </script>
 
@@ -12,10 +20,12 @@ const props = defineProps({
         <div class="score-card" v-for="category in scoreOrder" :key="category">
             <h3>{{ category.charAt(0).toUpperCase() + category.slice(1).replace('_', ' ') }}</h3>
             <div class="score-bar">
-                <div class="score-bar-fill" :style="{ width: (props.scores[category].score / 9) * 100 + '%' }"></div>
+                <div v-if="props.scores[category]" class="score-bar-fill"
+                    :style="{ width: (props.scores[category].score / 9) * 100 + '%' }">
+                </div>
             </div>
-            <div class="score-label">{{ props.scores[category].score }} / 9</div>
-            <p>{{ props.scores[category].explanation }}</p>
+            <div v-if="props.scores[category]" class="score-label">{{ props.scores[category].score }} / 9</div>
+            <p v-if="props.scores[category]">{{ props.scores[category].explanation }}</p>
         </div>
     </div>
 </template>

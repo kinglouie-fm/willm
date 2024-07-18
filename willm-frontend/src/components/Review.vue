@@ -2,7 +2,10 @@
 import { computed } from 'vue';
 
 const props = defineProps({
-    reviewData: [Object, String]  // Allow both Object and String types
+    reviewData: {
+        type: [Object, String],
+        default: () => null
+    }
 });
 
 const getDisplayKey = (key) => {
@@ -14,7 +17,7 @@ const getDisplayKey = (key) => {
 
 // Filter out keys with empty improvements and tips arrays
 const filteredReviewData = computed(() => {
-    if (typeof props.reviewData === 'string') {
+    if (typeof props.reviewData === 'string' || !props.reviewData) {
         return {};
     }
     return Object.fromEntries(

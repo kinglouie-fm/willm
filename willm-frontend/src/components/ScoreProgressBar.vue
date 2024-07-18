@@ -38,7 +38,7 @@ const props = defineProps({
                 <span>9</span>
             </div>
             <div class="scores">
-                <span>Median: {{ props.medianScore.toFixed(1) }}</span>
+                <span class="pe-3">Median: {{ props.medianScore.toFixed(1) }}</span>
                 <span>Latest: {{ props.latestScore.toFixed(1) }}</span>
             </div>
         </div>

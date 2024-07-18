@@ -76,10 +76,10 @@ export class ReviewService {
     if (previousReview) {
       // Check for frequency improvements
       const previousFrequencies = {
-        ...getCategoryFrequency(previousReview.review_data.grammar_vocab.tips.map(tip => ({ category: tip }))),
-        ...getCategoryFrequency(previousReview.review_data.organization.tips.map(tip => ({ category: tip }))),
-        ...getCategoryFrequency(previousReview.review_data.coherence.tips.map(tip => ({ category: tip }))),
-        ...getCategoryFrequency(previousReview.review_data.writingStyle.tips.map(tip => ({ category: tip })))
+        ...getCategoryFrequency((previousReview.review_data.grammar_vocab?.tips || []).map(tip => ({ category: tip }))),
+        ...getCategoryFrequency((previousReview.review_data.organization?.tips || []).map(tip => ({ category: tip }))),
+        ...getCategoryFrequency((previousReview.review_data.coherence?.tips || []).map(tip => ({ category: tip }))),
+        ...getCategoryFrequency((previousReview.review_data.writingStyle?.tips || []).map(tip => ({ category: tip })))
       };
 
       const frequencyImprovements = Object.keys(previousFrequencies).filter(category => {

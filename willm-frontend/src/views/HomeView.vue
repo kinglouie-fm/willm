@@ -149,6 +149,7 @@ const handleFurtherCorrect = async () => {
     furtherCorrectionData.value = furtherResponse.data;
 
     console.log(furtherResponse.data)
+    selectedTab.value = 'Correction';
     toggleSidebar();
   }
   catch (error) {

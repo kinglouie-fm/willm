@@ -105,7 +105,7 @@ const handleCorrect = async () => {
     contexts.value = correctionResponse.data.contexts;
 
     explanations.value = correctionResponse.data.explanations.map(explanation => {
-      return explanation.replace(/(\nT:.*)/g, '').trim();
+      return explanation.replace(/(\n[T|X]:.*)/g, '').trim();
     });
 
     scores.value = scoresResponse.data;

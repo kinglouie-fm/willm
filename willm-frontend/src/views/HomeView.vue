@@ -231,20 +231,82 @@ const activatePopovers = () => {
 
 const updateText = () => {
   textareaBig.value = editableDiv.value.innerText;
+  limitTextLength();
 };
+
+const limitTextLength = () => {
+  const maxLength = 2000;
+  let textContent = editableDiv.value.innerText;
+  if (textContent.length > maxLength) {
+    editableDiv.value.innerText = textContent.slice(0, maxLength);
+    alert(`Maximum length of ${maxLength} characters reached.`);
+  }
+};
+
+const initPopover = () => {
+  const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+  popoverTriggerList.forEach((popoverTriggerEl) => {
+    const popover = new bootstrap.Popover(popoverTriggerEl, {
+      trigger: 'hover',
+      html: true,
+      content: document.querySelector('#popover-content').innerHTML,
+      template: '<div class="popover wide-popover" role="tooltip"><div class="popover-arrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+    });
+
+    // Set the width immediately when the popover is created
+    popoverTriggerEl.addEventListener('inserted.bs.popover', () => {
+      const popoverElement = document.querySelector('.popover.wide-popover');
+      if (popoverElement) {
+        popoverElement.style.maxWidth = '600px';
+        popoverElement.style.fontSize = '16px';
+      }
+    });
+  });
+};
+
+onMounted(() => {
+  initPopover();
+});
+
+
+onMounted(() => {
+  initPopover();
+});
 </script>
 
 <template>
-  <div class="container-fluid h-100 mt-5">
+  <div class="container-fluid h-100 mt-4">
     <div class="row h-50">
       <!-- Upper Left -->
       <div class="col-7">
         <div class="row mx-5 mb-3">
           <div class="col-12 p-0">
+            <div class="d-flex align-items-center mb-3">
+              <img class="info-icon me-2" src="/icons/icon-info-01.svg" data-bs-toggle="popover"
+                data-bs-placement="bottom" />
+              <h5 class="mb-0">How to use the tool?</h5>
+            </div>
+            <div id="popover-content" style="display: none;">
+              <h5>How to use the tool?</h5>
+              <ol>
+                <li>Select the text section you want to correct.</li>
+                <li>Enter your text in the large text area.</li>
+                <li>
+                  Click "AI Evaluation" to receive scores and explanations.
+                  <ul>
+                    <li>Feedback on Organization, Coherence, and Writing Style considers the corrected version of your
+                      text.</li>
+                  </ul>
+                </li>
+                <li>Click "Review" to get tips and see recent improvements.</li>
+              </ol>
+
+            </div>
             <textarea v-model="textareaSmall" class="form-control textarea-small" placeholder="Enter section..."
               required></textarea>
           </div>
         </div>
+
         <div class="row mx-5">
           <div class="col-12 p-0">
             <div ref="editableDiv" contenteditable="true" class="form-control textarea-big" @input="updateText">
@@ -270,7 +332,7 @@ const updateText = () => {
       <!-- Lower Left -->
       <div class="col-6">
         <div class="mx-5">
-          <button type="button" class="btn btn-md" @click="handleCorrect">Correct</button>
+          <button type="button" class="btn btn-md" @click="handleCorrect">AI Evaluation</button>
           <button type="button" class="btn btn-md" @click="handleFurtherCorrect">Get further Feedback</button>
           <button type="button" class="btn btn-md" @click="generateReview">Generate Review</button>
         </div>
@@ -293,8 +355,14 @@ const updateText = () => {
   color: white;
 }
 
+.info-icon {
+  width: 25px;
+  height: 25px;
+  cursor: pointer;
+}
+
 .textarea-big {
-  height: 300px;
+  height: 500px;
   word-wrap: break-word;
   overflow: auto;
   resize: none;
@@ -316,5 +384,10 @@ a {
 
 a:hover {
   text-decoration: underline;
+}
+
+::v-deep .popover.wide-popover {
+  max-width: none;
+  font-size: 16px;
 }
 </style>

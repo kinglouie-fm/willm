@@ -97,28 +97,26 @@ onMounted(() => {
         </div>
 
         <div id="popover-content" style="display: none;">
-            <div class="explanation">
-                <h4>How the scores are calculated:</h4>
-                <p>
-                    The median of all older scores for the selected section is calculated and compared to your
-                    latest score.
-                    The progress bar represents the comparison:
-                </p>
-                <ul>
-                    <li><strong class="median">Median Color:</strong> The median score of all
-                        previous
-                        scores.
-                    </li>
-                    <li><strong class="green">Green:</strong> Improvement above the median score.</li>
-                    <li><strong class="red">Red:</strong> Decline below the median score.</li>
-                </ul>
-                <p>
-                    If your latest score is higher than the median, the bar from the median to the latest score is
-                    green.
-                    If your latest score is lower than the median, the bar up to the latest score is the median
-                    color, and the rest is red.
-                </p>
-            </div>
+            <h4>How the scores are calculated:</h4>
+            <p>
+                The median of all older scores for the selected section is calculated and compared to your
+                latest score.
+                The progress bar represents the comparison:
+            </p>
+            <ul>
+                <li><strong class="median">Median Color:</strong> The median score of all
+                    previous
+                    scores.
+                </li>
+                <li><strong class="green">Green:</strong> Improvement above the median score.</li>
+                <li><strong class="red">Red:</strong> Decline below the median score.</li>
+            </ul>
+            <p>
+                If your latest score is higher than the median, the bar from the median to the latest score is
+                green.
+                If your latest score is lower than the median, the bar up to the latest score is the median
+                color, and the rest is red.
+            </p>
         </div>
     </div>
 </template>

@@ -1,17 +1,10 @@
 <script setup>
-import { ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
-
-const mode = ref('productive');
-
-const handleSwitchChange = (event) => {
-    mode.value = event.target.checked ? 'learning' : 'productive';
-};
 
 const logout = async () => {
     await authStore.logout();
@@ -30,17 +23,12 @@ const navigateTo = (path) => {
                 <div class="col-4 text-start mt-1 d-flex align-items-center">
                     <button class="btn me-2" v-if="authStore.isAuthenticated && route.path !== '/profile'"
                         @click="navigateTo('/profile')">
-                        Profile Page
+                        <h4>Profile Page</h4>
                     </button>
                     <button class="btn me-2" v-if="authStore.isAuthenticated && route.path !== '/'"
                         @click="navigateTo('/')">
-                        Home
+                        <h4>Home</h4>
                     </button>
-                    <div class="form-check form-switch d-flex align-items-center" v-if="authStore.isAuthenticated">
-                        <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault"
-                            @change="handleSwitchChange">
-                        <label class="form-check-label ms-2" for="flexSwitchCheckDefault">{{ mode }}</label>
-                    </div>
                 </div>
                 <div class="col-4 text-center mt-2">
                     <h1 class="title">WILLM</h1>

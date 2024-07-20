@@ -1,10 +1,11 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import Sidebar from '@/components/Sidebar.vue';
 import axios from 'axios';
 import * as bootstrap from 'bootstrap';
+import { useAuthStore } from '../stores/auth';
+import Evaluation from '@/components/Evaluation.vue';
+import Review from '@/components/Review.vue';
 
-const isSidebarOpen = ref(false);
 const textareaSmall = ref('Introduction');
 const textareaBig = ref();
 const mistakes = ref([]);
@@ -30,35 +31,14 @@ const furtherCorrectionData = ref({
   writingStyle: { mistakes: [], corrections: [], explanations: [] },
 });
 
-const selectedTab = ref('Correction');
+const authStore = useAuthStore();
+const mode = ref('productive');
 
-const toggleSidebar = () => {
-  if (!isSidebarOpen.value) {
-    isSidebarOpen.value = true;
-  }
+const handleSwitchChange = (event) => {
+  mode.value = event.target.checked ? 'learning' : 'productive';
 };
 
-const generateReview = async () => {
-  try {
-    const response = await axios.post('http://localhost:3000/review/generate');
-    if (response.data.reviewData === '<2') {
-      reviewData.value = 'Not enough sessions to generate the review';
-    } else {
-      reviewData.value = response.data.reviewData;
-      console.log(response.data)
-    }
-    selectedTab.value = 'Review';
-    toggleSidebar();
-  } catch (error) {
-    console.error('Error generating review:', error);
-  }
-};
-
-const stripHtmlTags = (html) => {
-  let div = document.createElement('div');
-  div.innerHTML = html;
-  return div.textContent || div.innerText || '';
-};
+const selectedComponent = ref('Review');
 
 const handleCorrect = async () => {
   let textToCorrect = editableDiv.value.innerText;
@@ -97,7 +77,6 @@ const handleCorrect = async () => {
       })
     ]);
 
-    // Handle correction response
     mistakes.value = correctionResponse.data.mistakes;
     corrections.value = correctionResponse.data.corrections;
     explanations.value = correctionResponse.data.explanations;
@@ -111,12 +90,7 @@ const handleCorrect = async () => {
     scores.value = scoresResponse.data;
 
     highlightMistakes();
-    selectedTab.value = 'Scores';
-    toggleSidebar();
-
-    // Trigger question generation if applicable
-    const questionResponse = await axios.post('http://localhost:3000/question/generate');
-    console.log('Question Generation Response:', questionResponse.data);
+    selectedComponent.value = 'Evaluation';
   } catch (error) {
     console.error('Error processing requests:', error);
   }
@@ -148,23 +122,48 @@ const handleFurtherCorrect = async () => {
     });
     furtherCorrectionData.value = furtherResponse.data;
 
-    console.log(furtherResponse.data)
-    selectedTab.value = 'Correction';
-    toggleSidebar();
-  }
-  catch (error) {
+    selectedComponent.value = 'Evaluation';
+  } catch (error) {
     console.error('Error getting further corrections:', error);
   }
+};
+
+const generateReview = async () => {
+  try {
+    const response = await axios.post('http://localhost:3000/review/generate');
+    if (response.data.reviewData === '<2') {
+      reviewData.value = 'Not enough sessions to generate the review';
+    } else {
+      reviewData.value = response.data.reviewData;
+    }
+    selectedComponent.value = 'Review';
+  } catch (error) {
+    console.error('Error generating review:', error);
+  }
+};
+
+const getRecentReview = async () => {
+  try {
+    const response = await axios.get('http://localhost:3000/review/recent');
+    console.log(response);
+    reviewData.value = response.data.reviewData || 'No recent review available. Click on "Review" to generate one. Remember that you need to have at least 2 sessions to generate a review.';
+    selectedComponent.value = 'Review';
+  } catch (error) {
+    console.error('Error fetching recent review:', error);
+  }
+};
+
+const stripHtmlTags = (html) => {
+  let div = document.createElement('div');
+  div.innerHTML = html;
+  return div.textContent || div.innerText || '';
 };
 
 const highlightMistakes = () => {
   let htmlContent = editableDiv.value.innerHTML;
   contexts.value.forEach((context, index) => {
     const mistake = mistakes.value[index];
-    // Create a safe regex to find the exact mistake word within the context
     const regex = new RegExp(`(${context.replace(/\s+/g, '\\s+')})`, 'gi');
-
-    // Use replace function to replace the mistake with a highlighted version
     htmlContent = htmlContent.replace(regex, (match) => {
       return match.replace(new RegExp(`\\b${escapeRegExp(mistake)}\\b`, 'gi'), `<span class="mistake" data-bs-toggle="popover" data-bs-html="true" data-bs-content="${escapeHTML(`<b>Correction</b>: ${corrections.value[index]}<br><b>Explanation</b>: ${explanations.value[index]}`)}">${mistake}</span>`);
     });
@@ -173,16 +172,14 @@ const highlightMistakes = () => {
   activatePopovers();
 };
 
-// Escape special characters for regex
 const escapeRegExp = (string) => {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 };
 
-// Escape HTML characters
 const escapeHTML = (string) => {
   return string
     .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
+    .replace(/</ / g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
@@ -253,7 +250,6 @@ const initPopover = () => {
       template: '<div class="popover wide-popover" role="tooltip"><div class="popover-arrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
     });
 
-    // Set the width immediately when the popover is created
     popoverTriggerEl.addEventListener('inserted.bs.popover', () => {
       const popoverElement = document.querySelector('.popover.wide-popover');
       if (popoverElement) {
@@ -266,11 +262,7 @@ const initPopover = () => {
 
 onMounted(() => {
   initPopover();
-});
-
-
-onMounted(() => {
-  initPopover();
+  getRecentReview();
 });
 </script>
 
@@ -284,11 +276,17 @@ onMounted(() => {
             <div class="d-flex align-items-center mb-3">
               <img class="info-icon me-2" src="/icons/icon-info-01.svg" data-bs-toggle="popover"
                 data-bs-placement="bottom" />
-              <h5 class="mb-0">How to use the tool?</h5>
+              <h5 class="mb-0 me-auto">How to use the tool?</h5>
+              <div class="form-check form-switch d-flex align-items-center ms-auto" v-if="authStore.isAuthenticated">
+                <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault"
+                  @change="handleSwitchChange">
+                <label class="form-check-label ms-2" for="flexSwitchCheckDefault">{{ mode }}</label>
+              </div>
             </div>
+
             <div id="popover-content" style="display: none;">
               <h5>How to use the tool?</h5>
-              <ol>
+              <ul>
                 <li>Select the text section you want to correct.</li>
                 <li>Enter your text in the large text area.</li>
                 <li>
@@ -299,8 +297,13 @@ onMounted(() => {
                   </ul>
                 </li>
                 <li>Click "Review" to get tips and see recent improvements.</li>
-              </ol>
-
+                <li>Use the switch to change the learning mode:
+                  <ul>
+                    <li>"productive": you only need to click the correction to apply it.</li>
+                    <li>"learning": you need to type the correction on your own. This enhances the learning process</li>
+                  </ul>
+                </li>
+              </ul>
             </div>
             <textarea v-model="textareaSmall" class="form-control textarea-small" placeholder="Enter section..."
               required></textarea>
@@ -316,15 +319,10 @@ onMounted(() => {
         </div>
       </div>
       <!-- Upper Right -->
-      <div class="col-5 d-flex flex-column ml-5">
-        <div class="d-flex justify-content-end align-items-center">
-          <button type="button" class="btn" @click="toggleSidebar">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-list"
-              viewBox="0 0 16 16">
-              <path fill-rule="evenodd"
-                d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5" />
-            </svg>
-          </button>
+      <div class="col-5 d-flex flex-column">
+        <div class="flex-grow-1">
+          <component :is="selectedComponent === 'Review' ? Review : Evaluation" :reviewData="reviewData"
+            :furtherCorrectionData="furtherCorrectionData" :scores="scores" />
         </div>
       </div>
     </div>
@@ -338,9 +336,6 @@ onMounted(() => {
         </div>
       </div>
     </div>
-
-    <Sidebar :isOpen="isSidebarOpen" @close="isSidebarOpen = false" :review-data="reviewData"
-      :furtherCorrectionData="furtherCorrectionData" :selectedTab="selectedTab" :scores="scores" />
   </div>
 </template>
 
@@ -371,9 +366,10 @@ onMounted(() => {
 }
 
 .textarea-small {
-  height: 50px;
+  height: 30px;
   line-height: 1.5rem;
   font-size: 1.1rem;
+  resize: none;
 }
 
 a {
@@ -386,7 +382,7 @@ a:hover {
   text-decoration: underline;
 }
 
-::v-deep .popover.wide-popover {
+:deep(.popover.wide-popover) {
   max-width: none;
   font-size: 16px;
 }

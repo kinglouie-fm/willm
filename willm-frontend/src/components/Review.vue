@@ -29,22 +29,23 @@ const filteredReviewData = computed(() => {
 </script>
 
 <template>
-    <div>
+    <div class="container">
+        <h2 class="text-center">Review</h2>
         <div v-if="typeof props.reviewData === 'string'">
             <p>{{ props.reviewData }}</p>
         </div>
         <div v-else-if="Object.keys(filteredReviewData).length">
             <div v-for="(categoryData, key) in filteredReviewData" :key="key">
-                <h3>{{ getDisplayKey(key) }}</h3>
+                <h4>{{ getDisplayKey(key) }}</h4>
                 <div v-if="categoryData.improvements && categoryData.improvements.length">
-                    <h4>Improvements</h4>
+                    <h5>Improvements</h5>
                     <ul>
                         <li v-for="(improvement, index) in categoryData.improvements" :key="index">{{ improvement }}
                         </li>
                     </ul>
                 </div>
                 <div v-if="categoryData.tips && categoryData.tips.length">
-                    <h4>Tips</h4>
+                    <h5>Tips</h5>
                     <ul>
                         <li v-for="(tip, index) in categoryData.tips" :key="index">{{ tip }}</li>
                     </ul>
@@ -57,17 +58,4 @@ const filteredReviewData = computed(() => {
     </div>
 </template>
 
-<style scoped>
-h3 {
-    margin-top: 20px;
-}
-
-h4 {
-    margin-top: 10px;
-}
-
-ul {
-    list-style-type: disc;
-    margin-left: 20px;
-}
-</style>
+<style scoped></style>

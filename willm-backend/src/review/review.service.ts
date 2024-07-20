@@ -21,8 +21,6 @@ export class ReviewService {
       return { reviewData: 'Not enough sessions to generate review.' };
     }
 
-    console.log('Retrieved issues:', issues);
-
     // Separate issues into two groups
     const grammarVocabIssues = issues.filter(issue => issue.type === 'grammar_vocab');
     const orgCohWritingIssues = issues.filter(issue => ['organization', 'coherence', 'writingStyle'].includes(issue.type));
@@ -36,9 +34,7 @@ export class ReviewService {
     };
 
     const grammarVocabFrequency = getCategoryFrequency(grammarVocabIssues);
-    console.log('Grammar/Vocab Frequency:', grammarVocabFrequency);
     const orgCohWritingFrequency = getCategoryFrequency(orgCohWritingIssues);
-    console.log('Org/Coh/Writing Frequency:', orgCohWritingFrequency);
 
     // Sort categories by frequency and get the top 3 for each group
     const getTopCategories = (frequency) => {
@@ -46,9 +42,7 @@ export class ReviewService {
     };
 
     const topGrammarVocabCategories = getTopCategories(grammarVocabFrequency);
-    console.log('Top Grammar/Vocab Categories:', topGrammarVocabCategories);
     const topOrgCohWritingCategories = getTopCategories(orgCohWritingFrequency);
-    console.log('Top Org/Coh/Writing Categories:', topOrgCohWritingCategories);
 
     // Create a mapping of categories to their types
     const getCategoryTypeMap = (issues) => {
@@ -61,9 +55,7 @@ export class ReviewService {
     };
 
     const grammarVocabTypeMap = getCategoryTypeMap(grammarVocabIssues);
-    console.log('Grammar/Vocab Type Map:', grammarVocabTypeMap);
     const orgCohWritingTypeMap = getCategoryTypeMap(orgCohWritingIssues);
-    console.log('Org/Coh/Writing Type Map:', orgCohWritingTypeMap);
 
     // Retrieve all reviews sorted by date in descending order
     const allReviews = await this.reviewModel.find({ user_id: userId }).sort({ date_created: -1 }).limit(25).exec();
@@ -72,6 +64,14 @@ export class ReviewService {
 
     // Find the first review that is older than today
     const previousReview = allReviews.find(review => review.date_created < startOfToday);
+
+    // Initialize reviewData manually
+    let reviewData = {
+      grammar_vocab: { improvements: [], tips: [] },
+      organization: { improvements: [], tips: [] },
+      coherence: { improvements: [], tips: [] },
+      writingStyle: { improvements: [], tips: [] },
+    };
 
     if (previousReview) {
       // Check for frequency improvements
@@ -88,34 +88,20 @@ export class ReviewService {
         return currFreq < prevFreq;
       });
 
-      console.log('Frequency Improvements:', frequencyImprovements);
-
-      const reviewData = {
-        grammar_vocab: { improvements: [], tips: [] },
-        organization: { improvements: [], tips: [] },
-        coherence: { improvements: [], tips: [] },
-        writingStyle: { improvements: [], tips: [] },
-      };
-
       frequencyImprovements.forEach(category => {
         const type = grammarVocabTypeMap[category] || orgCohWritingTypeMap[category];
-        if (type in reviewData) {
+        if (type && reviewData[type]) {
           reviewData[type].improvements.push(category);
         }
       });
 
       topGrammarVocabCategories.forEach(category => {
-        const type = grammarVocabTypeMap[category];
-        if (type in reviewData) {
-          reviewData.grammar_vocab.tips.push(category);
-        }
+        reviewData.grammar_vocab.tips.push(category);
       });
 
       topOrgCohWritingCategories.forEach(category => {
         const type = orgCohWritingTypeMap[category];
-        if (type in reviewData) {
-          reviewData[type].tips.push(category);
-        }
+        reviewData[type].tips.push(category);
       });
 
       // Store the review
@@ -141,36 +127,30 @@ export class ReviewService {
     }
 
     // Store the initial review
-    const initialReviewData = {
-      grammar_vocab: { improvements: [], tips: [] },
-      organization: { improvements: [], tips: [] },
-      coherence: { improvements: [], tips: [] },
-      writingStyle: { improvements: [], tips: [] },
-    };
-
     topGrammarVocabCategories.forEach(category => {
-      const type = grammarVocabTypeMap[category];
-      if (type in initialReviewData) {
-        initialReviewData.grammar_vocab.tips.push(category);
-      }
+      reviewData.grammar_vocab.tips.push(category);
     });
 
     topOrgCohWritingCategories.forEach(category => {
       const type = orgCohWritingTypeMap[category];
-      if (type in initialReviewData) {
-        initialReviewData[type].tips.push(category);
-      }
+      reviewData[type].tips.push(category);
     });
-
-    console.log('Initial Review Data:', initialReviewData);
 
     const newReview = new this.reviewModel({
       user_id: userId,
       date_created: new Date(),
-      review_data: initialReviewData
+      review_data: reviewData
     });
     await newReview.save();
 
-    return { reviewData: initialReviewData };
+    return { reviewData };
+  }
+
+  async getRecentReview(userId: Types.ObjectId): Promise<any> {
+    const recentReview = await this.reviewModel.findOne({ user_id: userId }).sort({ date_created: -1 }).exec();
+    if (!recentReview) {
+      return { reviewData: 'No recent review available. Click on "Review" to generate one but remember that you need to have at least two sessions (one login per day = one session) to generate a review.' };
+    }
+    return { reviewData: recentReview.review_data };
   }
 }

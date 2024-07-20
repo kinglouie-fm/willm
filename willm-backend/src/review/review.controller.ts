@@ -1,4 +1,4 @@
-import { Controller, Post, Req, UseGuards, Res } from '@nestjs/common';
+import { Controller, Post, Get, Req, UseGuards, Res } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ReviewService } from './review.service';
 import { Request, Response } from 'express';
@@ -13,5 +13,13 @@ export class ReviewController {
     const userId = req.user._id;
     const reviewResult = await this.reviewService.generateReview(userId);
     return res.status(200).json(reviewResult);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('recent')
+  async getRecentReview(@Req() req: Request, @Res() res: Response) {
+    const userId = req.user._id;
+    const recentReview = await this.reviewService.getRecentReview(userId);
+    return res.status(200).json(recentReview);
   }
 }

@@ -16,7 +16,7 @@ const props = defineProps({
 </script>
 
 <template>
-    <div class="scores-container">
+    <div class="container">
         <div class="score-card" v-for="category in scoreOrder" :key="category">
             <h3>{{ category.charAt(0).toUpperCase() + category.slice(1).replace('_', ' ') }}</h3>
             <div class="score-bar">
@@ -31,13 +31,6 @@ const props = defineProps({
 </template>
 
 <style scoped>
-.scores-container {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 10px;
-}
-
 .score-card {
     background-color: #f9f9f9;
     border: 1px solid #ddd;

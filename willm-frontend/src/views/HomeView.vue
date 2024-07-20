@@ -246,7 +246,7 @@ const initPopover = () => {
     const popover = new bootstrap.Popover(popoverTriggerEl, {
       trigger: 'hover',
       html: true,
-      content: document.querySelector('#popover-content').innerHTML,
+      // content: document.querySelector('#popover-content').innerHTML,
       template: '<div class="popover wide-popover" role="tooltip"><div class="popover-arrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
     });
 
@@ -275,35 +275,32 @@ onMounted(() => {
           <div class="col-12 p-0">
             <div class="d-flex align-items-center mb-3">
               <img class="info-icon me-2" src="/icons/icon-info-01.svg" data-bs-toggle="popover"
-                data-bs-placement="bottom" />
+                data-bs-placement="bottom" data-bs-content='
+                <h5>How to use the tool?</h5>
+                <ul>
+                  <li>Select the text section you want to correct.</li>
+                  <li>Enter your text in the large text area.</li>
+                  <li>
+                    Click "AI Evaluation" to receive scores and explanations.
+                    <ul>
+                      <li>Feedback on Organization, Coherence, and Writing Style considers the corrected version of your
+                        text.</li>
+                    </ul>
+                  </li>
+                  <li>Click "Review" to get tips and see recent improvements.</li>
+                  <li>Use the switch to change the learning mode:
+                    <ul>
+                      <li>"productive": you only need to click the correction to apply it.</li>
+                      <li>"learning": you need to type the correction on your own. This enhances the learning process</li>
+                    </ul>
+                  </li>
+                </ul>' />
               <h5 class="mb-0 me-auto">How to use the tool?</h5>
               <div class="form-check form-switch d-flex align-items-center ms-auto" v-if="authStore.isAuthenticated">
                 <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault"
                   @change="handleSwitchChange">
                 <label class="form-check-label ms-2" for="flexSwitchCheckDefault">{{ mode }}</label>
               </div>
-            </div>
-
-            <div id="popover-content" style="display: none;">
-              <h5>How to use the tool?</h5>
-              <ul>
-                <li>Select the text section you want to correct.</li>
-                <li>Enter your text in the large text area.</li>
-                <li>
-                  Click "AI Evaluation" to receive scores and explanations.
-                  <ul>
-                    <li>Feedback on Organization, Coherence, and Writing Style considers the corrected version of your
-                      text.</li>
-                  </ul>
-                </li>
-                <li>Click "Review" to get tips and see recent improvements.</li>
-                <li>Use the switch to change the learning mode:
-                  <ul>
-                    <li>"productive": you only need to click the correction to apply it.</li>
-                    <li>"learning": you need to type the correction on your own. This enhances the learning process</li>
-                  </ul>
-                </li>
-              </ul>
             </div>
             <textarea v-model="textareaSmall" class="form-control textarea-small" placeholder="Enter section..."
               required></textarea>

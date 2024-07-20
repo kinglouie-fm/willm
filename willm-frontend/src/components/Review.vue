@@ -30,7 +30,25 @@ const filteredReviewData = computed(() => {
 
 <template>
     <div class="container">
-        <h2 class="text-center">Review</h2>
+        <div class="d-flex align-items-center justify-content-center">
+            <img class="info-icon me-2" src="/icons/icon-info-01.svg" data-bs-toggle="popover"
+                data-bs-placement="bottom" data-bs-content='
+                <h5>What are reviews?</h5>
+                <ul>
+                    <li>Reviews serve as reminders of your current writing challenges.</li>
+                    <ul>
+                    <li>Tips: A recap of your most frequent mistakes in each category.</li>
+                    <li>Improvements: Areas where you improved your writing.</li>
+                    </ul>
+                    <li>If there is no recent review available:</li>
+                    <ul>
+                    <li>Click on "Review" to generate one.</li>
+                    <li>Remember that you need to have at least two sessions to generate a review.</li>
+                    <li>A session is generated when you evaluate your writing. Only one is generated each day.</li>
+                    </ul>
+                </ul>' />
+            <h2 class="mb-0">Review</h2>
+        </div>
         <div v-if="typeof props.reviewData === 'string'">
             <p>{{ props.reviewData }}</p>
         </div>
@@ -58,4 +76,10 @@ const filteredReviewData = computed(() => {
     </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.info-icon {
+    width: 25px;
+    height: 25px;
+    cursor: pointer;
+}
+</style>

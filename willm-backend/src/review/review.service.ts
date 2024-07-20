@@ -149,7 +149,7 @@ export class ReviewService {
   async getRecentReview(userId: Types.ObjectId): Promise<any> {
     const recentReview = await this.reviewModel.findOne({ user_id: userId }).sort({ date_created: -1 }).exec();
     if (!recentReview) {
-      return { reviewData: 'No recent review available. Click on "Review" to generate one but remember that you need to have at least two sessions (one login per day = one session) to generate a review.' };
+      return { reviewData: 'No recent review available.' };
     }
     return { reviewData: recentReview.review_data };
   }

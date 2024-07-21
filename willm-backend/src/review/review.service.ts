@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { IssueService } from '../issue/issue.service';
 import { SessionService } from '../session/session.service';
+import { TextService } from '../text/text.service';
 import { Review } from './schema/review.schema';
 
 @Injectable()
@@ -10,12 +11,23 @@ export class ReviewService {
   constructor(
     private readonly issueService: IssueService,
     private readonly sessionService: SessionService,
+    private readonly textService: TextService,
     @InjectModel(Review.name) private reviewModel: Model<Review>
   ) {}
 
   async generateReview(userId: Types.ObjectId): Promise<any> {
-    // Retrieve the last 25 issues per type for the user
-    const issues = await this.issueService.getLastIssuesByType(userId, 25);
+    // Retrieve the last 10 texts for the user
+    const texts = await this.textService.findLastSubmissions(userId, 10);
+
+    if (!texts || texts.length === 0) {
+      return { reviewData: 'No text available.' };
+    }
+
+    // Get the text IDs and ensure they are of type Types.ObjectId[]
+    const textIds: Types.ObjectId[] = texts.map(text => text._id) as Types.ObjectId[];
+
+    // Retrieve issues related to the last 10 texts
+    const issues = await this.issueService.getIssuesByTextIds(textIds);
 
     if (!issues || issues.length === 0) {
       return { reviewData: 'Not enough sessions to generate review.' };
@@ -143,7 +155,7 @@ export class ReviewService {
     });
     await newReview.save();
 
-    return { reviewData };
+    return { reviewData: reviewData };
   }
 
   async getRecentReview(userId: Types.ObjectId): Promise<any> {

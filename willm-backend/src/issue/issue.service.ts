@@ -27,6 +27,10 @@ export class IssueService {
     return this.issueModel.find({ session: { $in: sessionIds } }).exec();
   }
 
+  async getIssuesByTextIds(textIds: Types.ObjectId[]): Promise<Issue[]> {
+    return this.issueModel.find({ text: { $in: textIds } }).exec();
+  }
+
   async getLastIssuesByType(userId: Types.ObjectId, limit: number): Promise<Issue[]> {
     const types = ['grammar_vocab', 'organization', 'coherence', 'writing_style'];
     const issues = await Promise.all(

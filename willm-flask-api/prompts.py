@@ -10,7 +10,14 @@ UNIFIED_PROMPT = """
 Regarding grammar and vocabulary, look for issues with misspelling, subject-verb agreement, tense consistency, pronoun agreement, incorrect use of articles, incorrect prepositions, inappropriate word choice, redundancy, and other grammatical errors. Provide the grammatical rule or reasoning when explaining the mistake. Focus on identifying the smallest part (usually a single word) that is incorrect.
 
 Categorize each mistake into one of the following categories:
-- misspelling, subject-verb agreement, tense consistency, pronoun agreement, incorrect use of articles, incorrect prepositions, inappropriate word choice, redundancy
+- misspelling
+- subject-verb agreement
+- tense consistency
+- pronoun agreement
+- incorrect use of articles
+- incorrect prepositions
+- inappropriate word choice
+- redundancy
 
 For each mistake, you should provide the following:
 
@@ -41,7 +48,11 @@ GRAMMAR_PROMPT = """
 Regarding grammar, look for issues with sentence structure, verb tense, subject-verb agreement, punctuation, and other grammatical errors. Provide the grammatical rule when explaining the mistake. Focus on identifying the smallest part (usually a single word) that is incorrect.
 
 Categorize each mistake into one of the following categories:
-- subject-verb agreement, tense consistency, pronoun agreement, incorrect use of articles, incorrect prepositions
+- subject-verb agreement
+- tense consistency
+- pronoun agreement
+- incorrect use of articles
+- incorrect prepositions
 
 For each mistake, you should provide the following:
 
@@ -72,7 +83,8 @@ VOCAB_PROMPT = """
 Regarding vocabulary, suggest better word choices where applicable and explain why the suggested word is more appropriate.
 
 Categorize each mistake into one of the following categories:
-- inappropriate word choice, redundancy
+- inappropriate word choice
+- redundancy
 
 For each mistake, you should provide the following:
 
@@ -109,7 +121,8 @@ Ignore grammar or vocabulary mistakes.
 Specifically focus on the section {section}.
 
 Categorize each mistake into one of the following categories:
-- disorganized ideas, poor paragraph structure
+- disorganized ideas
+- poor paragraph structure
 
 For each mistake, you should provide the following:
 

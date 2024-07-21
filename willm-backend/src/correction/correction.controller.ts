@@ -67,6 +67,7 @@ export class CorrectionController {
         corrected_text: corrections[i],
         category: categories[i] || 'Uncategorized'
       });
+      console.log("Added issue", issue);
       session.issues.push(issue._id as Types.ObjectId);
     }
 

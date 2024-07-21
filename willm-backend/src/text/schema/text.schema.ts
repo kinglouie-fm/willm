@@ -15,8 +15,8 @@ export class Text extends Document {
   @Prop({ required: true })
   content: string;
 
-  @Prop({ type: [{ type: Types.ObjectId, ref: 'Issue' }] })
-  issues: Types.ObjectId[];
+  @Prop({ required: true })
+  mode: string;
 }
 
 export const TextSchema = SchemaFactory.createForClass(Text);

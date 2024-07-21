@@ -20,7 +20,7 @@ export class CorrectionController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  async handleCorrection(@Body() body: { text: string, section: string }, @Req() req: Request) {
+  async handleCorrection(@Body() body: { text: string, section: string, mode: string }, @Req() req: Request) {
     console.log("Handling correction request");
     const initialResult = await this.correctionService.callPythonService(body.text, body.section, 'initial');
     const correctedText = initialResult.correctedText;
@@ -49,7 +49,7 @@ export class CorrectionController {
       session_id: session._id,
       section_id: section._id,
       content: body.text,
-      issues: []
+      mode: body.mode,
     });
 
     // Add issues

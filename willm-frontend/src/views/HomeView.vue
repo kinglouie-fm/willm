@@ -70,6 +70,7 @@ const handleCorrect = async () => {
       axios.post('http://localhost:3000/correct', {
         text: textToCorrect,
         section: textareaSmall.value,
+        mode: mode.value,
       }),
       axios.post('http://localhost:3000/score/generate', {
         text: textToCorrect,
@@ -281,13 +282,13 @@ onMounted(() => {
                   <li>Select the text section you want to correct.</li>
                   <li>Enter your text in the large text area.</li>
                   <li>
-                    Click "AI Evaluation" to receive scores and explanations.
+                    Click <b>"AI Evaluation"</b> to receive scores and explanations.
                     <ul>
                       <li>Feedback on Organization, Coherence, and Writing Style considers the corrected version of your
                         text.</li>
                     </ul>
                   </li>
-                  <li>Click "Review" to get tips and see recent improvements.</li>
+                  <li>Click <b>"Review"</b> to get tips and see recent improvements.</li>
                   <li>Use the switch to change the learning mode:
                     <ul>
                       <li>"productive": you only need to click the correction to apply it.</li>
@@ -328,8 +329,7 @@ onMounted(() => {
       <div class="col-6">
         <div class="mx-5">
           <button type="button" class="btn btn-md" @click="handleCorrect">AI Evaluation</button>
-          <button type="button" class="btn btn-md" @click="handleFurtherCorrect">Get further Feedback</button>
-          <button type="button" class="btn btn-md" @click="generateReview">Generate Review</button>
+          <button type="button" class="btn btn-md" @click="generateReview">Review</button>
         </div>
       </div>
     </div>

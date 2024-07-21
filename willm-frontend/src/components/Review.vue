@@ -56,21 +56,31 @@ const filteredReviewData = computed(() => {
             <p>{{ props.reviewData }}</p>
         </div>
         <div v-else-if="Object.keys(filteredReviewData).length">
-            <div v-for="(categoryData, key) in filteredReviewData" :key="key">
-                <h4>{{ getDisplayKey(key) }}</h4>
-                <div v-if="categoryData.improvements && categoryData.improvements.length">
-                    <h5>Improvements</h5>
-                    <ul>
-                        <li v-for="(improvement, index) in categoryData.improvements" :key="index">{{ improvement }}
-                        </li>
-                    </ul>
-                </div>
-                <div v-if="categoryData.tips && categoryData.tips.length">
-                    <h5>Tips</h5>
-                    <ul>
-                        <li v-for="(tip, index) in categoryData.tips" :key="index">{{ tip }}</li>
-                    </ul>
-                </div>
+            <div>
+                <h5>Tips</h5>
+                Your most frequent errors are:
+                <ul>
+                    <li v-for="(categoryData, key) in filteredReviewData" :key="key">
+                        {{ getDisplayKey(key) }}
+                        <ul>
+                            <li v-for="(tip, index) in categoryData.tips" :key="index">{{ tip }}</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <div
+                v-if="Object.keys(filteredReviewData).some(key => filteredReviewData[key].improvements && filteredReviewData[key].improvements.length)">
+                <h5>Improvements</h5>
+                You improved yourself by reducing the following types of mistakes:
+                <ul>
+                    <li v-for="(categoryData, key) in filteredReviewData" :key="key">
+                        {{ getDisplayKey(key) }}
+                        <ul>
+                            <li v-for="(improvement, index) in categoryData.improvements" :key="index">{{
+            improvement }}</li>
+                        </ul>
+                    </li>
+                </ul>
             </div>
         </div>
         <div v-else>

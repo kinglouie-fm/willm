@@ -34,8 +34,8 @@ export class ReviewService {
     }
 
     // Separate issues into two groups
-    const grammarVocabIssues = issues.filter(issue => issue.type === 'grammar_vocab');
-    const orgCohWritingIssues = issues.filter(issue => ['organization', 'coherence', 'writingStyle'].includes(issue.type));
+    const grammarVocabIssues = issues.filter(issue => issue.type === 'grammar_vocab' && issue.category !== 'Uncategorized');
+    const orgCohWritingIssues = issues.filter(issue => ['organization', 'coherence', 'writingStyle'].includes(issue.type) && issue.category !== 'Uncategorized');
 
     // Calculate the frequency of each category in both groups
     const getCategoryFrequency = (issues) => {

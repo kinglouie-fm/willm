@@ -5,11 +5,11 @@ const props = defineProps({
     scores: {
         type: Object,
         default: () => ({
-            grammar: { score: 0, explanation: 'N/A' },
-            vocabulary: { score: 0, explanation: 'N/A' },
-            organization: { score: 0, explanation: 'N/A' },
-            coherence: { score: 0, explanation: 'N/A' },
-            writing_style: { score: 0, explanation: 'N/A' }
+            grammar: 0,
+            vocabulary: 0,
+            organization: 0,
+            coherence: 0,
+            writing_style: 0
         })
     }
 });
@@ -20,12 +20,11 @@ const props = defineProps({
         <div class="score-card" v-for="category in scoreOrder" :key="category">
             <h3>{{ category.charAt(0).toUpperCase() + category.slice(1).replace('_', ' ') }}</h3>
             <div class="score-bar">
-                <div v-if="props.scores[category]" class="score-bar-fill"
-                    :style="{ width: (props.scores[category].score / 9) * 100 + '%' }">
+                <div v-if="props.scores[category] !== null" class="score-bar-fill"
+                    :style="{ width: (props.scores[category] / 9) * 100 + '%' }">
                 </div>
             </div>
-            <div v-if="props.scores[category]" class="score-label">{{ props.scores[category].score }} / 9</div>
-            <p v-if="props.scores[category]">{{ props.scores[category].explanation }}</p>
+            <div v-if="props.scores[category] !== null" class="score-label">{{ props.scores[category] }} / 9</div>
         </div>
     </div>
 </template>

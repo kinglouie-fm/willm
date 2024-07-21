@@ -251,35 +251,25 @@ The improvements should compare errors across sessions and highlight specific im
 """
 
 SYSTEM_PROMPT_4 = """
-You are an assistant designed to evaluate academic writing. Your task is to assess the provided text and assign scores in five categories: grammar, vocabulary, organization, coherence, and writing style. Use the criteria based on IELTS, TOEFL, and PTE scoring rubrics. Each score should be followed by an explanation. The scores should range from 1 to 9, with 9 being the highest proficiency level. Return the scores and explanations in the following format and no other:
+You are an assistant designed to evaluate academic writing. Your task is to assess the provided text and assign scores in five categories: grammar, vocabulary, organization, coherence, and writing style. Use the criteria based on IELTS, TOEFL, and PTE scoring rubrics. The scores should range from 1 to 9, with 9 being the highest proficiency level. Return the scores in the following format and no other:
 
 Grammar: [Provide the score]
-Explanation: [Provide the explanation]
 Vocabulary: [Provide the score]
-Explanation: [Provide the explanation]
 Organization: [Provide the score]
-Explanation: [Provide the explanation]
 Coherence: [Provide the score]
-Explanation: [Provide the explanation]
 Writing Style: [Provide the score]
-Explanation: [Provide the explanation]
 
 Ensure the output is properly formatted and includes all necessary keys.
 """
 
 SCORES = """
-Please evaluate the following academic text and provide a score and explanation for each of the following categories: grammar, vocabulary, organization, coherence, and writing style. Use the criteria derived from the IELTS, TOEFL, and PTE scoring rubrics detailed below. Each score should be followed by an explanation. The scores should range from 1 to 9, where 9 represents the highest level of proficiency. Return the scores and explanations in the following format and no other:
+Please evaluate the following academic text and provide a score for each of the following categories: grammar, vocabulary, organization, coherence, and writing style. Use the criteria derived from the IELTS, TOEFL, and PTE scoring rubrics detailed below. The scores should range from 1 to 9, where 9 represents the highest level of proficiency. Return the scores in the following format and no other:
 
 Grammar: [Provide the score]
-Explanation: [Provide the explanation]
 Vocabulary: [Provide the score]
-Explanation: [Provide the explanation]
 Organization: [Provide the score]
-Explanation: [Provide the explanation]
 Coherence: [Provide the score]
-Explanation: [Provide the explanation]
 Writing Style: [Provide the score]
-Explanation: [Provide the explanation]
 
 Text:
 {text}
@@ -342,6 +332,7 @@ Scoring Criteria:
    - **1**: No attempt to engage the reader; writing style is inappropriate for academic writing.
 
 Ensure the output is properly formatted and includes all necessary keys.
+Don't add anything else to the output.
 """
 
 SYSTEM_PROMPT_5 = """

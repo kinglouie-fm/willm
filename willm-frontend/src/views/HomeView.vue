@@ -154,7 +154,6 @@ const generateReview = async () => {
 const getRecentReview = async () => {
   try {
     const response = await axios.get('http://localhost:3000/review/recent');
-    console.log(response);
     reviewData.value = response.data.reviewData || 'No recent review available. Click on "Review" to generate one. Remember that you need to have at least 2 sessions to generate a review.';
     selectedComponent.value = 'Review';
   } catch (error) {
@@ -286,9 +285,29 @@ const applyCorrection = () => {
   }
 };
 
+const initPopover = () => {
+  const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+  popoverTriggerList.forEach((popoverTriggerEl) => {
+    const popover = new bootstrap.Popover(popoverTriggerEl, {
+      trigger: 'hover',
+      html: true,
+      template: '<div class="popover wide-popover" role="tooltip"><div class="popover-arrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+    });
+
+    popoverTriggerEl.addEventListener('inserted.bs.popover', () => {
+      const popoverElement = document.querySelector('.popover.wide-popover');
+      if (popoverElement) {
+        popoverElement.style.maxWidth = '600px';
+        popoverElement.style.fontSize = '16px';
+      }
+    });
+  });
+};
+
 onMounted(() => {
   getRecentReview();
   activatePopovers();
+  initPopover();
 });
 </script>
 

@@ -1,14 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 
-class ImprovementTip {
-  @Prop({ type: [String], default: [] })
-  improvements: string[];
-
-  @Prop({ type: [String], default: [] })
-  tips: string[];
-}
-
 @Schema()
 export class Review extends Document {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })

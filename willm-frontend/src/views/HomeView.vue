@@ -58,6 +58,7 @@ const handleCorrect = async () => {
   textToCorrect = stripHtmlTags(textToCorrect);
   editableDiv.value.innerText = textToCorrect;
 
+  // Reset correction states
   mistakes.value = [];
   corrections.value = [];
   explanations.value = [];
@@ -86,6 +87,9 @@ const handleCorrect = async () => {
       })
     ]);
 
+    console.log(correctionResponse.data);
+
+    // Process initial correction response
     mistakes.value = correctionResponse.data.mistakes;
     corrections.value = correctionResponse.data.corrections;
     explanations.value = correctionResponse.data.explanations;
@@ -100,6 +104,24 @@ const handleCorrect = async () => {
 
     highlightMistakes();
     selectedComponent.value = 'Evaluation';
+
+    // Process further correction response if available
+    if (correctionResponse.data.furtherCorrection) {
+      const furtherCorrection = correctionResponse.data.furtherCorrection;
+
+      organizationMistakes.value = furtherCorrection.organization.mistakes;
+      organizationCorrections.value = furtherCorrection.organization.corrections;
+      organizationExplanations.value = furtherCorrection.organization.explanations;
+
+      coherenceMistakes.value = furtherCorrection.coherence.mistakes;
+      coherenceCorrections.value = furtherCorrection.coherence.corrections;
+      coherenceExplanations.value = furtherCorrection.coherence.explanations;
+
+      writingStyleMistakes.value = furtherCorrection.writingStyle.mistakes;
+      writingStyleCorrections.value = furtherCorrection.writingStyle.corrections;
+      writingStyleExplanations.value = furtherCorrection.writingStyle.explanations;
+    }
+
   } catch (error) {
     console.error('Error processing requests:', error);
   }

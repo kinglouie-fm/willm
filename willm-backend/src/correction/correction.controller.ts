@@ -20,9 +20,11 @@ export class CorrectionController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  async handleCorrection(@Body() body: { text: string, section: string, mode: string }, @Req() req: Request) {
+  async handleCorrection(@Body() body: { text: string, section: string, mode: string }, @Req() req: Request, @Res() res: Response) {
     console.log("Handling correction request");
+    
     const initialResult = await this.correctionService.callPythonService(body.text, body.section, 'initial');
+    console.log(initialResult);
     const correctedText = initialResult.correctedText;
 
     const mistakes = initialResult.mistakes || [];
@@ -74,13 +76,27 @@ export class CorrectionController {
 
     await session.save();
 
-    return {
+    // Perform further correction if correctedText is available
+    let furtherCorrectionResult = null;
+    if (correctedText) {
+      try {
+        console.log("Performing further correction");
+        furtherCorrectionResult = await this.correctionService.callPythonService(correctedText, body.section, 'further');
+      } catch (error) {
+        console.error('Error in further correction:', error);
+      }
+    }
+
+    // Send combined response to frontend
+    return res.json({
       mistakes: mistakes,
       corrections: corrections,
       explanations: explanations,
       categories: categories,
-      contexts: contexts
-    };
+      contexts: contexts,
+      correctedText: correctedText,
+      furtherCorrection: furtherCorrectionResult
+    });
   }
 
   @UseGuards(JwtAuthGuard)
@@ -142,68 +158,5 @@ export class CorrectionController {
       coherence: coherence,
       writingStyle: writingStyle
     };
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Post('improve')
-  async handleImprovementRequest(@Req() req: Request, @Res() res: Response) {
-    const userId = req.user._id;
-
-    // Check if the user has more than 2 sessions
-    const sessions = await this.sessionService.getSessionsByUserId(userId);
-    if (sessions.length < 3) {
-      return res.status(200).send('<2');
-    }
-
-    // Retrieve the last 5 sessions and their associated issues
-    const lastFiveSessions = sessions.slice(-5);
-    const sessionIds = lastFiveSessions.map(s => s._id) as Types.ObjectId[];
-    const issues = await this.issueService.getIssuesBySessions(sessionIds);
-
-    // Categorize issues
-    const sameSectionIssues: { [key: string]: any[] } = {};
-    const differentSectionIssues: any[] = [];
-
-    issues.forEach(issue => {
-      const sectionId = issue.section.toHexString();
-      if (!sameSectionIssues[sectionId]) {
-        sameSectionIssues[sectionId] = [];
-      }
-      sameSectionIssues[sectionId].push(issue);
-    });
-
-    Object.keys(sameSectionIssues).forEach(sectionId => {
-      if (sameSectionIssues[sectionId].length === 1) {
-        differentSectionIssues.push(...sameSectionIssues[sectionId]);
-        delete sameSectionIssues[sectionId];
-      }
-    });
-
-    const prompts = [];
-
-    Object.keys(sameSectionIssues).forEach(sectionId => {
-      const sectionIssues = sameSectionIssues[sectionId].map(issue => issue.original_text).join('\n- ');
-      prompts.push({
-        prompt: 'DETAILED_IMPROVEMENTS',
-        data: {
-          section_name: sectionId,
-          issues: sectionIssues
-        }
-      });
-    });
-
-    if (differentSectionIssues.length > 0) {
-      const issuesText = differentSectionIssues.map(issue => issue.original_text).join('\n- ');
-      prompts.push({
-        prompt: 'GENERAL_IMPROVEMENT',
-        data: { issues: issuesText }
-      });
-    }
-
-    console.log(prompts);
-
-    const improvements = await this.correctionService.getImprovementsFromFlaskAPI(prompts);
-
-    return res.status(200).json(improvements);
   }
 }

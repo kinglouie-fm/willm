@@ -7,9 +7,9 @@ import os
 import re
 import asyncio
 import aiohttp
-from prompts import (SYSTEM_PROMPT_1, SYSTEM_PROMPT_2, SYSTEM_PROMPT_3, SYSTEM_PROMPT_4, SYSTEM_PROMPT_5,
-                     UNIFIED_PROMPT, ORGANIZATION_PROMPT, COHERENCE_PROMPT, WRITING_STYLE_PROMPT, 
-                     DETAILED_IMPROVEMENTS, GENERAL_IMPROVEMENT, SCORES, 
+from prompts import (SYSTEM_PROMPT_1, SYSTEM_PROMPT_2, SYSTEM_PROMPT_4, SYSTEM_PROMPT_5,
+                     UNIFIED_PROMPT, UNIFIED_PROMPT_2, ORGANIZATION_PROMPT, COHERENCE_PROMPT, WRITING_STYLE_PROMPT, 
+                     SCORES, 
                      REVISION_PROMPT, SYNONYMS_PROMPT, ANTONYMS_PROMPT, ACADEMIC_SENTENCE_PROMPT, 
                      ARGUMENT_STRENGTHENING_PROMPT, PEER_REVIEW_PROMPT, SYNTHESIS_PROMPT)
 import logging
@@ -48,35 +48,12 @@ async def fetch_openai_response(session, system_prompt, prompt_template, data, s
         response_json = await response.json()
         logging.info(f"Response JSON: {response_json}")
         return response_json['choices'][0]['message']['content']
-    
-async def fetch_improvements(session, prompt_template, data):
-    prompt = prompt_template.format(**data)
-    async with session.post(
-        'https://api.openai.com/v1/chat/completions',
-        headers={
-            'Authorization': f'Bearer {openai.api_key}',
-            'Content-Type': 'application/json'
-        },
-        json={
-            "model": "gpt-4o",
-            "messages": [
-                {"role": "system", "content": SYSTEM_PROMPT_3},
-                {"role": "user", "content": prompt}
-            ],
-            "max_tokens": 2000
-        }
-    ) as response:
-        response_json = await response.json()
-        return response_json['choices'][0]['message']['content']
-
-# async def handle_grammar(session, data):
-#     return await fetch_openai_response(session, SYSTEM_PROMPT_1, GRAMMAR_PROMPT, data)
-
-# async def handle_vocabulary(session, data):
-#     return await fetch_openai_response(session, SYSTEM_PROMPT_1, VOCAB_PROMPT, data)
 
 async def handle_unified(session, data):
     return await fetch_openai_response(session, SYSTEM_PROMPT_1, UNIFIED_PROMPT, data)
+
+async def handle_unified_2(session, data, section):
+    return await fetch_openai_response(session, SYSTEM_PROMPT_2, UNIFIED_PROMPT_2, data, section)
 
 async def handle_organization(session, data, section):
     return await fetch_openai_response(session, SYSTEM_PROMPT_2, ORGANIZATION_PROMPT, data, section)
@@ -99,21 +76,17 @@ async def handle_correction():
         return jsonify({"error": "No text provided"}), 400
 
     async with aiohttp.ClientSession() as session:
-        # grammar_result = await handle_grammar(session, data)
-        # vocab_result = await handle_vocabulary(session, data)
         unified_result = await handle_unified(session, data)
 
-    # Process and merge results to extract mistakes, corrections, explanations, and corrected text
-    # merged_result = merge_results(grammar_result, vocab_result)
-    # mistakes, corrections, explanations, categories, corrected_text = process_initial_result(merged_result)
-    mistakes, corrections, explanations, categories, contexts = process_initial_result(unified_result)
+    mistakes, corrections, explanations, categories, contexts, corrected_text = process_initial_result(unified_result)
 
     return jsonify({
         "mistakes": mistakes,
         "corrections": corrections,
         "explanations": explanations,
         "categories": categories,
-        "contexts": contexts
+        "contexts": contexts,
+        "correctedText": corrected_text
     })
 
 @app.route('/handle-further-correction', methods=['POST'])
@@ -125,14 +98,9 @@ async def handle_further_correction():
         return jsonify({"error": "No text provided"}), 400
 
     async with aiohttp.ClientSession() as session:
-        tasks = [
-            handle_organization(session, data, section),
-            handle_coherence(session, data, section),
-            handle_writing_style(session, data, section)
-        ]
-        results = await asyncio.gather(*tasks)
+        unified_result = await handle_unified_2(session, data, section)
 
-    feedback = {key: process_further_result(result) for key, result in zip(["organization", "coherence", "writingStyle"], results)}
+    feedback = process_further_result(unified_result)
 
     return jsonify(feedback)
 
@@ -180,37 +148,6 @@ def parse_scores(response_text):
 
     return scores
 
-@app.route('/generate-improvements', methods=['POST'])
-async def generate_improvements():
-    data = request.json.get('prompts')
-
-    if not data:
-        return jsonify({"error": "No prompts provided"}), 400
-
-    async with aiohttp.ClientSession() as session:
-        tasks = []
-        for prompt in data:
-            print(f"Processing prompt: {prompt}")
-            if prompt['prompt'] == 'DETAILED_IMPROVEMENTS':
-                tasks.append(fetch_improvements(session, DETAILED_IMPROVEMENTS, prompt['data']))
-            elif prompt['prompt'] == 'GENERAL_IMPROVEMENT':
-                tasks.append(fetch_improvements(session, GENERAL_IMPROVEMENT, prompt['data']))
-
-        results = await asyncio.gather(*tasks)
-
-    return jsonify(results)
-
-# def merge_results(grammar_result, vocab_result):
-#     grammar_issues = extract_issues(grammar_result)
-#     vocab_issues = extract_issues(vocab_result)
-
-#     merged_issues = {issue['mistake']: issue for issue in grammar_issues}
-#     for issue in vocab_issues:
-#         if issue['mistake'] not in merged_issues:
-#             merged_issues[issue['mistake']] = issue
-
-#     return "\n".join([f"M: {issue['mistake']}\nC: {issue['correction']}\nE: {issue['explanation']}\nT: {issue['category']}" for issue in merged_issues.values()])
-
 def extract_issues(result):
     mistakes = re.findall(r'M: (.*?)\n', result, re.DOTALL)
     corrections = re.findall(r'C: (.*?)\n', result, re.DOTALL)
@@ -237,6 +174,7 @@ def process_initial_result(result):
     explanations = []
     categories = []
     contexts = []
+    corrected_text = None
 
     fine_match = re.search(r'The submitted writing is fine.', result)
     mistakes_match = re.findall(r'M: (.*?)\n', result, re.DOTALL)
@@ -244,6 +182,7 @@ def process_initial_result(result):
     explanations_match = re.findall(r'E: (.*?)(?=\nM:|Correction:|$)', result, re.DOTALL)
     categories_match = re.findall(r'T: (.*?)\n', result, re.DOTALL)
     contexts_match = re.findall(r'X: (.*?)\n', result, re.DOTALL)
+    corrected_text_match = re.search(r'Correction:\s*(.*)', result, re.DOTALL)
 
     if fine_match:
         mistakes.append("The submitted writing is fine.")
@@ -261,35 +200,33 @@ def process_initial_result(result):
         categories = [t.strip() for t in categories_match]
     if contexts_match:
         contexts = [x.strip() for x in contexts_match]
+    if corrected_text_match:
+        corrected_text = corrected_text_match.group(1).strip()
 
-    return mistakes, corrections, explanations, categories, contexts
+    return mistakes, corrections, explanations, categories, contexts, corrected_text
 
 def process_further_result(result):
     feedback = {
-        "mistakes": [],
-        "corrections": [],
-        "explanations": [],
-        "categories": [],
+        "organization": {"mistakes": [], "corrections": [], "explanations": [], "categories": []},
+        "coherence": {"mistakes": [], "corrections": [], "explanations": [], "categories": []},
+        "writingStyle": {"mistakes": [], "corrections": [], "explanations": [], "categories": []}
     }
 
-    fine_match = re.search(r'The submitted writing is fine.', result)
-    mistakes_match = re.findall(r'M: (.*?)\n', result, re.DOTALL)
-    corrections_match = re.findall(r'C: (.*?)\n', result, re.DOTALL)
-    explanations_match = re.findall(r'E: (.*?)(?=\nM:|Correction:|$)', result, re.DOTALL)
-    categories_match = re.findall(r'T: (.*?)\n', result, re.DOTALL)
+    sections = ["organization", "coherence", "writingStyle"]
+    for section in sections:
+        mistakes_match = re.findall(rf'{section.capitalize()}:\nM: (.*?)\n', result, re.DOTALL)
+        corrections_match = re.findall(rf'{section.capitalize()}:\nC: (.*?)\n', result, re.DOTALL)
+        explanations_match = re.findall(rf'{section.capitalize()}:\nE: (.*?)(?=\nM:|$)', result, re.DOTALL)
+        categories_match = re.findall(rf'{section.capitalize()}:\nT: (.*?)\n', result, re.DOTALL)
 
-    if fine_match:
-        feedback["mistakes"].append("The submitted writing is fine.")
-        feedback["corrections"].append("The submitted writing is fine.")
-        feedback["explanations"].append("The submitted writing is fine.")
-    if mistakes_match:
-        feedback["mistakes"] = [m.strip() for m in mistakes_match]
-    if corrections_match:
-        feedback["corrections"] = [c.strip() for c in corrections_match]
-    if explanations_match:
-        feedback["explanations"] = [e.strip() for e in explanations_match]
-    if categories_match:
-        feedback["categories"] = [t.strip() for t in categories_match]
+        if mistakes_match:
+            feedback[section]["mistakes"] = [m.strip() for m in mistakes_match]
+        if corrections_match:
+            feedback[section]["corrections"] = [c.strip() for c in corrections_match]
+        if explanations_match:
+            feedback[section]["explanations"] = [e.strip() for e in explanations_match]
+        if categories_match:
+            feedback[section]["categories"] = [t.strip() for t in categories_match]
 
     return feedback
 

@@ -171,9 +171,12 @@ C: [Provide the corrected phrase/segment]
 E: [Explain why the organization is problematic and how to improve it]
 T: [Category]
 
-Don't use bullet points or any other sort of list. Separate each set of mistakes/corrections/explanations with a blank line.
+If the submitted writing is good as it is for either organization, coherence or writing style, then the output should look like this:
 
-If the submitted writing is good as it is, simply state: "The submitted writing is fine."
+[Organization, Coherence, or Writing Style]:
+The submitted writing is fine.
+
+Don't use bullet points or any other sort of list. Separate each set of mistakes/corrections/explanations with a blank line.
 
 Don't add anything else to the output.
 
@@ -292,37 +295,37 @@ Don't add anything else to the output.
 Now, correct the following submitted writing: {text}
 """
 
-SYSTEM_PROMPT_3="""
-You are an assistant designed to give general or detailed improvements. Your job is to identify improvements that the user made in their writing over time or within a specific section. You will be provided with a list of issues that were present in the writing, and you need to generate improvements.
-"""
+# SYSTEM_PROMPT_3="""
+# You are an assistant designed to give general or detailed improvements. Your job is to identify improvements that the user made in their writing over time or within a specific section. You will be provided with a list of issues that were present in the writing, and you need to generate improvements.
+# """
 
-GENERAL_IMPROVEMENT = """
-The following issues are listed in chronological order from oldest to newest:
-- {issues}
+# GENERAL_IMPROVEMENT = """
+# The following issues are listed in chronological order from oldest to newest:
+# - {issues}
 
-Generate improvements highlighting:
-1. Grammar and Vocabulary Improvements
-2. Organization and Coherence
-3. Writing Style
+# Generate improvements highlighting:
+# 1. Grammar and Vocabulary Improvements
+# 2. Organization and Coherence
+# 3. Writing Style
 
-The improvements should include:
-- Frequency and types of errors.
-- Reductions in specific error types over sessions.
-- Changes in the structure and flow of sections.
-- Improvements in style, such as varied sentence structures and tone.
-"""
+# The improvements should include:
+# - Frequency and types of errors.
+# - Reductions in specific error types over sessions.
+# - Changes in the structure and flow of sections.
+# - Improvements in style, such as varied sentence structures and tone.
+# """
 
-DETAILED_IMPROVEMENTS = """
-The following issues are listed in chronological order from oldest to newest for section {section_name}:
-- {issues}
+# DETAILED_IMPROVEMENTS = """
+# The following issues are listed in chronological order from oldest to newest for section {section_name}:
+# - {issues}
 
-Generate detailed improvements highlighting:
-1. Grammar and Vocabulary Improvements
-2. Organization and Coherence
-3. Writing Style
+# Generate detailed improvements highlighting:
+# 1. Grammar and Vocabulary Improvements
+# 2. Organization and Coherence
+# 3. Writing Style
 
-The improvements should compare errors across sessions and highlight specific improvements made in this section.
-"""
+# The improvements should compare errors across sessions and highlight specific improvements made in this section.
+# """
 
 SYSTEM_PROMPT_4 = """
 You are an assistant designed to evaluate academic writing. Your task is to assess the provided text and assign scores in five categories: grammar, vocabulary, organization, coherence, and writing style. Use the criteria based on IELTS, TOEFL, and PTE scoring rubrics. The scores should range from 1 to 9, with 9 being the highest proficiency level. Return the scores in the following format and no other:

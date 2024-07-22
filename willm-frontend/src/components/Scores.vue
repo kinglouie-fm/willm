@@ -17,15 +17,19 @@ const props = defineProps({
 
 <template>
     <div class="container">
-        <div class="score-card" v-for="category in scoreOrder" :key="category">
-            <h3>{{ category.charAt(0).toUpperCase() + category.slice(1).replace('_', ' ') }}</h3>
-            <div class="score-bar">
-                <div v-if="props.scores[category]" class="score-bar-fill"
-                    :style="{ width: (props.scores[category].score / 9) * 100 + '%' }">
+        <div class="d-flex align-items-center justify-content-center">
+            <h2 class="mb-3">Scores</h2>
+        </div>
+        <div class="d-flex flex-wrap justify-content-center align-items-center">
+            <div class="score-card mx-2 mb-2" v-for="(category, index) in scoreOrder" :key="category">
+                <h6>{{ category.charAt(0).toUpperCase() + category.slice(1).replace('_', ' ') }}</h6>
+                <div class="score-bar">
+                    <div v-if="props.scores[category]" class="score-bar-fill"
+                        :style="{ width: (props.scores[category].score / 9) * 100 + '%' }">
+                    </div>
                 </div>
+                <div v-if="props.scores[category]" class="score-label">{{ props.scores[category].score }} / 9</div>
             </div>
-            <div v-if="props.scores[category]" class="score-label">{{ props.scores[category].score }} / 9</div>
-            <p v-if="props.scores[category]">{{ props.scores[category].explanation }}</p>
         </div>
     </div>
 </template>

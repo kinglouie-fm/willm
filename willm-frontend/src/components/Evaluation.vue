@@ -10,7 +10,7 @@ const props = defineProps({
 
 <template>
     <div>
-        <Scores :scores="props.scores" />
+        <Scores :scores="props.scores" class="mb-3" />
         <Correction :furtherCorrectionData="props.furtherCorrectionData" />
     </div>
 </template>

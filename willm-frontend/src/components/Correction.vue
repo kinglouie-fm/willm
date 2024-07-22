@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 import * as bootstrap from 'bootstrap';
+
 const props = defineProps({
     furtherCorrectionData: Object
 });
@@ -13,18 +14,24 @@ const toggleCollapse = (index, category) => {
         toggle: true
     });
 };
+
+const handleSelectFeedback = (event) => {
+    selectedFeedback.value = event.target.value;
+};
 </script>
 
 <template>
     <div>
-        <div class="d-flex justify-content-center mb-4">
-            <button type="button" class="btn btn-md" @click="selectedFeedback = 'organization'"
-                :class="{ active: selectedFeedback === 'organization' }">Organization</button>
-            <button type="button" class="btn btn-md" @click="selectedFeedback = 'coherence'"
-                :class="{ active: selectedFeedback === 'coherence' }">Coherence</button>
-            <button type="button" class="btn btn-md" @click="selectedFeedback = 'writingStyle'"
-                :class="{ active: selectedFeedback === 'writingStyle' }">Writing Style</button>
+        <div class="d-flex justify-content-start mb-3">
+            <div class="custom-select-wrapper">
+                <select class="custom-select" @change="handleSelectFeedback">
+                    <option value="organization" selected>Organization</option>
+                    <option value="coherence">Coherence</option>
+                    <option value="writingStyle">Writing Style</option>
+                </select>
+            </div>
         </div>
+
         <div v-if="selectedFeedback === 'organization'">
             <h4>Organization Feedback</h4>
             <div v-for="(mistake, index) in props.furtherCorrectionData.organization.mistakes" :key="index">
@@ -40,6 +47,7 @@ const toggleCollapse = (index, category) => {
                 </ul>
             </div>
         </div>
+
         <div v-if="selectedFeedback === 'coherence'">
             <h4>Coherence Feedback</h4>
             <div v-for="(mistake, index) in props.furtherCorrectionData.coherence.mistakes" :key="index">
@@ -54,6 +62,7 @@ const toggleCollapse = (index, category) => {
                 </ul>
             </div>
         </div>
+
         <div v-if="selectedFeedback === 'writingStyle'">
             <h4>Writing Style Feedback</h4>
             <div v-for="(mistake, index) in props.furtherCorrectionData.writingStyle.mistakes" :key="index">
@@ -69,6 +78,7 @@ const toggleCollapse = (index, category) => {
                 </ul>
             </div>
         </div>
+
         <div v-if="props.furtherCorrectionData === 'Not enough sessions to generate review.'">
             <p>{{ props.furtherCorrectionData }}</p>
         </div>
@@ -76,14 +86,25 @@ const toggleCollapse = (index, category) => {
 </template>
 
 <style scoped>
-.btn {
-    border: 1px solid #c5c5c5;
-    color: #838383;
+.custom-select-wrapper {
+    display: inline-block;
 }
 
-.btn.active {
-    background-color: #eabc7c;
-    color: white;
+.custom-select {
+    border: 1px solid #c5c5c5;
+    color: #838383;
+    padding: 0.375rem 1.75rem 0.375rem 0.75rem;
+    appearance: none;
+    background: url('data:image/svg+xml;utf8,<svg fill="%23838383" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>') no-repeat right 0.75rem center/16px 16px;
+    background-color: #fff;
+    border-radius: 0.25rem;
+    cursor: pointer;
+}
+
+.custom-select:focus {
+    border-color: #eabc7c;
+    box-shadow: none;
+    outline: 0;
 }
 
 a {

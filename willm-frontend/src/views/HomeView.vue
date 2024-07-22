@@ -180,7 +180,7 @@ const escapeRegExp = (string) => {
 const escapeHTML = (string) => {
   return string
     .replace(/&/g, '&amp;')
-    .replace(/</ / g, '&lt;')
+    .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
@@ -318,7 +318,7 @@ onMounted(() => {
       </div>
       <!-- Upper Right -->
       <div class="col-5 d-flex flex-column">
-        <div class="flex-grow-1">
+        <div class="feedback flex-grow-1">
           <component :is="selectedComponent === 'Review' ? Review : Evaluation" :reviewData="reviewData"
             :furtherCorrectionData="furtherCorrectionData" :scores="scores" />
         </div>
@@ -345,6 +345,11 @@ onMounted(() => {
 .btn:hover {
   background-color: #eabc7c;
   color: white;
+}
+
+.feedback {
+  overflow-y: auto;
+  max-height: 70vh;
 }
 
 .info-icon {

@@ -46,6 +46,7 @@ async def fetch_openai_response(session, system_prompt, prompt_template, data, s
         }
     ) as response:
         response_json = await response.json()
+        logging.info(f"Response JSON: {response_json}")
         return response_json['choices'][0]['message']['content']
     
 async def fetch_improvements(session, prompt_template, data):
@@ -154,35 +155,30 @@ async def generate_scores():
         return jsonify({"error": str(e)}), 500
 
 def parse_scores(response_text):
-    # Initialize a dictionary to hold the scores and explanations
     scores = {
-        "grammar": {"score": None, "explanation": ""},
-        "vocabulary": {"score": None, "explanation": ""},
-        "organization": {"score": None, "explanation": ""},
-        "coherence": {"score": None, "explanation": ""},
-        "writing_style": {"score": None, "explanation": ""}
+        "grammar": None,
+        "vocabulary": None,
+        "organization": None,
+        "coherence": None,
+        "writing_style": None
     }
 
     # Define regex patterns for each score and its explanation
     patterns = {
-        'grammar': r'Grammar:\s*(\d+)\s*Explanation:\s*(.*?)(?=\n\s*Vocabulary:|$)',
-        'vocabulary': r'Vocabulary:\s*(\d+)\s*Explanation:\s*(.*?)(?=\n\s*Organization:|$)',
-        'organization': r'Organization:\s*(\d+)\s*Explanation:\s*(.*?)(?=\n\s*Coherence:|$)',
-        'coherence': r'Coherence:\s*(\d+)\s*Explanation:\s*(.*?)(?=\n\s*Writing Style:|$)',
-        'writing_style': r'Writing Style:\s*(\d+)\s*Explanation:\s*(.*?)(?=$)'
+        'grammar': r'Grammar:\s*(\d+)',
+        'vocabulary': r'Vocabulary:\s*(\d+)',
+        'organization': r'Organization:\s*(\d+)',
+        'coherence': r'Coherence:\s*(\d+)',
+        'writing_style': r'Writing Style:\s*(\d+)'
     }
 
     # Loop over each pattern to extract the score and explanation
     for key, pattern in patterns.items():
-        match = re.search(pattern, response_text, re.DOTALL)
+        match = re.search(pattern, response_text)
         if match:
-            scores[key] = {
-                'score': int(match.group(1).strip()),
-                'explanation': match.group(2).strip()
-            }
+            scores[key] = int(match.group(1).strip())
 
     return scores
-
 
 @app.route('/generate-improvements', methods=['POST'])
 async def generate_improvements():

@@ -17,11 +17,11 @@ export class ScoreService {
     const scoreData = response.data;
 
     const scoresToStore = {
-      grammar: scoreData.grammar.score,
-      vocabulary: scoreData.vocabulary.score,
-      organization: scoreData.organization.score,
-      coherence: scoreData.coherence.score,
-      writing_style: scoreData.writing_style.score,
+      grammar: scoreData.grammar,
+      vocabulary: scoreData.vocabulary,
+      organization: scoreData.organization,
+      coherence: scoreData.coherence,
+      writing_style: scoreData.writing_style,
     };
 
     // Save the scores to the database

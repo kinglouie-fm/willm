@@ -18,7 +18,7 @@ const props = defineProps({
 <template>
     <div class="container">
         <div class="d-flex align-items-center justify-content-center">
-            <h2 class="mb-3">Scores</h2>
+            <h3 class="mb-3">Scores</h3>
         </div>
         <div class="d-flex flex-wrap justify-content-center align-items-center">
             <div class="score-card mx-2 mb-2" v-for="category in scoreOrder" :key="category">
@@ -35,6 +35,10 @@ const props = defineProps({
 </template>
 
 <style scoped>
+h3 {
+    color: #eabc7c;
+}
+
 .score-card {
     background-color: #f9f9f9;
     border: 1px solid #ddd;

@@ -26,9 +26,9 @@ const editableDiv = ref(null);
 const reviewData = ref(null);
 const scores = ref({});
 const furtherCorrectionData = ref({
-  organization: { mistakes: [], corrections: [], explanations: [] },
-  coherence: { mistakes: [], corrections: [], explanations: [] },
-  writingStyle: { mistakes: [], corrections: [], explanations: [] },
+  organization: { mistakes: [], corrections: [], explanations: [], categories: [] },
+  coherence: { mistakes: [], corrections: [], explanations: [], categories: [] },
+  writingStyle: { mistakes: [], corrections: [], explanations: [], categories: [] },
 });
 
 const authStore = useAuthStore();
@@ -109,17 +109,32 @@ const handleCorrect = async () => {
     if (correctionResponse.data.furtherCorrection) {
       const furtherCorrection = correctionResponse.data.furtherCorrection;
 
-      organizationMistakes.value = furtherCorrection.organization.mistakes;
-      organizationCorrections.value = furtherCorrection.organization.corrections;
-      organizationExplanations.value = furtherCorrection.organization.explanations;
+      if (furtherCorrection.organization.message) {
+        furtherCorrectionData.value.organization = { message: furtherCorrection.organization.message };
+      } else {
+        furtherCorrectionData.value.organization.mistakes = furtherCorrection.organization.mistakes;
+        furtherCorrectionData.value.organization.corrections = furtherCorrection.organization.corrections;
+        furtherCorrectionData.value.organization.explanations = furtherCorrection.organization.explanations;
+        furtherCorrectionData.value.organization.categories = furtherCorrection.organization.categories;
+      }
 
-      coherenceMistakes.value = furtherCorrection.coherence.mistakes;
-      coherenceCorrections.value = furtherCorrection.coherence.corrections;
-      coherenceExplanations.value = furtherCorrection.coherence.explanations;
+      if (furtherCorrection.coherence.message) {
+        furtherCorrectionData.value.coherence = { message: furtherCorrection.coherence.message };
+      } else {
+        furtherCorrectionData.value.coherence.mistakes = furtherCorrection.coherence.mistakes;
+        furtherCorrectionData.value.coherence.corrections = furtherCorrection.coherence.corrections;
+        furtherCorrectionData.value.coherence.explanations = furtherCorrection.coherence.explanations;
+        furtherCorrectionData.value.coherence.categories = furtherCorrection.coherence.categories;
+      }
 
-      writingStyleMistakes.value = furtherCorrection.writingStyle.mistakes;
-      writingStyleCorrections.value = furtherCorrection.writingStyle.corrections;
-      writingStyleExplanations.value = furtherCorrection.writingStyle.explanations;
+      if (furtherCorrection.writingStyle.message) {
+        furtherCorrectionData.value.writingStyle = { message: furtherCorrection.writingStyle.message };
+      } else {
+        furtherCorrectionData.value.writingStyle.mistakes = furtherCorrection.writingStyle.mistakes;
+        furtherCorrectionData.value.writingStyle.corrections = furtherCorrection.writingStyle.corrections;
+        furtherCorrectionData.value.writingStyle.explanations = furtherCorrection.writingStyle.explanations;
+        furtherCorrectionData.value.writingStyle.categories = furtherCorrection.writingStyle.categories;
+      }
     }
 
   } catch (error) {
@@ -151,7 +166,34 @@ const handleFurtherCorrect = async () => {
       text: textToCorrect,
       section: textareaSmall.value,
     });
-    furtherCorrectionData.value = furtherResponse.data;
+    const furtherCorrection = furtherResponse.data;
+
+    if (furtherCorrection.organization.message) {
+      furtherCorrectionData.value.organization = { message: furtherCorrection.organization.message };
+    } else {
+      furtherCorrectionData.value.organization.mistakes = furtherCorrection.organization.mistakes;
+      furtherCorrectionData.value.organization.corrections = furtherCorrection.organization.corrections;
+      furtherCorrectionData.value.organization.explanations = furtherCorrection.organization.explanations;
+      furtherCorrectionData.value.organization.categories = furtherCorrection.organization.categories;
+    }
+
+    if (furtherCorrection.coherence.message) {
+      furtherCorrectionData.value.coherence = { message: furtherCorrection.coherence.message };
+    } else {
+      furtherCorrectionData.value.coherence.mistakes = furtherCorrection.coherence.mistakes;
+      furtherCorrectionData.value.coherence.corrections = furtherCorrection.coherence.corrections;
+      furtherCorrectionData.value.coherence.explanations = furtherCorrection.coherence.explanations;
+      furtherCorrectionData.value.coherence.categories = furtherCorrection.coherence.categories;
+    }
+
+    if (furtherCorrection.writingStyle.message) {
+      furtherCorrectionData.value.writingStyle = { message: furtherCorrection.writingStyle.message };
+    } else {
+      furtherCorrectionData.value.writingStyle.mistakes = furtherCorrection.writingStyle.mistakes;
+      furtherCorrectionData.value.writingStyle.corrections = furtherCorrection.writingStyle.corrections;
+      furtherCorrectionData.value.writingStyle.explanations = furtherCorrection.writingStyle.explanations;
+      furtherCorrectionData.value.writingStyle.categories = furtherCorrection.writingStyle.categories;
+    }
 
     selectedComponent.value = 'Evaluation';
   } catch (error) {

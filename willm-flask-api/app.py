@@ -220,7 +220,9 @@ def process_further_result(result):
         if section_match:
             section_content = section_match.group(1).strip()
             logging.info(f"Section '{section}' content: {section_content}")
-            if section_content != "The submitted writing is fine.":
+            if section_content == "The submitted writing is fine.":
+                feedback[section] = {"message": "The submitted writing is fine."}
+            else:
                 # Extracting mistakes, corrections, explanations, and categories within the section content
                 mistakes_match = re.findall(r'M: (.*?)\n', section_content, re.DOTALL)
                 corrections_match = re.findall(r'C: (.*?)\n', section_content, re.DOTALL)
@@ -232,6 +234,7 @@ def process_further_result(result):
                 feedback[section]["explanations"] = [e.strip() for e in explanations_match]
                 feedback[section]["categories"] = [t.strip() for t in categories_match]
 
+    # Converting section names to camel case
     feedback = {
         "organization": feedback["Organization"],
         "coherence": feedback["Coherence"],
@@ -240,9 +243,6 @@ def process_further_result(result):
 
     logging.info(f"Processed feedback: {feedback}")
     return feedback
-
-
-
 
 question_prompts = {
     'revision': REVISION_PROMPT,

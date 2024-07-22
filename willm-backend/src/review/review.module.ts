@@ -9,6 +9,7 @@ import { Session, SessionSchema } from '../session/schema/session.schema';
 import { SessionService } from '../session/session.service';
 import { User, UserSchema } from '../user/schema/user.schema';
 import { UserModule } from '../user/user.module';
+import { TextModule } from '../text/text.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { UserModule } from '../user/user.module';
     MongooseModule.forFeature([{ name: Session.name, schema: SessionSchema }]),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     forwardRef(() => UserModule),
+    forwardRef(() => TextModule),
   ],
   controllers: [ReviewController],
   providers: [ReviewService, IssueService, SessionService],

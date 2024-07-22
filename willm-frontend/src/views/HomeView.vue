@@ -38,6 +38,7 @@ const currentMistake = ref('');
 const currentCorrection = ref('');
 const currentExplanation = ref('');
 const userCorrection = ref('');
+const correctionError = ref('');
 let currentMistakeElement = null;
 
 const handleSwitchChange = (event) => {
@@ -83,6 +84,8 @@ const handleCorrect = async () => {
         section: textareaSmall.value,
       })
     ]);
+
+    console.log(correctionResponse);
 
     mistakes.value = correctionResponse.data.mistakes;
     corrections.value = correctionResponse.data.corrections;
@@ -236,6 +239,7 @@ const activatePopovers = () => {
         currentCorrection.value = correction;
         currentExplanation.value = explanations.value[index];
         userCorrection.value = '';
+        correctionError.value = '';
         currentMistakeElement = el;
         const modal = new bootstrap.Modal(document.getElementById('correctionModal'));
         modal.show();
@@ -259,17 +263,26 @@ const limitTextLength = () => {
 };
 
 const applyCorrection = () => {
-  if (currentMistakeElement) {
-    currentMistakeElement.innerText = userCorrection.value;
-    currentMistakeElement.classList.remove('mistake');
-    currentMistakeElement.removeAttribute('data-bs-toggle');
-    currentMistakeElement.removeAttribute('data-bs-content');
-    const popoverInstance = bootstrap.Popover.getInstance(currentMistakeElement);
-    if (popoverInstance) {
-      popoverInstance.dispose();
-      currentMistakeElement.replaceWith(currentMistakeElement.cloneNode(true));
+  if (userCorrection.value.trim() === currentCorrection.value.trim()) {
+    if (currentMistakeElement) {
+      currentMistakeElement.innerText = userCorrection.value;
+      currentMistakeElement.classList.remove('mistake');
+      currentMistakeElement.removeAttribute('data-bs-toggle');
+      currentMistakeElement.removeAttribute('data-bs-content');
+      const popoverInstance = bootstrap.Popover.getInstance(currentMistakeElement);
+      if (popoverInstance) {
+        popoverInstance.dispose();
+        currentMistakeElement.replaceWith(currentMistakeElement.cloneNode(true));
+      }
+      currentMistakeElement = null;
+      correctionError.value = '';
     }
-    currentMistakeElement = null;
+    const modal = bootstrap.Modal.getInstance(document.getElementById('correctionModal'));
+    if (modal) {
+      modal.hide();
+    }
+  } else {
+    correctionError.value = 'The correction entered is incorrect. Please try again.';
   }
 };
 
@@ -361,6 +374,7 @@ onMounted(() => {
           <p><strong>Correction:</strong> {{ currentCorrection }}</p>
           <p><strong>Explanation:</strong> {{ currentExplanation }}</p>
           <input v-model="userCorrection" type="text" class="form-control" placeholder="Type the correction here">
+          <p v-if="correctionError" class="text-danger">{{ correctionError }}</p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn" data-bs-dismiss="modal">Close</button>

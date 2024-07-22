@@ -68,6 +68,8 @@ export class CorrectionController {
         category: categories[i] || 'Uncategorized'
       });
       session.issues.push(issue._id as Types.ObjectId);
+
+      console.log(issue);
     }
 
     await session.save();

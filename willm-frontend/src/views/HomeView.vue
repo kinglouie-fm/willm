@@ -37,6 +37,7 @@ const mode = ref('productive');
 const currentMistake = ref('');
 const currentCorrection = ref('');
 const currentExplanation = ref('');
+const currentCategory = ref('');
 const userCorrection = ref('');
 const correctionError = ref('');
 let currentMistakeElement = null;
@@ -84,8 +85,6 @@ const handleCorrect = async () => {
         section: textareaSmall.value,
       })
     ]);
-
-    console.log(correctionResponse);
 
     mistakes.value = correctionResponse.data.mistakes;
     corrections.value = correctionResponse.data.corrections;
@@ -175,7 +174,7 @@ const highlightMistakes = () => {
     const mistake = mistakes.value[index];
     const regex = new RegExp(`(${context.replace(/\s+/g, '\\s+')})`, 'gi');
     htmlContent = htmlContent.replace(regex, (match) => {
-      return match.replace(new RegExp(`\\b${escapeRegExp(mistake)}\\b`, 'gi'), `<span class="mistake" data-bs-toggle="popover" data-bs-html="true" data-bs-content="${escapeHTML(`<b>Correction</b>: ${corrections.value[index]}<br><b>Explanation</b>: ${explanations.value[index]}`)}">${mistake}</span>`);
+      return match.replace(new RegExp(`\\b${escapeRegExp(mistake)}\\b`, 'gi'), `<span class="mistake" data-bs-toggle="popover" data-bs-html="true" data-bs-content="${escapeHTML(`<b>Mistake</b>: ${mistake}<br><b>Type</b>: ${categories.value[index]}<br><b>Correction</b>: ${corrections.value[index]}<br><b>Explanation</b>: ${explanations.value[index]}`)}">${mistake}</span>`);
     });
   });
   editableDiv.value.innerHTML = htmlContent;
@@ -222,7 +221,7 @@ const activatePopovers = () => {
     el.addEventListener('click', (e) => {
       e.stopPropagation();
       const content = el.getAttribute('data-bs-content');
-      const correction = content.split('<br>')[0].replace('<b>Correction</b>: ', '');
+      const correction = content.split('<br>')[2].replace('<b>Correction</b>: ', '');
 
       if (mode.value === 'productive') {
         el.innerText = correction;
@@ -236,6 +235,7 @@ const activatePopovers = () => {
         }
       } else if (mode.value === 'learning') {
         currentMistake.value = el.innerText;
+        currentCategory.value = categories.value[index];
         currentCorrection.value = correction;
         currentExplanation.value = explanations.value[index];
         userCorrection.value = '';
@@ -371,6 +371,7 @@ onMounted(() => {
         </div>
         <div class="modal-body">
           <p><strong>Mistake:</strong> {{ currentMistake }}</p>
+          <p><strong>Type:</strong> {{ currentCategory }}</p>
           <p><strong>Correction:</strong> {{ currentCorrection }}</p>
           <p><strong>Explanation:</strong> {{ currentExplanation }}</p>
           <input v-model="userCorrection" type="text" class="form-control" placeholder="Type the correction here">

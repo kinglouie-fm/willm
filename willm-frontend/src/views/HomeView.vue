@@ -34,6 +34,12 @@ const furtherCorrectionData = ref({
 const authStore = useAuthStore();
 const mode = ref('productive');
 
+const currentMistake = ref('');
+const currentCorrection = ref('');
+const currentExplanation = ref('');
+const userCorrection = ref('');
+let currentMistakeElement = null;
+
 const handleSwitchChange = (event) => {
   mode.value = event.target.checked ? 'learning' : 'productive';
 };
@@ -188,7 +194,7 @@ const escapeHTML = (string) => {
 
 const activatePopovers = () => {
   const popoverElements = editableDiv.value.querySelectorAll('.mistake');
-  popoverElements.forEach((el) => {
+  popoverElements.forEach((el, index) => {
     new bootstrap.Popover(el, {
       trigger: 'hover',
       html: true,
@@ -214,14 +220,25 @@ const activatePopovers = () => {
       e.stopPropagation();
       const content = el.getAttribute('data-bs-content');
       const correction = content.split('<br>')[0].replace('<b>Correction</b>: ', '');
-      el.innerText = correction;
-      el.classList.remove('mistake');
-      el.removeAttribute('data-bs-toggle');
-      el.removeAttribute('data-bs-content');
-      const popoverInstance = bootstrap.Popover.getInstance(el);
-      if (popoverInstance) {
-        popoverInstance.dispose();
-        el.replaceWith(el.cloneNode(true));
+
+      if (mode.value === 'productive') {
+        el.innerText = correction;
+        el.classList.remove('mistake');
+        el.removeAttribute('data-bs-toggle');
+        el.removeAttribute('data-bs-content');
+        const popoverInstance = bootstrap.Popover.getInstance(el);
+        if (popoverInstance) {
+          popoverInstance.dispose();
+          el.replaceWith(el.cloneNode(true));
+        }
+      } else if (mode.value === 'learning') {
+        currentMistake.value = el.innerText;
+        currentCorrection.value = correction;
+        currentExplanation.value = explanations.value[index];
+        userCorrection.value = '';
+        currentMistakeElement = el;
+        const modal = new bootstrap.Modal(document.getElementById('correctionModal'));
+        modal.show();
       }
     });
   });
@@ -241,29 +258,24 @@ const limitTextLength = () => {
   }
 };
 
-const initPopover = () => {
-  const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
-  popoverTriggerList.forEach((popoverTriggerEl) => {
-    const popover = new bootstrap.Popover(popoverTriggerEl, {
-      trigger: 'hover',
-      html: true,
-      // content: document.querySelector('#popover-content').innerHTML,
-      template: '<div class="popover wide-popover" role="tooltip"><div class="popover-arrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
-    });
-
-    popoverTriggerEl.addEventListener('inserted.bs.popover', () => {
-      const popoverElement = document.querySelector('.popover.wide-popover');
-      if (popoverElement) {
-        popoverElement.style.maxWidth = '600px';
-        popoverElement.style.fontSize = '16px';
-      }
-    });
-  });
+const applyCorrection = () => {
+  if (currentMistakeElement) {
+    currentMistakeElement.innerText = userCorrection.value;
+    currentMistakeElement.classList.remove('mistake');
+    currentMistakeElement.removeAttribute('data-bs-toggle');
+    currentMistakeElement.removeAttribute('data-bs-content');
+    const popoverInstance = bootstrap.Popover.getInstance(currentMistakeElement);
+    if (popoverInstance) {
+      popoverInstance.dispose();
+      currentMistakeElement.replaceWith(currentMistakeElement.cloneNode(true));
+    }
+    currentMistakeElement = null;
+  }
 };
 
 onMounted(() => {
-  initPopover();
   getRecentReview();
+  activatePopovers();
 });
 </script>
 
@@ -331,6 +343,28 @@ onMounted(() => {
         <div class="mx-5">
           <button type="button" class="btn btn-md" @click="handleCorrect">AI Evaluation</button>
           <button type="button" class="btn btn-md" @click="generateReview">Review</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal fade" id="correctionModal" tabindex="-1" aria-labelledby="correctionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="correctionModalLabel">Correction</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p><strong>Mistake:</strong> {{ currentMistake }}</p>
+          <p><strong>Correction:</strong> {{ currentCorrection }}</p>
+          <p><strong>Explanation:</strong> {{ currentExplanation }}</p>
+          <input v-model="userCorrection" type="text" class="form-control" placeholder="Type the correction here">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn" @click="applyCorrection">Apply Correction</button>
         </div>
       </div>
     </div>

@@ -165,7 +165,7 @@ M: [Highlight only the incorrect phrase/segment]
 C: [Provide the corrected phrase/segment]
 E: [Explain why the organization is problematic and how to improve it]
 T: [Category]
-Writing style:
+WritingStyle:
 M: [Highlight only the incorrect phrase/segment]
 C: [Provide the corrected phrase/segment]
 E: [Explain why the organization is problematic and how to improve it]
@@ -173,10 +173,10 @@ T: [Category]
 
 If the submitted writing is good as it is for either organization, coherence or writing style, then the output should look like this:
 
-[Organization, Coherence, or Writing Style]:
+[Organization, Coherence, or WritingStyle]:
 The submitted writing is fine.
 
-Don't use bullet points or any other sort of list. Separate each set of mistakes/corrections/explanations with a blank line.
+Don't use bullet points or any other sort of list. Separate each set of mistakes/corrections/explanations/category with a blank line.
 
 Don't add anything else to the output.
 

@@ -101,6 +101,7 @@ async def handle_further_correction():
         unified_result = await handle_unified_2(session, data, section)
 
     feedback = process_further_result(unified_result)
+    logger.info(f"Feedback: {feedback}")
 
     return jsonify(feedback)
 
@@ -207,28 +208,39 @@ def process_initial_result(result):
 
 def process_further_result(result):
     feedback = {
-        "organization": {"mistakes": [], "corrections": [], "explanations": [], "categories": []},
-        "coherence": {"mistakes": [], "corrections": [], "explanations": [], "categories": []},
-        "writingStyle": {"mistakes": [], "corrections": [], "explanations": [], "categories": []}
+        "Organization": {"mistakes": [], "corrections": [], "explanations": [], "categories": []},
+        "Coherence": {"mistakes": [], "corrections": [], "explanations": [], "categories": []},
+        "WritingStyle": {"mistakes": [], "corrections": [], "explanations": [], "categories": []}
     }
 
-    sections = ["organization", "coherence", "writingStyle"]
+    sections = ["Organization", "Coherence", "WritingStyle"]
     for section in sections:
-        mistakes_match = re.findall(rf'{section.capitalize()}:\nM: (.*?)\n', result, re.DOTALL)
-        corrections_match = re.findall(rf'{section.capitalize()}:\nC: (.*?)\n', result, re.DOTALL)
-        explanations_match = re.findall(rf'{section.capitalize()}:\nE: (.*?)(?=\nM:|$)', result, re.DOTALL)
-        categories_match = re.findall(rf'{section.capitalize()}:\nT: (.*?)\n', result, re.DOTALL)
+        section_pattern = rf"{section}:(.*?)(\n\n|\Z)"
+        section_match = re.search(section_pattern, result, re.DOTALL)
+        if section_match:
+            section_content = section_match.group(1).strip()
+            logging.info(f"Section '{section}' content: {section_content}")
+            if section_content != "The submitted writing is fine.":
+                # Extracting mistakes, corrections, explanations, and categories within the section content
+                mistakes_match = re.findall(r'M: (.*?)\n', section_content, re.DOTALL)
+                corrections_match = re.findall(r'C: (.*?)\n', section_content, re.DOTALL)
+                explanations_match = re.findall(r'E: (.*?)(?=\nM:|\nC:|$)', section_content, re.DOTALL)
+                categories_match = re.findall(r'T: (.*?)\n', section_content, re.DOTALL)
 
-        if mistakes_match:
-            feedback[section]["mistakes"] = [m.strip() for m in mistakes_match]
-        if corrections_match:
-            feedback[section]["corrections"] = [c.strip() for c in corrections_match]
-        if explanations_match:
-            feedback[section]["explanations"] = [e.strip() for e in explanations_match]
-        if categories_match:
-            feedback[section]["categories"] = [t.strip() for t in categories_match]
+                feedback[section]["mistakes"] = [m.strip() for m in mistakes_match]
+                feedback[section]["corrections"] = [c.strip() for c in corrections_match]
+                feedback[section]["explanations"] = [e.strip() for e in explanations_match]
+                feedback[section]["categories"] = [t.strip() for t in categories_match]
 
+    feedback = {
+        "organization": feedback["Organization"],
+        "coherence": feedback["Coherence"],
+        "writingStyle": feedback["WritingStyle"]
+    }
+
+    logging.info(f"Processed feedback: {feedback}")
     return feedback
+
 
 question_prompts = {
     'revision': REVISION_PROMPT,

@@ -213,6 +213,7 @@ def process_further_result(result):
         "WritingStyle": {"mistakes": [], "corrections": [], "explanations": [], "categories": []}
     }
 
+    # Extracting each section content
     sections = ["Organization", "Coherence", "WritingStyle"]
     for section in sections:
         section_pattern = rf"{section}:(.*?)(\n\n|\Z)"
@@ -227,11 +228,12 @@ def process_further_result(result):
                 explanations_match = re.findall(r'E: (.*?)(?=\nM:|\nC:|$)', section_content, re.DOTALL)
                 categories_match = re.findall(r'T: (.*?)\n', section_content, re.DOTALL)
 
-                feedback[section]["mistakes"] = [m.strip() for m in mistakes_match]
-                feedback[section]["corrections"] = [c.strip() for c in corrections_match]
-                feedback[section]["explanations"] = [e.strip() for e in explanations_match]
+                feedback[section]["mistakes"] = [m.strip().strip('[]') for m in mistakes_match]
+                feedback[section]["corrections"] = [c.strip().strip('[]') for c in corrections_match]
+                feedback[section]["explanations"] = [e.strip().strip('[]') for e in explanations_match]
                 feedback[section]["categories"] = [t.strip() for t in categories_match]
 
+    # Converting section names to camel case
     feedback = {
         "organization": feedback["Organization"],
         "coherence": feedback["Coherence"],
@@ -240,6 +242,7 @@ def process_further_result(result):
 
     logging.info(f"Processed feedback: {feedback}")
     return feedback
+
 
 
 question_prompts = {

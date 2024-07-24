@@ -56,7 +56,6 @@ const handleCorrect = async () => {
   }
 
   textToCorrect = stripHtmlTags(textToCorrect);
-  console.log(textToCorrect);
   editableDiv.value.innerText = textToCorrect;
 
   // Reset correction states
@@ -347,7 +346,9 @@ onMounted(() => {
                       <li><b>Important</b>: First choose the learning mode, then evaluate your text with the tool by clicking on "AI Evaluation"</li>
                     </ul>
                   </li>
-                </ul>' />
+                </ul>
+                <p>To prevent bugs, please do not copy and paste the text from the input area!</p>
+                ' />
               <h5 class="mb-0 me-auto">How to use the tool?</h5>
               <div class="form-check form-switch d-flex align-items-center ms-auto" v-if="authStore.isAuthenticated">
                 <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault"

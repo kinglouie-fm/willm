@@ -1,4 +1,3 @@
-// src/stores/auth.js
 import { defineStore } from 'pinia';
 import axios from 'axios';
 import router from '../router';
@@ -10,6 +9,24 @@ export const useAuthStore = defineStore('auth', {
     isAuthenticated: false,
   }),
   actions: {
+    async register(username, password) {
+      try {
+        const response = await axios.post('http://localhost:3000/user/register', { username, password, dataPrivacyConsent });
+        if (response.status === 201) {
+          alert('Registration successful. Please login.');
+          router.push({ name: 'login' });
+        } else {
+          alert('Registration failed. Please try again.');
+        }
+      } catch (error) {
+        if (error.response && error.response.status === 400) {
+          alert('Username already taken. Please choose a different username.');
+        } else {
+          console.error(error);
+          alert('An error occurred. Please try again.');
+        }
+      }
+    },
     async login(username, password) {
       try {
         const response = await axios.post('http://localhost:3000/user/login', { username, password });

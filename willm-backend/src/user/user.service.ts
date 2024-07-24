@@ -17,7 +17,16 @@ export class UserService {
     private readonly sessionService: SessionService
   ) {}
 
+  async userExists(username: string): Promise<boolean> {
+    const count = await this.userModel.countDocuments({ username });
+    return count > 0;
+  }
+
   async register(username: string, password: string): Promise<void> {
+    const userExists = await this.userExists(username);
+    if (userExists) {
+      throw new Error('User already exists');
+    }
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = new this.userModel({
       username,

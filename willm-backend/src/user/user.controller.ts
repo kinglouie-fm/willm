@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Res, UnauthorizedException, Get, Req } from '@nestjs/common';
+import { Controller, Post, Body, Res, UnauthorizedException, Get, Req, BadRequestException } from '@nestjs/common';
 import { Response, Request } from 'express';
 import { UserService } from './user.service';
 import { SessionService } from '../session/session.service';
@@ -12,10 +12,26 @@ export class UserController {
   ) {}
 
   @Post('register')
-  async register(@Body('username') username: string, @Body('password') password: string): Promise<{ message: string }> {
-    await this.userService.register(username, password);
-    return { message: 'User registered successfully' };
+  async register(
+    @Body('username') username: string,
+    @Body('password') password: string,
+    @Body('dataPrivacyConsent') dataPrivacyConsent: boolean,
+    @Res() res: Response
+  ): Promise<void> {
+    if (!dataPrivacyConsent) {
+      throw new UnauthorizedException('Data privacy consent is required.');
+    }
+    try {
+      await this.userService.register(username, password);
+      res.status(201).json({ message: 'User registered successfully' });
+    } catch (error) {
+      if (error.message === 'User already exists') {
+        throw new BadRequestException('Username already taken');
+      }
+      throw error;
+    }
   }
+
 
   @Post('login')
   async login(@Body('username') username: string, @Body('password') password: string, @Res() res: Response): Promise<any> {

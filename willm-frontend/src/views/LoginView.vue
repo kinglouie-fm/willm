@@ -23,8 +23,12 @@ const login = async () => {
                 <label for="password">Password:</label>
                 <input type="password" v-model="password" id="password" class="form-control" />
             </div>
-            <button type="submit" class="btn btn-primary mt-2">Login</button>
+            <button type="submit" class="btn btn-primary mt-2 me-2">Login</button>
         </form>
+        <p class="mt-2">
+            Don't have an account yet? Go to <a @click.prevent="$router.push({ name: 'register' })"
+                href="#">registration</a>
+        </p>
     </div>
 </template>
 

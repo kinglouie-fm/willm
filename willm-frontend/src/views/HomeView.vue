@@ -56,6 +56,7 @@ const handleCorrect = async () => {
   }
 
   textToCorrect = stripHtmlTags(textToCorrect);
+  console.log(textToCorrect);
   editableDiv.value.innerText = textToCorrect;
 
   // Reset correction states
@@ -142,68 +143,10 @@ const handleCorrect = async () => {
   }
 };
 
-const handleFurtherCorrect = async () => {
-  let textToCorrect = editableDiv.value.innerText;
-  if (!textToCorrect) {
-    alert('Please enter some text to correct');
-    return;
-  }
-  textToCorrect = stripHtmlTags(textToCorrect);
-  editableDiv.value.innerText = textToCorrect;
-
-  organizationMistakes.value = [];
-  organizationCorrections.value = [];
-  organizationExplanations.value = [];
-  coherenceMistakes.value = [];
-  coherenceCorrections.value = [];
-  coherenceExplanations.value = [];
-  writingStyleMistakes.value = [];
-  writingStyleCorrections.value = [];
-  writingStyleExplanations.value = [];
-
-  try {
-    const furtherResponse = await axios.post('http://localhost:3000/correct/further-correct', {
-      text: textToCorrect,
-      section: textareaSmall.value,
-    });
-    const furtherCorrection = furtherResponse.data;
-
-    if (furtherCorrection.organization.message) {
-      furtherCorrectionData.value.organization = { message: furtherCorrection.organization.message };
-    } else {
-      furtherCorrectionData.value.organization.mistakes = furtherCorrection.organization.mistakes;
-      furtherCorrectionData.value.organization.corrections = furtherCorrection.organization.corrections;
-      furtherCorrectionData.value.organization.explanations = furtherCorrection.organization.explanations;
-      furtherCorrectionData.value.organization.categories = furtherCorrection.organization.categories;
-    }
-
-    if (furtherCorrection.coherence.message) {
-      furtherCorrectionData.value.coherence = { message: furtherCorrection.coherence.message };
-    } else {
-      furtherCorrectionData.value.coherence.mistakes = furtherCorrection.coherence.mistakes;
-      furtherCorrectionData.value.coherence.corrections = furtherCorrection.coherence.corrections;
-      furtherCorrectionData.value.coherence.explanations = furtherCorrection.coherence.explanations;
-      furtherCorrectionData.value.coherence.categories = furtherCorrection.coherence.categories;
-    }
-
-    if (furtherCorrection.writingStyle.message) {
-      furtherCorrectionData.value.writingStyle = { message: furtherCorrection.writingStyle.message };
-    } else {
-      furtherCorrectionData.value.writingStyle.mistakes = furtherCorrection.writingStyle.mistakes;
-      furtherCorrectionData.value.writingStyle.corrections = furtherCorrection.writingStyle.corrections;
-      furtherCorrectionData.value.writingStyle.explanations = furtherCorrection.writingStyle.explanations;
-      furtherCorrectionData.value.writingStyle.categories = furtherCorrection.writingStyle.categories;
-    }
-
-    selectedComponent.value = 'Evaluation';
-  } catch (error) {
-    console.error('Error getting further corrections:', error);
-  }
-};
-
 const generateReview = async () => {
   try {
     const response = await axios.post('http://localhost:3000/review/generate');
+    console.log(response.data)
     if (response.data.reviewData === '<2') {
       reviewData.value = 'Not enough sessions to generate the review';
     } else {

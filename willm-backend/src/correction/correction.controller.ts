@@ -22,7 +22,7 @@ export class CorrectionController {
   @Post()
   async handleCorrection(@Body() body: { text: string, section: string, mode: string }, @Req() req: Request, @Res() res: Response) {
     console.log("Handling correction request");
-    
+
     const initialResult = await this.correctionService.callPythonService(body.text, body.section, 'initial');
     console.log(initialResult);
     const correctedText = initialResult.correctedText;
@@ -54,7 +54,7 @@ export class CorrectionController {
       mode: body.mode,
     });
 
-    // Add issues
+    // Add issues for initial corrections
     for (let i = 0; i < mistakes.length; i++) {
       if (mistakes[i] === "The submitted writing is fine.") {
         continue;
@@ -82,6 +82,35 @@ export class CorrectionController {
       try {
         console.log("Performing further correction");
         furtherCorrectionResult = await this.correctionService.callPythonService(correctedText, body.section, 'further');
+
+        const { organization, coherence, writingStyle } = furtherCorrectionResult;
+
+        const combinedMistakes = [
+          ...(organization?.mistakes ?? []).map((mistake, i) => organization.corrections && organization.corrections[i] ? ({ mistake, correction: organization.corrections[i], type: 'organization', category: organization.categories[i] }) : null),
+          ...(coherence?.mistakes ?? []).map((mistake, i) => coherence.corrections && coherence.corrections[i] ? ({ mistake, correction: coherence.corrections[i], type: 'coherence', category: coherence.categories[i] }) : null),
+          ...(writingStyle?.mistakes ?? []).map((mistake, i) => writingStyle.corrections && writingStyle.corrections[i] ? ({ mistake, correction: writingStyle.corrections[i], type: 'writingStyle', category: writingStyle.categories[i] }) : null)
+        ].filter(issue => issue !== null); // Filter out any null values
+
+        // Add issues for further corrections
+        for (let i = 0; i < combinedMistakes.length; i++) {
+          if (combinedMistakes[i].mistake === "The submitted writing is fine.") {
+            continue;
+          }
+
+          const issue = await this.issueService.addIssue(userId, {
+            section: section._id,
+            session: session._id,
+            text: text._id,
+            type: combinedMistakes[i].type,
+            original_text: combinedMistakes[i].mistake,
+            corrected_text: combinedMistakes[i].correction,
+            category: combinedMistakes[i].category || 'Uncategorized'
+          });
+          session.issues.push(issue._id as Types.ObjectId);
+        }
+
+        await session.save();
+
       } catch (error) {
         console.error('Error in further correction:', error);
       }
@@ -97,66 +126,5 @@ export class CorrectionController {
       correctedText: correctedText,
       furtherCorrection: furtherCorrectionResult
     });
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Post('further-correct')
-  async handleFurtherCorrection(@Body() body: { text: string, section: string }, @Req() req: Request) {
-    const furtherResult = await this.correctionService.callPythonService(body.text, body.section, 'further');
-
-    const { organization, coherence, writingStyle } = furtherResult;
-
-    const userId = req.user._id;
-
-    const session = await this.sessionService.getCurrentSession(userId);
-
-    // Find or create the section
-    let section = await this.sectionService.findSectionByPayload(userId, body.section);
-    if (!section) {
-      section = await this.sectionService.addSection(userId, {
-        payload: body.section,
-        date_created: new Date(),
-      });
-    }
-
-    // Create a new Text document
-    const text = await this.textService.addText(userId, {
-      session_id: session._id,
-      section_id: section._id,
-      content: body.text,
-      issues: []
-    });
-
-    const combinedMistakes = [
-      ...organization.mistakes.map((mistake, i) => ({ mistake, correction: organization.corrections[i], type: 'organization', category: organization.categories[i] })),
-      ...coherence.mistakes.map((mistake, i) => ({ mistake, correction: coherence.corrections[i], type: 'coherence', category: coherence.categories[i] })),
-      ...writingStyle.mistakes.map((mistake, i) => ({ mistake, correction: writingStyle.corrections[i], type: 'writingStyle', category: writingStyle.categories[i] }))
-    ];
-
-    // Add issues
-    for (let i = 0; i < combinedMistakes.length; i++) {
-      if (combinedMistakes[i].mistake === "The submitted writing is fine.") {
-        continue;
-      }
-
-      const issue = await this.issueService.addIssue(userId, {
-        section: section._id,
-        session: session._id,
-        text: text._id,
-        type: combinedMistakes[i].type,
-        original_text: combinedMistakes[i].mistake,
-        corrected_text: combinedMistakes[i].correction,
-        category: combinedMistakes[i].category || 'Uncategorized'
-      });
-      session.issues.push(issue._id as Types.ObjectId);
-    }
-
-    await session.save();
-
-    return {
-      organization: organization,
-      coherence: coherence,
-      writingStyle: writingStyle
-    };
   }
 }

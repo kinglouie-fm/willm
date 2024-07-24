@@ -137,6 +137,9 @@ const handleCorrect = async () => {
       }
     }
 
+    // Trigger question generation if applicable
+    const questionResponse = await axios.post('http://localhost:3000/question/generate');
+    console.log('Question Generation Response:', questionResponse.data);
   } catch (error) {
     console.error('Error processing requests:', error);
   }

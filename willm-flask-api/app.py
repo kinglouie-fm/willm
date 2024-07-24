@@ -206,6 +206,9 @@ def process_initial_result(result):
     return mistakes, corrections, explanations, categories, contexts, corrected_text
 
 def process_further_result(result):
+    if "Writing Style" in result:
+        result = result.replace("Writing Style", "WritingStyle")
+        
     feedback = {
         "Organization": {"mistakes": [], "corrections": [], "explanations": [], "categories": []},
         "Coherence": {"mistakes": [], "corrections": [], "explanations": [], "categories": []},
@@ -219,7 +222,7 @@ def process_further_result(result):
         section_match = re.search(section_pattern, result, re.DOTALL)
         if section_match:
             section_content = section_match.group(1).strip()
-            logging.info(f"Section '{section}' content: {section_content}")
+            # logging.info(f"Section '{section}' content: {section_content}")
             if section_content == "The submitted writing is fine.":
                 feedback[section] = {"message": "The submitted writing is fine."}
             else:
@@ -241,7 +244,7 @@ def process_further_result(result):
         "writingStyle": feedback["WritingStyle"]
     }
 
-    logging.info(f"Processed feedback: {feedback}")
+    # logging.info(f"Processed feedback: {feedback}")
     return feedback
 
 question_prompts = {

@@ -14,6 +14,9 @@ export class QuestionController {
   @UseGuards(JwtAuthGuard)
   @Post('generate')
   async generateQuestion(@Req() req: Request) {
+    return {
+      "message": "saving money, change back when needed"
+    }
     const userId = req.user._id;
 
     // Check submission count

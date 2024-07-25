@@ -52,5 +52,13 @@ export const useAuthStore = defineStore('auth', {
         alert('An error occurred. Please try again.');
       }
     },
+    async checkAuthStatus() {
+      try {
+        const response = await axios.get('http://localhost:3000/user/pre-test-status');
+        this.preTestsCompleted = response.data.preTestsCompleted;
+      } catch (error) {
+        console.error('Error checking auth status:', error);
+      }
+    },
   },
 });

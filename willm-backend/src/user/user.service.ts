@@ -65,14 +65,15 @@ export class UserService {
     return this.findUserByUsername(decoded.username);
   }
 
-  async addPreTestSubmission(userId: string, text: string): Promise<void> {
-    const user = await this.userModel.findById(userId);
-    user.preTestSubmissions.push(text);
-    if (user.preTestSubmissions.length >= 3) {
-      user.preTestsCompleted = true;
-    }
-    await user.save();
+  async addPreTestSubmission(userId: string, text: string, section: string): Promise<void> {
+  const user = await this.userModel.findById(userId);
+  user.preTestSubmissions.push({ text, section });
+  if (user.preTestSubmissions.length >= 3) {
+    user.preTestsCompleted = true;
   }
+  await user.save();
+}
+
 
   async completePreTest(userId: string): Promise<void> {
     const user = await this.userModel.findById(userId);

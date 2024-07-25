@@ -13,8 +13,8 @@ export class User extends Document {
   @Prop({ default: false })
   preTestsCompleted: boolean;
 
-  @Prop({ type: [String], default: [] })
-  preTestSubmissions: string[];
+  @Prop({ type: [{ text: String, section: String }], default: [] })
+  preTestSubmissions: { text: string, section: string }[];
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Issue' }] })
   issues: Types.ObjectId[];

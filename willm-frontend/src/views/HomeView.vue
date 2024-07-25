@@ -42,6 +42,7 @@ const userCorrection = ref('');
 const correctionError = ref('');
 let currentMistakeElement = null;
 
+const preTestSection = ref('');
 const preTestText = ref('');
 const preTestCount = ref(0);
 const MIN_LENGTH = 250;
@@ -208,6 +209,10 @@ const escapeHTML = (string) => {
 };
 
 const activatePopovers = () => {
+  if (!editableDiv.value) {
+    return;
+  }
+
   const popoverElements = editableDiv.value.querySelectorAll('.mistake');
   popoverElements.forEach((el, index) => {
     new bootstrap.Popover(el, {
@@ -358,15 +363,21 @@ const checkPreTestStatus = async () => {
 };
 
 const submitPreTest = async () => {
+  if (!preTestSection.value) {
+    alert('Please enter the section for the text.');
+    return;
+  }
+
   if (!validatePreTestTextLength(preTestText.value)) {
     alert(`Please ensure your text is between ${MIN_LENGTH} and ${MAX_LENGTH} words.`);
     return;
   }
 
   try {
-    await axios.post('http://localhost:3000/user/pre-test', { text: preTestText.value });
+    await axios.post('http://localhost:3000/user/pre-test', { text: preTestText.value, section: preTestSection.value });
     preTestCount.value++;
     preTestText.value = '';
+    preTestSection.value = '';
     if (preTestCount.value >= 3) {
       authStore.preTestsCompleted = true;
       const preTestModal = bootstrap.Modal.getInstance(document.getElementById('preTestModal'));
@@ -384,7 +395,8 @@ const showPreTestModal = () => {
   preTestModal.show();
 };
 
-onMounted(() => {
+onMounted(async () => {
+  await authStore.checkAuthStatus();
   if (!authStore.preTestsCompleted) {
     checkPreTestStatus();
   } else {
@@ -524,6 +536,8 @@ onMounted(() => {
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
+          <textarea v-model="preTestSection" class="form-control mb-2" rows="1"
+            placeholder="Enter the section..."></textarea>
           <textarea v-model="preTestText" class="form-control" rows="20"
             placeholder="Enter your text here..."></textarea>
         </div>

@@ -77,11 +77,11 @@ export class UserController {
       return res.status(400).json({ message: 'At least one pre-test submission is required to complete the process.' });
     }
     await this.userService.completePreTest(user._id.toString());
-    return res.status(200).json({ message: 'Pre-test process completed successfully' });
+    return res.status(200).json({ message: 'Pre-test process completed successfully', preTestsCompleted: true });
   }
 
   @Post('pre-test')
-  async submitPreTest(@Body('text') text: string, @Req() req: Request, @Res() res: Response): Promise<any> {
+  async submitPreTest(@Body('text') text: string, @Body('section') section: string, @Req() req: Request, @Res() res: Response): Promise<any> {
     const MIN_WORD_COUNT = 250;
     const MAX_WORD_COUNT = 1500;
     const wordCount = text.trim().split(/\s+/).length;
@@ -94,7 +94,8 @@ export class UserController {
     if (!user) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
-    await this.userService.addPreTestSubmission(user._id.toString(), text);
+    await this.userService.addPreTestSubmission(user._id.toString(), text, section);
     return res.status(200).json({ message: 'Pre-test submitted successfully' });
   }
+
 }

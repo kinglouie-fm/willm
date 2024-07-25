@@ -1,15 +1,10 @@
 import { Controller, Post, Body, Res, UnauthorizedException, Get, Req, BadRequestException } from '@nestjs/common';
 import { Response, Request } from 'express';
 import { UserService } from './user.service';
-import { SessionService } from '../session/session.service';
 
 @Controller('user')
 export class UserController {
-
-  constructor(
-    private readonly userService: UserService,
-    private readonly sessionService: SessionService
-  ) {}
+  constructor(private readonly userService: UserService) {}
 
   @Post('register')
   async register(
@@ -32,7 +27,6 @@ export class UserController {
     }
   }
 
-
   @Post('login')
   async login(@Body('username') username: string, @Body('password') password: string, @Res() res: Response): Promise<any> {
     const isValid = await this.userService.validateUser(username, password);
@@ -42,10 +36,7 @@ export class UserController {
     const user = await this.userService.findUserByUsername(username);
     const token = this.userService.generateJwtToken(username);
     res.cookie('auth_token', token, { httpOnly: true, secure: false });
-
-    const session = await this.sessionService.getCurrentSession(user._id.toString());
-
-    return res.status(200).json({ message: 'Login successful', session });
+    return res.status(200).json({ message: 'Login successful', preTestsCompleted: user.preTestsCompleted });
   }
 
   @Post('logout')
@@ -65,5 +56,45 @@ export class UserController {
       return res.status(401).json({ message: 'Unauthorized' });
     }
     return res.status(200).json({ username: decoded.username });
+  }
+
+  @Get('pre-test-status')
+  async getPreTestStatus(@Req() req: Request, @Res() res: Response): Promise<any> {
+    const user = await this.userService.findUserByToken(req.cookies['auth_token']);
+    if (!user) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+    return res.status(200).json({ preTestsCompleted: user.preTestsCompleted, preTestCount: user.preTestSubmissions.length });
+  }
+
+  @Post('complete-pre-test')
+  async completePreTest(@Req() req: Request, @Res() res: Response): Promise<any> {
+    const user = await this.userService.findUserByToken(req.cookies['auth_token']);
+    if (!user) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+    if (user.preTestSubmissions.length < 1) {
+      return res.status(400).json({ message: 'At least one pre-test submission is required to complete the process.' });
+    }
+    await this.userService.completePreTest(user._id.toString());
+    return res.status(200).json({ message: 'Pre-test process completed successfully' });
+  }
+
+  @Post('pre-test')
+  async submitPreTest(@Body('text') text: string, @Req() req: Request, @Res() res: Response): Promise<any> {
+    const MIN_WORD_COUNT = 250;
+    const MAX_WORD_COUNT = 1500;
+    const wordCount = text.trim().split(/\s+/).length;
+
+    if (wordCount < MIN_WORD_COUNT || wordCount > MAX_WORD_COUNT) {
+      throw new BadRequestException(`Text must be between ${MIN_WORD_COUNT} and ${MAX_WORD_COUNT} words.`);
+    }
+
+    const user = await this.userService.findUserByToken(req.cookies['auth_token']);
+    if (!user) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+    await this.userService.addPreTestSubmission(user._id.toString(), text);
+    return res.status(200).json({ message: 'Pre-test submitted successfully' });
   }
 }

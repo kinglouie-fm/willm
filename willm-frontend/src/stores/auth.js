@@ -7,6 +7,7 @@ axios.defaults.withCredentials = true;
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     isAuthenticated: false,
+    preTestsCompleted: false,
   }),
   actions: {
     async register(username, password) {
@@ -32,6 +33,7 @@ export const useAuthStore = defineStore('auth', {
         const response = await axios.post('http://localhost:3000/user/login', { username, password });
         if (response.status === 200 && response.data.message === 'Login successful') {
           this.isAuthenticated = true;
+          this.preTestsCompleted = response.data.preTestsCompleted;
           router.push({ name: 'home' });
         } else {
           alert('Invalid username or password');
@@ -44,6 +46,7 @@ export const useAuthStore = defineStore('auth', {
       try {
         await axios.post('http://localhost:3000/user/logout');
         this.isAuthenticated = false;
+        this.preTestsCompleted = false;
         router.push({ name: 'login' });
       } catch (error) {
         alert('An error occurred. Please try again.');

@@ -4,17 +4,13 @@ import { Model } from 'mongoose';
 import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
 import { User } from './schema/user.schema';
-import { Session } from '../session/schema/session.schema';
-import { SessionService } from '../session/session.service';
 
 const JWT_SECRET = 'your_jwt_secret';
 
 @Injectable()
 export class UserService {
   constructor(
-    @InjectModel(User.name) private userModel: Model<User>,
-    @Inject(forwardRef(() => SessionService))
-    private readonly sessionService: SessionService
+    @InjectModel(User.name) private userModel: Model<User>
   ) {}
 
   async userExists(username: string): Promise<boolean> {
@@ -31,14 +27,8 @@ export class UserService {
     const newUser = new this.userModel({
       username,
       password: hashedPassword,
-      issues: [],
-      improvements: [],
-      sessions: [],
-      question_pool: [],
-      review_pool: [],
-      scores: [],
-      sections: [],
-      recent_quiz_history: []
+      preTestsCompleted: false,
+      preTestSubmissions: [],
     });
     await newUser.save();
   }
@@ -67,14 +57,26 @@ export class UserService {
     return this.userModel.findOne({ username }).exec();
   }
 
-  async handleUserLogin(username: string, password: string): Promise<{ token: string, session: Session }> {
-    const isValid = await this.validateUser(username, password);
-    if (!isValid) {
-      throw new UnauthorizedException('Invalid credentials');
+  async findUserByToken(token: string): Promise<User> {
+    const decoded = this.verifyJwtToken(token);
+    if (!decoded) {
+      throw new UnauthorizedException('Invalid token');
     }
-    const user = await this.userModel.findOne({ username });
-    const token = this.generateJwtToken(username);
-    const session = await this.sessionService.getCurrentSession(user._id.toString());
-    return { token, session };
+    return this.findUserByUsername(decoded.username);
+  }
+
+  async addPreTestSubmission(userId: string, text: string): Promise<void> {
+    const user = await this.userModel.findById(userId);
+    user.preTestSubmissions.push(text);
+    if (user.preTestSubmissions.length >= 3) {
+      user.preTestsCompleted = true;
+    }
+    await user.save();
+  }
+
+  async completePreTest(userId: string): Promise<void> {
+    const user = await this.userModel.findById(userId);
+    user.preTestsCompleted = true;
+    await user.save();
   }
 }

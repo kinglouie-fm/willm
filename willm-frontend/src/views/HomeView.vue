@@ -42,6 +42,11 @@ const userCorrection = ref('');
 const correctionError = ref('');
 let currentMistakeElement = null;
 
+const preTestText = ref('');
+const preTestCount = ref(0);
+const MIN_LENGTH = 250;
+const MAX_LENGTH = 1500;
+
 const handleSwitchChange = (event) => {
   mode.value = event.target.checked ? 'learning' : 'productive';
 };
@@ -313,23 +318,93 @@ const initPopover = () => {
   });
 };
 
+const validatePreTestTextLength = (text) => {
+  const wordCount = text.trim().split(/\s+/).length;
+  console.log(wordCount);
+  return wordCount >= MIN_LENGTH && wordCount <= MAX_LENGTH;
+};
+
+const completePreTestProcess = async () => {
+  try {
+    if (preTestCount.value >= 1) {
+      await axios.post('http://localhost:3000/user/complete-pre-test');
+      authStore.preTestsCompleted = true;
+      const preTestModal = bootstrap.Modal.getInstance(document.getElementById('preTestModal'));
+      preTestModal.hide();
+      alert('Pre-test process completed. You can start using the tool.');
+    } else {
+      alert('You need to submit at least one pre-test to complete the process.');
+    }
+  } catch (error) {
+    console.error('Error completing pre-test process:', error);
+    alert('Error completing pre-test process.');
+  }
+};
+
+const checkPreTestStatus = async () => {
+  try {
+    const response = await axios.get('http://localhost:3000/user/pre-test-status');
+    if (response.data.preTestsCompleted) {
+      authStore.preTestsCompleted = true;
+    } else {
+      authStore.preTestsCompleted = false;
+      preTestCount.value = response.data.preTestCount;
+      const preTestModal = new bootstrap.Modal(document.getElementById('preTestModal'));
+      preTestModal.show();
+    }
+  } catch (error) {
+    console.error('Error checking pre-test status:', error);
+  }
+};
+
+const submitPreTest = async () => {
+  if (!validatePreTestTextLength(preTestText.value)) {
+    alert(`Please ensure your text is between ${MIN_LENGTH} and ${MAX_LENGTH} words.`);
+    return;
+  }
+
+  try {
+    await axios.post('http://localhost:3000/user/pre-test', { text: preTestText.value });
+    preTestCount.value++;
+    preTestText.value = '';
+    if (preTestCount.value >= 3) {
+      authStore.preTestsCompleted = true;
+      const preTestModal = bootstrap.Modal.getInstance(document.getElementById('preTestModal'));
+      preTestModal.hide();
+    } else if (preTestCount.value >= 1) {
+      alert(`Pre-test ${preTestCount.value}/3 submitted. You can submit up to ${3 - preTestCount.value} more pre-tests.`);
+    }
+  } catch (error) {
+    console.error('Error submitting pre-test:', error);
+  }
+};
+
+const showPreTestModal = () => {
+  const preTestModal = new bootstrap.Modal(document.getElementById('preTestModal'));
+  preTestModal.show();
+};
+
 onMounted(() => {
-  getRecentReview();
-  activatePopovers();
+  if (!authStore.preTestsCompleted) {
+    checkPreTestStatus();
+  } else {
+    activatePopovers();
+  }
   initPopover();
 });
 </script>
 
 <template>
   <div class="container-fluid h-100 mt-4">
-    <div class="row h-50">
-      <!-- Upper Left -->
-      <div class="col-7">
-        <div class="row mx-5 mb-3">
-          <div class="col-12 p-0">
-            <div class="d-flex align-items-center mb-3">
-              <img class="info-icon me-2" src="/icons/icon-info-01.svg" data-bs-toggle="popover"
-                data-bs-placement="bottom" data-bs-content='
+    <div v-if="authStore.preTestsCompleted">
+      <div class="row h-50">
+        <!-- Upper Left -->
+        <div class="col-7">
+          <div class="row mx-5 mb-3">
+            <div class="col-12 p-0">
+              <div class="d-flex align-items-center mb-3">
+                <img class="info-icon me-2" src="/icons/icon-info-01.svg" data-bs-toggle="popover"
+                  data-bs-placement="bottom" data-bs-content='
                 <h5>How to use the tool?</h5>
                 <ul>
                   <li>Select the text section you want to correct.</li>
@@ -352,46 +427,51 @@ onMounted(() => {
                 </ul>
                 <p>To prevent bugs, please do not copy and paste the text from the input area!</p>
                 ' />
-              <h5 class="mb-0 me-auto">How to use the tool?</h5>
-              <div class="form-check form-switch d-flex align-items-center ms-auto" v-if="authStore.isAuthenticated">
-                <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault"
-                  @change="handleSwitchChange">
-                <label class="form-check-label ms-2" for="flexSwitchCheckDefault">{{ mode }}</label>
+                <h5 class="mb-0 me-auto">How to use the tool?</h5>
+                <div class="form-check form-switch d-flex align-items-center ms-auto" v-if="authStore.isAuthenticated">
+                  <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault"
+                    @change="handleSwitchChange">
+                  <label class="form-check-label ms-2" for="flexSwitchCheckDefault">{{ mode }}</label>
+                </div>
+              </div>
+              <textarea v-model="textareaSmall" class="form-control textarea-small" placeholder="Enter section..."
+                required></textarea>
+            </div>
+          </div>
+
+          <div class="row mx-5">
+            <div class="col-12 p-0">
+              <div ref="editableDiv" contenteditable="true" class="form-control textarea-big" @input="updateText">
+                {{ textareaBig }}
               </div>
             </div>
-            <textarea v-model="textareaSmall" class="form-control textarea-small" placeholder="Enter section..."
-              required></textarea>
           </div>
         </div>
-
-        <div class="row mx-5">
-          <div class="col-12 p-0">
-            <div ref="editableDiv" contenteditable="true" class="form-control textarea-big" @input="updateText">
-              {{ textareaBig }}
-            </div>
+        <!-- Upper Right -->
+        <div class="col-5 d-flex flex-column">
+          <div class="feedback flex-grow-1">
+            <component :is="selectedComponent === 'Review' ? Review : Evaluation" :reviewData="reviewData"
+              :furtherCorrectionData="furtherCorrectionData" :scores="scores" />
           </div>
         </div>
       </div>
-      <!-- Upper Right -->
-      <div class="col-5 d-flex flex-column">
-        <div class="feedback flex-grow-1">
-          <component :is="selectedComponent === 'Review' ? Review : Evaluation" :reviewData="reviewData"
-            :furtherCorrectionData="furtherCorrectionData" :scores="scores" />
+      <div class="row h-50 mt-3">
+        <!-- Lower Left -->
+        <div class="col-6">
+          <div class="mx-5">
+            <button type="button" class="btn btn-md" @click="handleCorrect">AI Evaluation</button>
+            <button type="button" class="btn btn-md" @click="generateReview">Review</button>
+          </div>
         </div>
       </div>
     </div>
-    <div class="row h-50 mt-3">
-      <!-- Lower Left -->
-      <div class="col-6">
-        <div class="mx-5">
-          <button type="button" class="btn btn-md" @click="handleCorrect">AI Evaluation</button>
-          <button type="button" class="btn btn-md" @click="generateReview">Review</button>
-        </div>
-      </div>
+    <div v-else>
+      <p>Please complete the pre-test submissions to start using the tool.</p>
+      <button type="button" class="btn" @click="showPreTestModal">Start Pre-Test</button>
     </div>
   </div>
 
-  <!-- Modal -->
+  <!-- Correction Modal -->
   <div class="modal fade" id="correctionModal" tabindex="-1" aria-labelledby="correctionModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -410,6 +490,48 @@ onMounted(() => {
         <div class="modal-footer">
           <button type="button" class="btn" data-bs-dismiss="modal">Close</button>
           <button type="button" class="btn" @click="applyCorrection">Apply Correction</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pre-test Modal -->
+  <div class="modal fade" id="preTestModal" tabindex="-1" aria-labelledby="preTestModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <img class="info-icon me-2" src="/icons/icon-info-01.svg" data-bs-toggle="popover" data-bs-placement="bottom"
+            data-bs-content='
+              <h5>Length Requirements:</h5>
+              <p>Minimum Length: 250 words<br>Maximum Length: 1500 words</p>
+              <h5>Number of Samples:</h5>
+              <p>You can submit up to 3 different writing samples.</p>
+              <h5>Consistency for Post-Test:</h5>
+              <p>You must use the same topic and sections for both the pre-test and post-test writing samples to
+                ensure comparability.</p>
+              <h5>Writing Requirements:</h5>
+              <p>Write the samples on your own without the help of writing improvement tools. This is crucial for an
+                effective evaluation.</p>
+              <h5>Suggested Writing Types:</h5>
+              <p><strong>Research Paper Excerpts:</strong> Sections from a research paper, such as the introduction,
+                literature review, or methodology.<br>
+                <strong>Essays:</strong> Academic essays on a chosen topic, with a clear thesis and supporting
+                arguments.<br>
+                <strong>Reports:</strong> Academic or project reports, including executive summaries or analysis sections.
+              </p>
+          ' />
+          <h5 class="modal-title" id="preTestModalLabel">Pre-Test Submission</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <textarea v-model="preTestText" class="form-control" rows="20"
+            placeholder="Enter your text here..."></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn" v-if="preTestCount > 0" @click="completePreTestProcess">Complete
+            Pre-Test</button>
+          <button type="button" class="btn" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn" @click="submitPreTest">Submit</button>
         </div>
       </div>
     </div>

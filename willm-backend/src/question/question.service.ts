@@ -11,11 +11,9 @@ export class QuestionService {
   private questionTypes = [
     'revision',
     'synonyms',
-    // 'antonyms',
     'academic_sentence',
     'argument_strengthening',
     'peer_review',
-    'synthesis',
   ];
   private currentQuestionIndex = 0;
 

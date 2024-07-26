@@ -435,15 +435,6 @@ Options: [The options enumerated with A, B, C, D, E]
 Answer: [The correct synonym]
 """
 
-# ANTONYMS_PROMPT = """
-# Generate a multiple choice question for identifying antonyms. Provide a word and five options, with only one correct antonym.
-
-# Output format:
-# Type: antonyms
-# Question: [The word and options]
-# Answer: [The correct antonym]
-# """
-
 ACADEMIC_SENTENCE_PROMPT = """
 Generate a sentence that needs to be paraphrased into academic style. Provide the original sentence and the academic version of it.
 
@@ -468,15 +459,7 @@ Generate a multiple choice question for peer review feedback. Provide a section 
 
 Output format:
 Type: peer_review
-Question: [The section and options]
-Answer: [The correct feedback]
-"""
-
-SYNTHESIS_PROMPT = """
-Generate a synthesis question that requires combining two or more concepts or pieces of information. Provide the concepts and the synthesized idea.
-
-Output format:
-Type: synthesis
-Question: [The concepts]
-Answer: [The synthesized idea]
+Question: [The section]
+Options: [The options enumerated with A, B, C, D, E]
+Answer: [The correct option]
 """

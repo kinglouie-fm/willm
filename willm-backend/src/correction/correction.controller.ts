@@ -22,10 +22,10 @@ export class CorrectionController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  async handleCorrection(@Body() body: { text: string, section: string, mode: string }, @Req() req: Request, @Res() res: Response) {
+  async handleCorrection(@Body() body: { text: string, section: string, mode: string, language: string }, @Req() req: Request, @Res() res: Response) {
     console.log("Handling correction request");
-
-    const initialResult = await this.correctionService.callPythonService(body.text, body.section, 'initial');
+    console.log(body.language);
+    const initialResult = await this.correctionService.callPythonService(body.text, body.section, 'initial', body.language);
     const correctedText = initialResult.correctedText;
 
     const mistakes = initialResult.mistakes || [];
@@ -53,6 +53,7 @@ export class CorrectionController {
       section_id: section._id,
       content: body.text,
       mode: body.mode,
+      language: body.language,
     });
 
     // Generate scores for the text and save them with the text_id
@@ -86,7 +87,7 @@ export class CorrectionController {
     if (correctedText) {
       try {
         console.log("Performing further correction");
-        furtherCorrectionResult = await this.correctionService.callPythonService(correctedText, body.section, 'further');
+        furtherCorrectionResult = await this.correctionService.callPythonService(correctedText, body.section, 'further', body.language);
 
         const { organization, coherence, writingStyle } = furtherCorrectionResult;
 

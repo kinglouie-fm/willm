@@ -28,8 +28,10 @@ openai.api_key = os.getenv('FLASK_API_KEY')
 chromadb_client = chromadb.Client()
 collection = chromadb_client.get_or_create_collection(name='questions')
 
-async def fetch_openai_response(session, system_prompt, prompt_template, data, section=None):
-    prompt = prompt_template.format(text=data, section=section)
+async def fetch_openai_response(session, system_prompt_template, prompt_template, data, section=None, language='English'):
+    system_prompt = system_prompt_template.format(language=language)
+    prompt = prompt_template.format(text=data, section=section, language=language)
+    logging.info(f"Received language: {language}")
     async with session.post(
         'https://api.openai.com/v1/chat/completions',
         headers={
@@ -49,11 +51,13 @@ async def fetch_openai_response(session, system_prompt, prompt_template, data, s
         logging.info(f"Response JSON: {response_json}")
         return response_json['choices'][0]['message']['content']
 
-async def handle_unified(session, data):
-    return await fetch_openai_response(session, SYSTEM_PROMPT_1, UNIFIED_PROMPT, data)
+async def handle_unified(session, data, language):
+    logging.info(f"Received language for unified: {language}")
+    return await fetch_openai_response(session, SYSTEM_PROMPT_1, UNIFIED_PROMPT, data, language=language)
 
-async def handle_unified_2(session, data, section):
-    return await fetch_openai_response(session, SYSTEM_PROMPT_2, UNIFIED_PROMPT_2, data, section)
+async def handle_unified_2(session, data, section, language):
+    logging.info(f"Received language for unified 2: {language}")
+    return await fetch_openai_response(session, SYSTEM_PROMPT_2, UNIFIED_PROMPT_2, data, section, language=language)
 
 async def handle_organization(session, data, section):
     return await fetch_openai_response(session, SYSTEM_PROMPT_2, ORGANIZATION_PROMPT, data, section)
@@ -71,12 +75,13 @@ async def handle_scores(session, data):
 @app.route('/handle-correction', methods=['POST'])
 async def handle_correction():
     data = request.json.get('text')
+    language = request.json.get('language')
 
     if not data:
         return jsonify({"error": "No text provided"}), 400
 
     async with aiohttp.ClientSession() as session:
-        unified_result = await handle_unified(session, data)
+        unified_result = await handle_unified(session, data, language)
 
     mistakes, corrections, explanations, categories, contexts, corrected_text = process_initial_result(unified_result)
 
@@ -93,12 +98,13 @@ async def handle_correction():
 async def handle_further_correction():
     data = request.json.get('text')
     section = request.json.get('section')
+    language = request.json.get('language')
 
     if not data:
         return jsonify({"error": "No text provided"}), 400
 
     async with aiohttp.ClientSession() as session:
-        unified_result = await handle_unified_2(session, data, section)
+        unified_result = await handle_unified_2(session, data, section, language)
 
     feedback = process_further_result(unified_result)
 

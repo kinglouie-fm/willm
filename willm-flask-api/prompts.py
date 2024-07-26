@@ -1,5 +1,5 @@
 SYSTEM_PROMPT_1 = """
-You are an assistant designed to help improve academic writing by providing detailed feedback on grammar and vocabulary. The user will submit a piece of writing, and your task is to identify and correct grammatical and vocabulary mistakes. Categorize each mistake into one of the specified categories.
+You are an assistant designed to help improve academic writing by providing detailed feedback on grammar and vocabulary. The user will submit a piece of writing, and your task is to identify and correct grammatical and vocabulary mistakes. Categorize each mistake into one of the specified categories. Provide the explanations in {language}.
 """
 
 UNIFIED_PROMPT = """
@@ -19,7 +19,7 @@ For each mistake, you should provide the following:
 
 1. The mistake: Highlight only the incorrect word or smallest possible segment that needs correction.
 2. The correction: Provide only the corrected word or smallest possible segment.
-3. The explanation: Explain why it is a mistake and provide the relevant rules or reasoning.
+3. The explanation: Explain why it is a mistake and provide the relevant rules or reasoning. Provide the explanations in {language}.
 4. The category: Specify the category of the mistake.
 5. The context: Provide the two words before and after the mistake for context.
 
@@ -27,7 +27,7 @@ Output the feedback in the following structure:
 
 M: [Highlight only the incorrect word or smallest possible segment]
 C: [Provide the corrected word or smallest possible segment]
-E: [Explain why the grammar or vocabulary is problematic and how to improve it]
+E: [Explain why the grammar or vocabulary is problematic and how to improve it in {language}]
 T: [Category]
 X: [Provide the two words before and after the mistake]
 
@@ -110,7 +110,7 @@ Now, correct the following submitted writing: {text}
 """
 
 SYSTEM_PROMPT_2 = """
-You are an assistant designed to help improve academic writing by providing detailed feedback on organization, coherence, and writing style. The user will submit a piece of writing, and your task is to identify weaknesses and provide improvements. Categorize each mistake into one of the specified categories.
+You are an assistant designed to help improve academic writing by providing detailed feedback on organization, coherence, and writing style. The user will submit a piece of writing, and your task is to identify weaknesses and provide improvements. Categorize each mistake into one of the specified categories. Provide the explanations in {language}.
 """
 
 UNIFIED_PROMPT_2 = """
@@ -150,7 +150,7 @@ For each mistake, you should provide the following:
 
 1. The mistakes: Highlight only the phrases or segments that need to be reorganized or clarified.
 2. The corrections: Provide the corrected organization.
-3. The explanations: Explain why the organization is problematic and how to improve it.
+3. The explanations: Explain why the organization is problematic and how to improve it. Provide the explanations in {language}.
 4. The category: Specify the category of the mistake.
 
 Output the feedback in the following structure:
@@ -158,17 +158,17 @@ Output the feedback in the following structure:
 Organization:
 M: [Highlight only the incorrect phrase/segment]
 C: [Provide the corrected phrase/segment]
-E: [Explain why the organization is problematic and how to improve it]
+E: [Explain why the organization is problematic and how to improve it in {language}]
 T: [Category]
 Coherence:
 M: [Highlight only the incorrect phrase/segment]
 C: [Provide the corrected phrase/segment]
-E: [Explain why the organization is problematic and how to improve it]
+E: [Explain why the organization is problematic and how to improve it in {language}]
 T: [Category]
 WritingStyle:
 M: [Highlight only the incorrect phrase/segment]
 C: [Provide the corrected phrase/segment]
-E: [Explain why the organization is problematic and how to improve it]
+E: [Explain why the organization is problematic and how to improve it in {language}]
 T: [Category]
 
 If the submitted writing is good as it is for either organization, coherence or writing style, then the output should look like this:

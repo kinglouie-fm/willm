@@ -6,6 +6,7 @@ import { useAuthStore } from '../stores/auth';
 import Evaluation from '@/components/Evaluation.vue';
 import Review from '@/components/Review.vue';
 import { isAfter } from 'date-fns';
+import { message } from 'ant-design-vue';
 
 const textareaSmall = ref('Introduction');
 const textareaBig = ref();
@@ -53,6 +54,11 @@ const postTestSection = ref('');
 const postTestSections = ref([]);
 const preTestSections = ref([]);
 
+const languages = [
+  'English', 'Albanian', 'Amharic', 'Arabic', 'Armenian', 'Bengali', 'Bosnian', 'Bulgarian', 'Burmese', 'Catalan', 'Chinese', 'Croatian', 'Czech', 'Danish', 'Dutch', 'Estonian', 'Finnish', 'French', 'Georgian', 'German', 'Greek', 'Gujarati', 'Hindi', 'Hungarian', 'Icelandic', 'Indonesian', 'Italian', 'Japanese', 'Kannada', 'Kazakh', 'Korean', 'Latvian', 'Lithuanian', 'Macedonian', 'Malay', 'Malayalam', 'Marathi', 'Mongolian', 'Norwegian', 'Persian', 'Polish', 'Portuguese', 'Punjabi', 'Romanian', 'Russian', 'Serbian', 'Slovak', 'Slovenian', 'Somali', 'Spanish', 'Swahili', 'Swedish', 'Tagalog', 'Tamil', 'Telugu', 'Thai', 'Turkish', 'Ukrainian', 'Urdu', 'Vietnamese'
+];
+const selectedLanguage = ref('English');
+
 const handleSwitchChange = (event) => {
   mode.value = event.target.checked ? 'learning' : 'productive';
 };
@@ -84,17 +90,22 @@ const handleCorrect = async () => {
   writingStyleMistakes.value = [];
   writingStyleCorrections.value = [];
   writingStyleExplanations.value = [];
+  furtherCorrectionData.value = {
+    organization: { mistakes: [], corrections: [], explanations: [], categories: [] },
+    coherence: { mistakes: [], corrections: [], explanations: [], categories: [] },
+    writingStyle: { mistakes: [], corrections: [], explanations: [], categories: [] },
+  };
 
   try {
+    message.loading("Evaluating text...");
     const correctionResponse = await axios.post('http://localhost:3000/correct', {
       text: textToCorrect,
       section: textareaSmall.value,
       mode: mode.value,
+      language: selectedLanguage.value
     });
 
     console.log(correctionResponse.data);
-
-    const textId = correctionResponse.data.textId;
 
     // Process initial correction response
     mistakes.value = correctionResponse.data.mistakes;
@@ -502,6 +513,11 @@ onMounted(async () => {
                     @change="handleSwitchChange">
                   <label class="form-check-label ms-2" for="flexSwitchCheckDefault">{{ mode }}</label>
                 </div>
+              </div>
+              <div class="d-flex align-items-center mb-3">
+                <select v-model="selectedLanguage" class="form-select" style="width: auto;">
+                  <option v-for="language in languages" :key="language" :value="language">{{ language }}</option>
+                </select>
               </div>
               <textarea v-model="textareaSmall" class="form-control textarea-small" placeholder="Enter section..."
                 required></textarea>

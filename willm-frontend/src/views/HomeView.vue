@@ -487,7 +487,12 @@ onMounted(async () => {
                   data-bs-placement="bottom" data-bs-content='
                 <h5>How to use the tool?</h5>
                 <ul>
-                  <li>Select the text section you want to correct.</li>
+                  <li>Select your preferred language from the dropdown menu.
+                    <ul>
+                      <li>This allows you to receive explanations in the language you are most comfortable with.</li>
+                    </ul>
+                  </li>
+                  <li>Enter the text section you want to correct.</li>
                   <li>Enter your text in the large text area.</li>
                   <li>
                     Click <b>"AI Evaluation"</b> to receive scores and explanations.

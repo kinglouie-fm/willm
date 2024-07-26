@@ -14,7 +14,7 @@ const getSections = async () => {
         const response = await axios.get('http://localhost:3000/score/sections');
         console.log("sections: ", response);
         if (response.data.length === 0) {
-            alert("No sections available for comparison. Please ensure you have scores older than 5 days for a section.");
+            message.info("No sections available for comparison. Please ensure you have scores older than 5 days for a section.", 7);
         } else {
             sections.value = response.data;
         }
@@ -27,7 +27,6 @@ const fetchComparison = async () => {
     if (selectedSection.value) {
         try {
             const response = await axios.get(`http://localhost:3000/score/comparison/${selectedSection.value}`, { withCredentials: true });
-            console.log("Comparison data: ", response.data);
             if (response.data.message) {
                 message.value = response.data.message;
                 comparisonData.value = null;

@@ -68,7 +68,7 @@ const selectedComponent = ref('Review');
 const handleCorrect = async () => {
   let textToCorrect = editableDiv.value.innerText;
   if (!textToCorrect) {
-    alert('Please enter some text to correct');
+    message.info('Please enter some text to correct');
     return;
   }
 
@@ -97,7 +97,7 @@ const handleCorrect = async () => {
   };
 
   try {
-    message.loading("Evaluating text...");
+    message.loading("Evaluating text...", 5);
     const correctionResponse = await axios.post('http://localhost:3000/correct', {
       text: textToCorrect,
       section: textareaSmall.value,
@@ -171,6 +171,7 @@ const generateReview = async () => {
       reviewData.value = 'Not enough sessions to generate the review';
     } else {
       reviewData.value = response.data.reviewData;
+      message.success("Review generated successfully");
     }
     selectedComponent.value = 'Review';
   } catch (error) {
@@ -288,7 +289,7 @@ const limitTextLength = () => {
   let textContent = editableDiv.value.innerText;
   if (textContent.length > maxLength) {
     editableDiv.value.innerText = textContent.slice(0, maxLength);
-    alert(`Maximum length of ${maxLength} characters reached.`);
+    message.info(`Maximum length of ${maxLength} characters reached.`);
   }
 };
 
@@ -348,13 +349,13 @@ const completePreTestProcess = async () => {
       const preTestModal = bootstrap.Modal.getInstance(document.getElementById('preTestModal'));
       preTestModal.hide();
       location.reload();
-      alert('Pre-test process completed. You can start using the tool.');
+      message.success("Pre-test process completed. You can start using the tool.");
     } else {
-      alert('You need to submit at least one pre-test to complete the process.');
+      message.info("You need to submit at least one pre-test to complete the process.");
     }
   } catch (error) {
+    message.error("Error completing pre-test process.");
     console.error('Error completing pre-test process:', error);
-    alert('Error completing pre-test process.');
   }
 };
 
@@ -376,12 +377,12 @@ const checkPreTestStatus = async () => {
 
 const submitPreTest = async () => {
   if (!preTestSection.value) {
-    alert('Please enter the section for the text.');
+    message.info('Please enter the section for the text.');
     return;
   }
 
   if (!validatePreTestTextLength(preTestText.value)) {
-    alert(`Please ensure your text is between ${MIN_LENGTH} and ${MAX_LENGTH} words.`);
+    message.info(`Please ensure your text is between ${MIN_LENGTH} and ${MAX_LENGTH} words.`, 5);
     return;
   }
 
@@ -396,7 +397,7 @@ const submitPreTest = async () => {
       preTestModal.hide();
       location.reload();
     } else if (preTestCount.value >= 1) {
-      alert(`Pre-test ${preTestCount.value}/3 submitted. You can submit up to ${3 - preTestCount.value} more pre-tests.`);
+      message.success(`Pre-test ${preTestCount.value}/3 submitted. You can submit up to ${3 - preTestCount.value} more pre-tests.`, 5)
     }
   } catch (error) {
     console.error('Error submitting pre-test:', error);
@@ -411,7 +412,7 @@ const showPreTestModal = () => {
 
 const submitPostTest = async () => {
   if (!validatePreTestTextLength(postTestText.value)) {
-    alert(`Please ensure your text is between ${MIN_LENGTH} and ${MAX_LENGTH} words.`);
+    message.info(`Please ensure your text is between ${MIN_LENGTH} and ${MAX_LENGTH} words.`, 5);
     return;
   }
 
@@ -419,7 +420,7 @@ const submitPostTest = async () => {
   const currentPostTestSection = postTestSection.value.trim().toLowerCase();
 
   if (currentPostTestSection !== nextPreTestSection) {
-    alert(`Entered section does not match the expected pre-test section: ${nextPreTestSection}`);
+    message.info(`Entered section does not match the expected pre-test section: ${nextPreTestSection}`, 5);
     return;
   }
 
@@ -427,20 +428,18 @@ const submitPostTest = async () => {
     const response = await axios.post('http://localhost:3000/user/post-test', { text: postTestText.value, section: postTestSection.value });
 
     if (response.data.postTestsCompleted) {
-      alert('Post-test submitted successfully. You have completed the post-tests and will be logged out.');
+      message.success('Post-test submitted successfully. You have completed the post-tests and will be logged out.');
       await authStore.logout();
     } else {
-      alert('Post-test submitted successfully.');
+      message.success('Post-test submitted successfully.');
     }
 
     postTestText.value = '';
     postTestSections.value.push(postTestSection.value);
     postTestSection.value = '';
-    const postTestModal = bootstrap.Modal.getInstance(document.getElementById('postTestModal'));
-    postTestModal.hide();
   } catch (error) {
     console.error('Error submitting post-test:', error);
-    alert('Error submitting post-test.');
+    message.error('Error submitting post-test.');
   }
 };
 

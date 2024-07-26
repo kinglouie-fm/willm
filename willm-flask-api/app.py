@@ -13,9 +13,10 @@ from prompts import (SYSTEM_PROMPT_1, SYSTEM_PROMPT_2, SYSTEM_PROMPT_4, SYSTEM_P
                      REVISION_PROMPT, SYNONYMS_PROMPT, ANTONYMS_PROMPT, ACADEMIC_SENTENCE_PROMPT, 
                      ARGUMENT_STRENGTHENING_PROMPT, PEER_REVIEW_PROMPT, SYNTHESIS_PROMPT)
 import logging
-# from langchain_community.embeddings import OpenAIEmbeddings
+from langchain_chroma import Chroma
 from langchain_openai import OpenAIEmbeddings
 import chromadb
+from chromadb.config import Settings
 
 load_dotenv()
 
@@ -25,8 +26,12 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 openai.api_key = os.getenv('FLASK_API_KEY')
-chromadb_client = chromadb.Client()
+chromadb_client = chromadb.HttpClient(host="chromaDB", port = 8000, settings=Settings(allow_reset=True, anonymized_telemetry=False))
 collection = chromadb_client.get_or_create_collection(name='questions')
+embedding_function = OpenAIEmbeddings(api_key=os.getenv('FLASK_API_KEY'))
+
+# LangChain Chroma setup
+db = Chroma(client=chromadb_client, collection_name='questions', embedding_function=embedding_function)
 
 async def fetch_openai_response(session, system_prompt_template, prompt_template, data, section=None, language='English'):
     system_prompt = system_prompt_template.format(language=language)
@@ -348,7 +353,7 @@ def generate_question():
 
     # Store the embedded question in ChromaDB
     document_id = str(uuid.uuid4())
-    collection.add(
+    db.add(
         documents=[generated_question],
         embeddings=[embedded_question],
         ids=[document_id],

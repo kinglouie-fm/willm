@@ -8,3 +8,4 @@ aiohttp==3.9.5
 chromadb==0.5.4
 langchain-community==0.2.5
 tiktoken==0.7.0
+langchain-chroma==0.1.2

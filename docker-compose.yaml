@@ -1,12 +1,4 @@
 services:
-  flask-api:
-    build:
-      context: ./willm-flask-api
-    ports:
-      - "8000:8000"
-    environment:
-      - FLASK_API_KEY=${FLASK_API_KEY}
-
   nestjs:
     build:
       context: ./willm-backend
@@ -23,5 +15,38 @@ services:
     volumes:
       - mongodb-data:/data/db
 
+  flask-api:
+    build:
+      context: ./willm-flask-api
+    ports:
+      - "8000:8000"
+    environment:
+      - FLASK_API_KEY=${FLASK_API_KEY}
+    depends_on:
+      chromadb:
+        condition: service_healthy
+
+  chromadb:
+    image: chromadb/chroma:latest
+    volumes:
+      - chroma-data:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+      - ALLOW_RESET=TRUE
+      - PERSIST_DIRECTORY=/chroma/chroma
+    ports:
+      - "8001:8000"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -f http://localhost:8000/api/v1/heartbeat || exit 1"
+        ]
+      interval: 60s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+
 volumes:
   mongodb-data:
+  chroma-data:

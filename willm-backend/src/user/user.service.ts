@@ -84,11 +84,13 @@ export class UserService {
 
   async addPostTestSubmission(userId: string, text: string, section: string): Promise<void> {
     const user = await this.userModel.findById(userId);
-    const preTestSections = user.preTestSubmissions.map(submission => submission.section);
-    const postTestSections = user.postTestSubmissions.map(submission => submission.section);
+    const preTestSections = user.preTestSubmissions.map(submission => submission.section.trim().toLowerCase());
+    const postTestSections = user.postTestSubmissions.map(submission => submission.section.trim().toLowerCase());
+
+    const normalizedSection = section.trim().toLowerCase();
 
     // Ensure that the next section in post-test submissions matches the corresponding pre-test section
-    if (postTestSections.length >= preTestSections.length || preTestSections[postTestSections.length] !== section) {
+    if (postTestSections.length >= preTestSections.length || preTestSections[postTestSections.length] !== normalizedSection) {
       throw new Error('Section does not match the expected pre-test section order.');
     }
 

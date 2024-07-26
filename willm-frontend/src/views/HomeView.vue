@@ -407,15 +407,14 @@ const submitPostTest = async () => {
     return;
   }
 
-  const nextPreTestSection = preTestSections.value[postTestSections.value.length];
-  if (!nextPreTestSection || postTestSection.value !== nextPreTestSection) {
-    console.log(!nextPreTestSection)
-    console.log(postTestSection.value !== nextPreTestSection)
-    console.log(postTestSection.value)
-    console.log(nextPreTestSection)
-    alert(`Entered section does not match the expected pre-test section: ${nextPreTestSection || 'undefined'}`);
+  const nextPreTestSection = preTestSections.value[postTestSections.value.length]?.trim().toLowerCase();
+  const currentPostTestSection = postTestSection.value.trim().toLowerCase();
+
+  if (currentPostTestSection !== nextPreTestSection) {
+    alert(`Entered section does not match the expected pre-test section: ${nextPreTestSection.charAt(0).toUpperCase() + nextPreTestSection.slice(1)}`);
     return;
   }
+
 
   try {
     await axios.post('http://localhost:3000/user/post-test', { text: postTestText.value, section: postTestSection.value });

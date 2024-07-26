@@ -18,7 +18,7 @@ const navigateTo = (path) => {
     router.push(path);
 };
 
-const isPostTestEnabled = ref(isAfter(new Date(), new Date('2023-08-28')));
+const isPostTestEnabled = ref(isAfter(new Date(), new Date('2024-08-28')));
 
 const showPostTestModal = () => {
     if (isPostTestEnabled.value) {

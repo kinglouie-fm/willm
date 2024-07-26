@@ -438,7 +438,7 @@ const submitPostTest = async () => {
 
 const fetchPreTestSections = async () => {
   const currentDate = new Date();
-  const enableDate = new Date('2023-08-28');
+  const enableDate = new Date('2024-08-28');
   if (isAfter(currentDate, enableDate)) {
     try {
       const preTestResponse = await axios.get('http://localhost:3000/user/pre-test-sections');

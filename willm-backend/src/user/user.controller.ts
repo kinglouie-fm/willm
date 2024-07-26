@@ -128,7 +128,7 @@ export class UserController {
     const MAX_WORD_COUNT = 1500;
     const wordCount = text.trim().split(/\s+/).length;
     const currentDate = new Date();
-    const enableDate = parseISO('2023-08-28');
+    const enableDate = parseISO('2024-08-28');
 
     if (!isAfter(currentDate, enableDate)) {
       return res.status(400).json({ message: 'Post-tests can only be submitted after August 28th.' });

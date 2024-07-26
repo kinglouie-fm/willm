@@ -144,11 +144,11 @@ export class UserController {
     }
 
     try {
-      await this.userService.addPostTestSubmission(user._id.toString(), text, section);
-      if (user.postTestsCompleted) {
+      const updatedUser = await this.userService.addPostTestSubmission(user._id.toString(), text, section);
+      if (updatedUser.postTestsCompleted) {
         res.clearCookie('auth_token');
       }
-      return res.status(200).json({ message: 'Post-test submitted successfully' });
+      return res.status(200).json({ message: 'Post-test submitted successfully', postTestsCompleted: updatedUser.postTestsCompleted });
     } catch (error) {
       return res.status(400).json({ message: error.message });
     }

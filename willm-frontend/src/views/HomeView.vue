@@ -330,7 +330,6 @@ const initPopover = () => {
 
 const validatePreTestTextLength = (text) => {
   const wordCount = text.trim().split(/\s+/).length;
-  console.log(wordCount);
   return wordCount >= MIN_LENGTH && wordCount <= MAX_LENGTH;
 };
 
@@ -411,24 +410,31 @@ const submitPostTest = async () => {
   const currentPostTestSection = postTestSection.value.trim().toLowerCase();
 
   if (currentPostTestSection !== nextPreTestSection) {
-    alert(`Entered section does not match the expected pre-test section: ${nextPreTestSection.charAt(0).toUpperCase() + nextPreTestSection.slice(1)}`);
+    alert(`Entered section does not match the expected pre-test section: ${nextPreTestSection}`);
     return;
   }
 
-
   try {
-    await axios.post('http://localhost:3000/user/post-test', { text: postTestText.value, section: postTestSection.value });
+    const response = await axios.post('http://localhost:3000/user/post-test', { text: postTestText.value, section: postTestSection.value });
+
+    if (response.data.postTestsCompleted) {
+      alert('Post-test submitted successfully. You have completed the post-tests and will be logged out.');
+      await authStore.logout();
+    } else {
+      alert('Post-test submitted successfully.');
+    }
+
     postTestText.value = '';
-    postTestSection.value = '';
     postTestSections.value.push(postTestSection.value);
+    postTestSection.value = '';
     const postTestModal = bootstrap.Modal.getInstance(document.getElementById('postTestModal'));
     postTestModal.hide();
-    alert('Post-test submitted successfully.');
   } catch (error) {
     console.error('Error submitting post-test:', error);
     alert('Error submitting post-test.');
   }
 };
+
 
 const fetchPreTestSections = async () => {
   const currentDate = new Date();

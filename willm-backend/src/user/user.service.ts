@@ -82,7 +82,7 @@ export class UserService {
     await user.save();
   }
 
-  async addPostTestSubmission(userId: string, text: string, section: string): Promise<void> {
+  async addPostTestSubmission(userId: string, text: string, section: string): Promise<User> {
     const user = await this.userModel.findById(userId);
     const preTestSections = user.preTestSubmissions.map(submission => submission.section.trim().toLowerCase());
     const postTestSections = user.postTestSubmissions.map(submission => submission.section.trim().toLowerCase());
@@ -101,7 +101,8 @@ export class UserService {
     }
 
     await user.save();
-  }
+    return user;
+}
 
   async getPreTestSections(userId: string): Promise<string[]> {
     const user = await this.userModel.findById(userId);

@@ -30,7 +30,7 @@ chromadb_client = chromadb.HttpClient(host="chromaDB", port = 8000, settings=Set
 collection = chromadb_client.get_or_create_collection(name='questions')
 embedding_function = OpenAIEmbeddings(api_key=os.getenv('FLASK_API_KEY'))
 
-# LangChain Chroma setup
+# LangChain Chroma setup - for similarity search
 db = Chroma(client=chromadb_client, collection_name='questions', embedding_function=embedding_function)
 
 async def fetch_openai_response(session, system_prompt_template, prompt_template, data, section=None, language='English'):
@@ -353,7 +353,7 @@ def generate_question():
 
     # Store the embedded question in ChromaDB
     document_id = str(uuid.uuid4())
-    db.add(
+    collection.add(
         documents=[generated_question],
         embeddings=[embedded_question],
         ids=[document_id],

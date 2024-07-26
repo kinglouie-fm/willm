@@ -5,6 +5,7 @@ import * as bootstrap from 'bootstrap';
 import { useAuthStore } from '../stores/auth';
 import Evaluation from '@/components/Evaluation.vue';
 import Review from '@/components/Review.vue';
+import { isAfter } from 'date-fns';
 
 const textareaSmall = ref('Introduction');
 const textareaBig = ref();
@@ -47,6 +48,10 @@ const preTestText = ref('');
 const preTestCount = ref(0);
 const MIN_LENGTH = 250;
 const MAX_LENGTH = 1500;
+const postTestText = ref('');
+const postTestSection = ref('');
+const postTestSections = ref([]);
+const preTestSections = ref([]);
 
 const handleSwitchChange = (event) => {
   mode.value = event.target.checked ? 'learning' : 'productive';
@@ -395,6 +400,53 @@ const showPreTestModal = () => {
   preTestModal.show();
 };
 
+
+const submitPostTest = async () => {
+  if (!validatePreTestTextLength(postTestText.value)) {
+    alert(`Please ensure your text is between ${MIN_LENGTH} and ${MAX_LENGTH} words.`);
+    return;
+  }
+
+  const nextPreTestSection = preTestSections.value[postTestSections.value.length];
+  if (!nextPreTestSection || postTestSection.value !== nextPreTestSection) {
+    console.log(!nextPreTestSection)
+    console.log(postTestSection.value !== nextPreTestSection)
+    console.log(postTestSection.value)
+    console.log(nextPreTestSection)
+    alert(`Entered section does not match the expected pre-test section: ${nextPreTestSection || 'undefined'}`);
+    return;
+  }
+
+  try {
+    await axios.post('http://localhost:3000/user/post-test', { text: postTestText.value, section: postTestSection.value });
+    postTestText.value = '';
+    postTestSection.value = '';
+    postTestSections.value.push(postTestSection.value);
+    const postTestModal = bootstrap.Modal.getInstance(document.getElementById('postTestModal'));
+    postTestModal.hide();
+    alert('Post-test submitted successfully.');
+  } catch (error) {
+    console.error('Error submitting post-test:', error);
+    alert('Error submitting post-test.');
+  }
+};
+
+const fetchPreTestSections = async () => {
+  const currentDate = new Date();
+  const enableDate = new Date('2023-08-28');
+  if (isAfter(currentDate, enableDate)) {
+    try {
+      const preTestResponse = await axios.get('http://localhost:3000/user/pre-test-sections');
+      preTestSections.value = preTestResponse.data.sections;
+
+      const postTestResponse = await axios.get('http://localhost:3000/user/post-test-sections');
+      postTestSections.value = postTestResponse.data.sections;
+    } catch (error) {
+      console.error('Error fetching sections:', error);
+    }
+  }
+};
+
 onMounted(async () => {
   await authStore.checkAuthStatus();
   if (!authStore.preTestsCompleted) {
@@ -403,6 +455,7 @@ onMounted(async () => {
     activatePopovers();
   }
   initPopover();
+  await fetchPreTestSections();
 });
 </script>
 
@@ -546,6 +599,58 @@ onMounted(async () => {
             Pre-Test</button>
           <button type="button" class="btn" data-bs-dismiss="modal">Close</button>
           <button type="button" class="btn" @click="submitPreTest">Submit</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Post-Test Modal -->
+  <div class="modal fade" id="postTestModal" tabindex="-1" aria-labelledby="postTestModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <img class="info-icon me-2" src="/icons/icon-info-01.svg" data-bs-toggle="popover" data-bs-placement="bottom"
+            data-bs-content='
+        <h5>Length Requirements:</h5>
+        <p>Minimum Length: 250 words<br>Maximum Length: 1500 words</p>
+        <h5>Number of Samples:</h5>
+        <p>You can submit up to 3 different writing samples.</p>
+        <h5>Consistency for Post-Test:</h5>
+        <p>You must use the same topic and sections for both the pre-test and post-test writing samples to
+          ensure comparability.</p>
+        <h5>Writing Requirements:</h5>
+        <p>Write the samples on your own without the help of writing improvement tools. This is crucial for an
+          effective evaluation.</p>
+        <h5>Suggested Writing Types:</h5>
+        <p><strong>Research Paper Excerpts:</strong> Sections from a research paper, such as the introduction,
+          literature review, or methodology.<br>
+          <strong>Essays:</strong> Academic essays on a chosen topic, with a clear thesis and supporting
+          arguments.<br>
+          <strong>Reports:</strong> Academic or project reports, including executive summaries or analysis sections.
+        </p>
+    ' />
+          <h5 class="modal-title" id="postTestModalLabel">Post-Test Submission</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div v-if="preTestSections.length > 0">
+            <p>Please enter the text for the following sections in the same order as the pre-test:</p>
+            <ul>
+              <li v-for="(section, index) in preTestSections" :key="index">{{ section }}</li>
+            </ul>
+            <textarea v-model="postTestSection" class="form-control mb-2" rows="1"
+              placeholder="Enter the section..."></textarea>
+            <textarea v-model="postTestText" class="form-control" rows="20"
+              placeholder="Enter your text here..."></textarea>
+          </div>
+          <div v-else>
+            <p>No pre-test sections found. Please complete the pre-test first.</p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn" @click="submitPostTest"
+            :disabled="preTestSections.length === 0">Submit</button>
         </div>
       </div>
     </div>

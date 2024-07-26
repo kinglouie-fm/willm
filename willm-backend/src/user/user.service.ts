@@ -29,6 +29,8 @@ export class UserService {
       password: hashedPassword,
       preTestsCompleted: false,
       preTestSubmissions: [],
+      postTestsCompleted: false,
+      postTestSubmissions: [],
     });
     await newUser.save();
   }
@@ -66,18 +68,41 @@ export class UserService {
   }
 
   async addPreTestSubmission(userId: string, text: string, section: string): Promise<void> {
-  const user = await this.userModel.findById(userId);
-  user.preTestSubmissions.push({ text, section });
-  if (user.preTestSubmissions.length >= 3) {
-    user.preTestsCompleted = true;
+    const user = await this.userModel.findById(userId);
+    user.preTestSubmissions.push({ text, section });
+    if (user.preTestSubmissions.length >= 3) {
+      user.preTestsCompleted = true;
+    }
+    await user.save();
   }
-  await user.save();
-}
-
 
   async completePreTest(userId: string): Promise<void> {
     const user = await this.userModel.findById(userId);
     user.preTestsCompleted = true;
     await user.save();
+  }
+
+  async addPostTestSubmission(userId: string, text: string, section: string): Promise<void> {
+    const user = await this.userModel.findById(userId);
+    const preTestSections = user.preTestSubmissions.map(submission => submission.section);
+    const postTestSections = user.postTestSubmissions.map(submission => submission.section);
+
+    // Ensure that the next section in post-test submissions matches the corresponding pre-test section
+    if (postTestSections.length >= preTestSections.length || preTestSections[postTestSections.length] !== section) {
+      throw new Error('Section does not match the expected pre-test section order.');
+    }
+
+    user.postTestSubmissions.push({ text, section });
+
+    if (user.postTestSubmissions.length >= user.preTestSubmissions.length) {
+      user.postTestsCompleted = true;
+    }
+
+    await user.save();
+  }
+
+  async getPreTestSections(userId: string): Promise<string[]> {
+    const user = await this.userModel.findById(userId);
+    return user.preTestSubmissions.map(submission => submission.section);
   }
 }

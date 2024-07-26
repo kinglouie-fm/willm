@@ -1,6 +1,9 @@
 <script setup>
+import { ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
+import { isAfter } from 'date-fns';
+import * as bootstrap from 'bootstrap';
 
 const route = useRoute();
 const router = useRouter();
@@ -13,6 +16,15 @@ const logout = async () => {
 
 const navigateTo = (path) => {
     router.push(path);
+};
+
+const isPostTestEnabled = ref(isAfter(new Date(), new Date('2023-08-28')));
+
+const showPostTestModal = () => {
+    if (isPostTestEnabled.value) {
+        const postTestModal = new bootstrap.Modal(document.getElementById('postTestModal'));
+        postTestModal.show();
+    }
 };
 </script>
 
@@ -34,6 +46,10 @@ const navigateTo = (path) => {
                     <h1 class="title">WILLM</h1>
                 </div>
                 <div class="col-4 text-end mt-1">
+                    <button class="btn btn-post-test me-2" v-if="authStore.isAuthenticated && isPostTestEnabled"
+                        @click="showPostTestModal">
+                        <h4>Start Post-Test</h4>
+                    </button>
                     <button class="btn" v-if="authStore.isAuthenticated" @click="logout">
                         <h4>Logout</h4>
                     </button>
@@ -56,5 +72,13 @@ const navigateTo = (path) => {
 
 .btn {
     margin: 0 5px;
+}
+
+.btn-post-test {
+    color: rgb(200, 70, 70);
+}
+
+.btn-post-test:hover {
+    color: rgb(200, 70, 70);
 }
 </style>

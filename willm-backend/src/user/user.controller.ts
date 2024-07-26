@@ -1,6 +1,7 @@
 import { Controller, Post, Body, Res, UnauthorizedException, Get, Req, BadRequestException } from '@nestjs/common';
 import { Response, Request } from 'express';
 import { UserService } from './user.service';
+import { isAfter, parseISO } from 'date-fns';
 
 @Controller('user')
 export class UserController {
@@ -34,9 +35,12 @@ export class UserController {
       throw new UnauthorizedException('Invalid credentials');
     }
     const user = await this.userService.findUserByUsername(username);
+    if (user.postTestsCompleted) {
+      return res.status(403).json({ message: 'You have completed the post-test and can no longer use the tool.' });
+    }
     const token = this.userService.generateJwtToken(username);
     res.cookie('auth_token', token, { httpOnly: true, secure: false });
-    return res.status(200).json({ message: 'Login successful', preTestsCompleted: user.preTestsCompleted });
+    return res.status(200).json({ message: 'Login successful', preTestsCompleted: user.preTestsCompleted, postTestsCompleted: user.postTestsCompleted });
   }
 
   @Post('logout')
@@ -98,4 +102,55 @@ export class UserController {
     return res.status(200).json({ message: 'Pre-test submitted successfully' });
   }
 
+  @Get('pre-test-sections')
+  async getPreTestSections(@Req() req: Request, @Res() res: Response): Promise<any> {
+    const user = await this.userService.findUserByToken(req.cookies['auth_token']);
+    if (!user) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+    const sections = await this.userService.getPreTestSections(user._id.toString());
+    return res.status(200).json({ sections });
+  }
+
+  @Get('post-test-sections')
+  async getPostTestSections(@Req() req: Request, @Res() res: Response): Promise<any> {
+    const user = await this.userService.findUserByToken(req.cookies['auth_token']);
+    if (!user) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+    const sections = user.postTestSubmissions.map(submission => submission.section);
+    return res.status(200).json({ sections });
+  }
+
+  @Post('post-test')
+  async submitPostTest(@Body('text') text: string, @Body('section') section: string, @Req() req: Request, @Res() res: Response): Promise<any> {
+    const MIN_WORD_COUNT = 250;
+    const MAX_WORD_COUNT = 1500;
+    const wordCount = text.trim().split(/\s+/).length;
+    const currentDate = new Date();
+    const enableDate = parseISO('2023-08-28');
+
+    if (!isAfter(currentDate, enableDate)) {
+      return res.status(400).json({ message: 'Post-tests can only be submitted after August 28th.' });
+    }
+
+    if (wordCount < MIN_WORD_COUNT || wordCount > MAX_WORD_COUNT) {
+      throw new BadRequestException(`Text must be between ${MIN_WORD_COUNT} and ${MAX_WORD_COUNT} words.`);
+    }
+
+    const user = await this.userService.findUserByToken(req.cookies['auth_token']);
+    if (!user) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    try {
+      await this.userService.addPostTestSubmission(user._id.toString(), text, section);
+      if (user.postTestsCompleted) {
+        res.clearCookie('auth_token');
+      }
+      return res.status(200).json({ message: 'Post-test submitted successfully' });
+    } catch (error) {
+      return res.status(400).json({ message: error.message });
+    }
+  }
 }

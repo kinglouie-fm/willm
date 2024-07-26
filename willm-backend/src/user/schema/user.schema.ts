@@ -16,6 +16,12 @@ export class User extends Document {
   @Prop({ type: [{ text: String, section: String }], default: [] })
   preTestSubmissions: { text: string, section: string }[];
 
+  @Prop({ type: [{ text: String, section: String }], default: [] })
+  postTestSubmissions: { text: string, section: string }[];
+
+  @Prop({ default: false })
+  postTestsCompleted: boolean;
+
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Issue' }] })
   issues: Types.ObjectId[];
 

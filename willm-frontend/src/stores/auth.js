@@ -8,6 +8,7 @@ export const useAuthStore = defineStore('auth', {
   state: () => ({
     isAuthenticated: false,
     preTestsCompleted: false,
+    postTestsCompleted: false,
   }),
   actions: {
     async register(username, password) {
@@ -34,12 +35,22 @@ export const useAuthStore = defineStore('auth', {
         if (response.status === 200 && response.data.message === 'Login successful') {
           this.isAuthenticated = true;
           this.preTestsCompleted = response.data.preTestsCompleted;
-          router.push({ name: 'home' });
+          if (response.data.postTestsCompleted) {
+            this.postTestsCompleted = true;
+            alert('You have completed the post-test and can no longer use the tool.');
+            this.logout();
+          } else {
+            router.push({ name: 'home' });
+          }
         } else {
           alert('Invalid username or password');
         }
       } catch (error) {
-        alert('An error occurred. Please try again.');
+        if (error.response && error.response.status === 403) {
+          alert('You have completed the post-test and can no longer use the tool.');
+        } else {
+          alert('An error occurred. Please try again.');
+        }
       }
     },
     async logout() {
@@ -47,6 +58,7 @@ export const useAuthStore = defineStore('auth', {
         await axios.post('http://localhost:3000/user/logout');
         this.isAuthenticated = false;
         this.preTestsCompleted = false;
+        this.postTestsCompleted = false;
         router.push({ name: 'login' });
       } catch (error) {
         alert('An error occurred. Please try again.');

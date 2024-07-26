@@ -12,7 +12,7 @@ export class ScoreService {
     private readonly httpService: HttpService,
   ) {}
 
-  async generateScore(text: string, userId: string, section: string): Promise<any> {
+  async generateScore(text: string, userId: string, section: string, textId: Types.ObjectId): Promise<any> {
     const response = await lastValueFrom(this.httpService.post("http://flask-api:8000/generate-scores", { text }));
     const scoreData = response.data;
 
@@ -29,6 +29,7 @@ export class ScoreService {
       ...scoresToStore,
       user_id: userId,
       section: section,
+      text_id: textId,
       date_created: new Date(),
     });
 

@@ -2,20 +2,22 @@ import { Controller, Post, Body, Get, Param, UseGuards, Req } from '@nestjs/comm
 import { ScoreService } from './score.service';
 import { Request } from 'express';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Types } from 'mongoose';
 
 @Controller('score')
 export class ScoreController {
   constructor(private readonly scoreService: ScoreService) {}
 
+  // not needed atm since scores are generated from correction controller
   @UseGuards(JwtAuthGuard)
   @Post('generate')
   async generateScore(
-    @Body() body: { text: string; section: string }, 
+    @Body() body: { text: string; section: string; textId: string },
     @Req() req: Request
   ) {
     const userId = req.user._id;
-    console.log('Generating score for user:', userId, 'section:', body.section);
-    const scoreData = await this.scoreService.generateScore(body.text, userId, body.section);
+    console.log('Generating score for user:', userId, 'section:', body.section, 'textId:', body.textId);
+    const scoreData = await this.scoreService.generateScore(body.text, userId, body.section, new Types.ObjectId(body.textId));
     return scoreData;
   }
 

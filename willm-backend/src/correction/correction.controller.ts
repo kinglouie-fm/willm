@@ -7,6 +7,7 @@ import { SectionService } from '../section/section.service';
 import { Request, Response } from 'express';
 import { Types } from 'mongoose';
 import { TextService } from '../text/text.service';
+import { ScoreService } from '../score/score.service';
 
 @Controller('correct')
 export class CorrectionController {
@@ -15,7 +16,8 @@ export class CorrectionController {
     private readonly issueService: IssueService,
     private readonly sessionService: SessionService,
     private readonly sectionService: SectionService,
-    private readonly textService: TextService
+    private readonly textService: TextService,
+    private readonly scoreService: ScoreService
   ) {}
 
   @UseGuards(JwtAuthGuard)
@@ -52,6 +54,10 @@ export class CorrectionController {
       content: body.text,
       mode: body.mode,
     });
+
+    // Generate scores for the text and save them with the text_id
+    const textId = text._id as Types.ObjectId;
+    const scoreData = await this.scoreService.generateScore(body.text, userId, body.section, textId);
 
     // Add issues for initial corrections
     for (let i = 0; i < mistakes.length; i++) {
@@ -123,7 +129,8 @@ export class CorrectionController {
       categories: categories,
       contexts: contexts,
       correctedText: correctedText,
-      furtherCorrection: furtherCorrectionResult
+      furtherCorrection: furtherCorrectionResult,
+      scores: scoreData
     });
   }
 }

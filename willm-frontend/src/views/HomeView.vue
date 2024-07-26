@@ -86,19 +86,15 @@ const handleCorrect = async () => {
   writingStyleExplanations.value = [];
 
   try {
-    const [correctionResponse, scoresResponse] = await Promise.all([
-      axios.post('http://localhost:3000/correct', {
-        text: textToCorrect,
-        section: textareaSmall.value,
-        mode: mode.value,
-      }),
-      axios.post('http://localhost:3000/score/generate', {
-        text: textToCorrect,
-        section: textareaSmall.value,
-      })
-    ]);
+    const correctionResponse = await axios.post('http://localhost:3000/correct', {
+      text: textToCorrect,
+      section: textareaSmall.value,
+      mode: mode.value,
+    });
 
     console.log(correctionResponse.data);
+
+    const textId = correctionResponse.data.textId;
 
     // Process initial correction response
     mistakes.value = correctionResponse.data.mistakes;
@@ -111,7 +107,7 @@ const handleCorrect = async () => {
       return explanation.replace(/(\n[T|X]:.*)/g, '').trim();
     });
 
-    scores.value = scoresResponse.data;
+    scores.value = correctionResponse.data.scores;
 
     highlightMistakes();
     selectedComponent.value = 'Evaluation';
@@ -340,6 +336,7 @@ const completePreTestProcess = async () => {
       authStore.preTestsCompleted = true;
       const preTestModal = bootstrap.Modal.getInstance(document.getElementById('preTestModal'));
       preTestModal.hide();
+      location.reload();
       alert('Pre-test process completed. You can start using the tool.');
     } else {
       alert('You need to submit at least one pre-test to complete the process.');
@@ -386,6 +383,7 @@ const submitPreTest = async () => {
       authStore.preTestsCompleted = true;
       const preTestModal = bootstrap.Modal.getInstance(document.getElementById('preTestModal'));
       preTestModal.hide();
+      location.reload();
     } else if (preTestCount.value >= 1) {
       alert(`Pre-test ${preTestCount.value}/3 submitted. You can submit up to ${3 - preTestCount.value} more pre-tests.`);
     }
@@ -460,6 +458,7 @@ onMounted(async () => {
     activatePopovers();
   }
   initPopover();
+  await getRecentReview();
   await fetchPreTestSections();
 });
 </script>

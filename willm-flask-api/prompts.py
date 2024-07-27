@@ -413,11 +413,14 @@ Don't add anything else to the output.
 """
 
 SYSTEM_PROMPT_5 = """
-Your task is to generate various types of questions for academic writing improvement. Each question type has a specific format and requirement. Please follow the guidelines below to create each question type.
+You are an expert in academic writing. Your task is to generate various types of questions for academic writing improvement. Each question type has a specific format and requirement. Please follow the guidelines below to create each question type.
 """
 
 REVISION_PROMPT = """
-Generate an academic text with errors for a revision type question. The text should have grammatical errors. There should be no two possible answers to correct the errors. The text should be max 100 words. Provide the question and the corresponding correct text.
+I will provide you with a text that includes a submission from a user. Identify the grammatical errors in the submission and generate a revision type question based on these errors. The text should have grammatical errors with no two possible answers to correct them. The text should be max 100 words. Provide the question and the corresponding correct text.
+
+Text:
+{text}
 
 Output format:
 Type: revision
@@ -426,7 +429,10 @@ Answer: [The correct text]
 """
 
 SYNONYMS_PROMPT = """
-Generate a multiple choice question for identifying academic synonyms. Provide an word and five options, with only one correct synonym. The difficulty should be medium.
+I will provide you with a text that includes a submission from a user. Identify a word in the submission that could be replaced with an academic synonym and generate a multiple choice question for identifying academic synonyms. Provide the word and five options, with only one correct synonym. The difficulty should be medium.
+
+Text:
+{text}
 
 Output format:
 Type: synonyms
@@ -436,16 +442,35 @@ Answer: [The correct synonym]
 """
 
 ACADEMIC_SENTENCE_PROMPT = """
-Generate a sentence that needs to be paraphrased into academic style. Provide the original sentence and the academic version of it.
+I will provide you with a text that includes a submission from a user. Identify a sentence in the submission that needs to be paraphrased into academic style and generate a question based on this sentence. Provide only the original sentence of it.
+
+Text:
+{text}
 
 Output format:
 Type: academic_sentence
-Question: [The original sentence]
-Answer: [The academic version]
+Question: Generate a sentence that needs to be paraphrased into academic style
+Sentence: [The original sentence]
+"""
+
+ACADEMIC_SENTENCE_CORRECTING_PROMPT = """
+You are an expert in academic writing. I will provide you with an original sentence and a corrected sentence. Your task is to evaluate whether the corrected sentence is good or not good based on academic writing standards.
+
+Text:
+Original Sentence: {original_sentence}
+Corrected Sentence: {corrected_sentence}
+
+Output format:
+Type: academic_sentence_evaluation
+Answer: [Good/Not Good]
+Reason: [Reason for your evaluation]
 """
 
 ARGUMENT_STRENGTHENING_PROMPT = """
-Generate a multiple choice question to strengthen an academic argument. Provide the argument and five options, with only one correct option to strengthen the argument.
+I will provide you with a text that includes a submission from a user. Identify an argument in the submission that could be strengthened and generate a multiple choice question to strengthen the academic argument. Provide the argument and five options, with only one correct option to strengthen the argument.
+
+Text:
+{text}
 
 Output format:
 Type: argument_strengthening
@@ -455,11 +480,75 @@ Answer: [The correct option]
 """
 
 PEER_REVIEW_PROMPT = """
-Generate a multiple choice question for peer review feedback. Provide a section of an academic text and five options for feedback, with only one correct feedback option.
+I will provide you with a text that includes a submission from a user. Identify a section in the submission that could benefit from peer review feedback and generate a multiple choice question based on this section. Provide the section of the academic text and five options for feedback, with only one correct feedback option.
+
+Text:
+{text}
 
 Output format:
 Type: peer_review
 Question: [The section]
 Options: [The options enumerated with A, B, C, D, E]
 Answer: [The correct option]
+"""
+
+ORGANIZATION_PROMPT = """
+Given the provided text which includes excerpts from sections (Introduction, Literature Review etc.) of academic papers, create one multiple-choice question that includes different excerpts and options but cover the same topic and test the organization of these sections. 
+Your generated excerpts should not be a copy of the provided text, they should only cover the topic of what each section is about. The question should ask the user to identify which section logically follows the generated excerpts to ensure a coherent and well-organized paper. 
+
+Text:
+{text}
+
+Your generated excerpts should not be a copy of the provided text, they should only cover the topic of the provided text.
+The options should include sentences from potential sections that could logically follow the provided excerpts. However, don't reveal to what sections the options belong to.
+The output should help users learn the logical flow of academic papers.
+
+Output format:
+Type: organization
+Question: Given the provided excerpts, which section logically follows to ensure a coherent and well-organized paper?
+Excerpts: [The generated excerpts that only cover the topic of the provided text]
+Options: [The options enumerated with A, B, C, D]
+Answer: [The correct option]
+"""
+
+COHERENCE_PROMPT = """
+Given the provided text which includes sentences from sections (Introduction, Literature Review etc.) of academic papers, create one multiple-choice question that includes different sentences and options but cover the same topic and asks the user to improve the coherence and logical flow between these two sections. 
+The generated sentences should be different then the ones in the provided text, thus they should not be a copy however they should cover the same topic of what they are about. Generate one to maximum two sentences per section.
+The question should ask the user to identify which section is the best choice for improving coherence and logical flow.
+
+Text:
+{text}
+
+Your generated sentences should not be a copy of the provided text, they should only cover the topic of the provided text.
+
+Output format:
+Type: coherence
+Question: Analyze the following sentences from two different sections of an academic paper. Select the best revision for the second sentence to improve coherence and maintain logical flow.
+Sentenes: [The generated sentences that only cover the topic of the provided text]
+Options: [The options enumerated with A, B, C, D]
+Answer: [The correct option]
+"""
+
+SYSTEM_PROMPT_6 = """
+You are an expert in academic writing, coherence and organization. I will provide you with text that includes excerpts from sections (e.g., Introduction and Methodology) of a user's last submissions. Your task is to generate a tip of maximum two sentences that helps the user improve either coherence or organization between these sections.
+"""
+
+COHERENCE_TIP_PROMPT = """
+Generate a tip of maximum two sentences that helps the user improve the coherence.
+
+Text:
+{text}
+
+Output format:
+Tip: [The tip to improve coherence]
+"""
+
+ORGANIZATION_TIP_PROMPT = """
+Generate a tip of maximum two sentences that helps the user improve the organization.
+
+Text:
+{text}
+
+Output format:
+Tip: [The tip to improve organization]
 """

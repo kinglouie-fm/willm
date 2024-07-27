@@ -10,7 +10,7 @@ import aiohttp
 from prompts import (SYSTEM_PROMPT_1, SYSTEM_PROMPT_2, SYSTEM_PROMPT_4, SYSTEM_PROMPT_5,
                      UNIFIED_PROMPT, UNIFIED_PROMPT_2, SCORES, 
                      REVISION_PROMPT, SYNONYMS_PROMPT, ACADEMIC_SENTENCE_PROMPT, 
-                     ARGUMENT_STRENGTHENING_PROMPT, PEER_REVIEW_PROMPT)
+                     ARGUMENT_STRENGTHENING_PROMPT)
 import logging
 from langchain_chroma import Chroma
 from langchain_openai import OpenAIEmbeddings
@@ -262,7 +262,6 @@ question_prompts = {
     'synonyms': SYNONYMS_PROMPT,
     'academic_sentence': ACADEMIC_SENTENCE_PROMPT,
     'argument_strengthening': ARGUMENT_STRENGTHENING_PROMPT,
-    'peer_review': PEER_REVIEW_PROMPT,
 }
 
 @app.route('/question/suggest-type', methods=['POST'])

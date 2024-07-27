@@ -479,18 +479,18 @@ Options: [The options enumerated with A, B, C, D, E]
 Answer: [The correct option]
 """
 
-PEER_REVIEW_PROMPT = """
-I will provide you with a text that includes a submission from a user. Identify a section in the submission that could benefit from peer review feedback and generate a multiple choice question based on this section. Provide the section of the academic text and five options for feedback, with only one correct feedback option.
+# PEER_REVIEW_PROMPT = """
+# I will provide you with a text that includes a submission from a user. Identify a section in the submission that could benefit from peer review feedback and generate a multiple choice question based on this section. Provide the section of the academic text and five options for feedback, with only one correct feedback option.
 
-Text:
-{text}
+# Text:
+# {text}
 
-Output format:
-Type: peer_review
-Question: [The section]
-Options: [The options enumerated with A, B, C, D, E]
-Answer: [The correct option]
-"""
+# Output format:
+# Type: peer_review
+# Question: [The section]
+# Options: [The options enumerated with A, B, C, D, E]
+# Answer: [The correct option]
+# """
 
 ORGANIZATION_PROMPT = """
 Given the provided text which includes excerpts from sections (Introduction, Literature Review etc.) of academic papers, create one multiple-choice question that includes different excerpts and options but cover the same topic and test the organization of these sections. 

@@ -13,7 +13,6 @@ export class QuestionService {
     'synonyms',
     'academic_sentence',
     'argument_strengthening',
-    'peer_review',
   ];
   private currentQuestionIndex = 0;
 

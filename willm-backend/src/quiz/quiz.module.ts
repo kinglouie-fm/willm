@@ -8,6 +8,7 @@ import { ReviewModule } from '../review/review.module';
 import { ScoreModule } from '../score/score.module';
 import { TextModule } from '../text/text.module';
 import { HttpModule } from '@nestjs/axios';
+import { UserModule } from 'src/user/user.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { HttpModule } from '@nestjs/axios';
     forwardRef(() => ReviewModule),
     forwardRef(() => ScoreModule),
     forwardRef(() => TextModule),
+    forwardRef(() => UserModule),
     HttpModule,
   ],
   providers: [QuizService],

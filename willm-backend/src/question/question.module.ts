@@ -11,7 +11,7 @@ import { UserModule } from 'src/user/user.module';
 @Module({
   imports: [
     HttpModule,
-    UserModule,
+    forwardRef(() => UserModule),
     forwardRef(() => TextModule),
     MongooseModule.forFeature([{ name: QuestionCount.name, schema: QuestionCountSchema }]),
   ],

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Score, ScoreSchema } from './schema/score.schema';
@@ -12,7 +12,7 @@ import { SectionService } from '../section/section.service';
   imports: [
     MongooseModule.forFeature([{ name: Score.name, schema: ScoreSchema }, { name: Section.name, schema: SectionSchema }]),
     HttpModule,
-    UserModule,
+    forwardRef(() => UserModule),
   ],
   controllers: [ScoreController],
   providers: [ScoreService, SectionService],

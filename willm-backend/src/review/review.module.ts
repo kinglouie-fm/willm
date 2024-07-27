@@ -14,15 +14,18 @@ import { TextModule } from '../text/text.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Issue.name, schema: IssueSchema }]),
-    MongooseModule.forFeature([{ name: Review.name, schema: ReviewSchema }]),
-    MongooseModule.forFeature([{ name: Session.name, schema: SessionSchema }]),
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    MongooseModule.forFeature([
+      { name: Issue.name, schema: IssueSchema },
+      { name: Review.name, schema: ReviewSchema },
+      { name: Session.name, schema: SessionSchema },
+      { name: User.name, schema: UserSchema }
+    ]),
     forwardRef(() => UserModule),
     forwardRef(() => TextModule),
     HttpModule,
   ],
   controllers: [ReviewController],
   providers: [ReviewService, IssueService, SessionService],
+  exports: [ReviewService],
 })
 export class ReviewModule {}

@@ -1,5 +1,6 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { HttpModule } from '@nestjs/axios';
 import { Issue, IssueSchema } from '../issue/schema/issue.schema';
 import { Review, ReviewSchema } from './schema/review.schema';
 import { ReviewController } from './review.controller';
@@ -19,6 +20,7 @@ import { TextModule } from '../text/text.module';
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     forwardRef(() => UserModule),
     forwardRef(() => TextModule),
+    HttpModule,
   ],
   controllers: [ReviewController],
   providers: [ReviewService, IssueService, SessionService],

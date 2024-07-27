@@ -424,7 +424,8 @@ Text:
 
 Output format:
 Type: revision
-Question: [The text with errors]
+Question: Revise the text to correct the grammatical errors.
+Text: [The text with errors]
 Answer: [The correct text]
 """
 
@@ -436,7 +437,8 @@ Text:
 
 Output format:
 Type: synonyms
-Question: [The word]
+Question: Identify the academic synonym for the word.
+Word: [The word]
 Options: [The options enumerated with A, B, C, D, E]
 Answer: [The correct synonym]
 """
@@ -473,7 +475,8 @@ Text:
 
 Output format:
 Type: argument_strengthening
-Question: [The argument]
+Question: Strengthen the argument by selecting the most appropriate option.
+Argument: [The argument that needs to be strengthened]
 Options: [The options enumerated with A, B, C, D, E]
 Answer: [The correct option]
 """
@@ -550,4 +553,22 @@ Text:
 
 Output format:
 Tip: [The tip to improve organization]
+"""
+
+EXPLAIN_ANSWER = """
+Explain why the correct answer is correct and why the user's answer is not correct. Include any relevant context from the provided text, word, or sentence if available.
+
+Question: {question}
+
+Optional context:
+Text: {text}
+Word: {word}
+Sentence: {sentence}
+Options: {options}
+
+Correct Answer: {correct_answer}
+User Answer: {user_answer}
+
+Output format:
+Explanation: [Detailed explanation]
 """

@@ -16,7 +16,7 @@ from prompts import (
     SYSTEM_PROMPT_1, SYSTEM_PROMPT_2, SYSTEM_PROMPT_4, SYSTEM_PROMPT_5,
     SYSTEM_PROMPT_6, UNIFIED_PROMPT, UNIFIED_PROMPT_2, SCORES, 
     REVISION_PROMPT, SYNONYMS_PROMPT, ACADEMIC_SENTENCE_PROMPT, ACADEMIC_SENTENCE_CORRECTING_PROMPT,
-    ARGUMENT_STRENGTHENING_PROMPT, COHERENCE_TIP_PROMPT, ORGANIZATION_TIP_PROMPT
+    ARGUMENT_STRENGTHENING_PROMPT, EXPLAIN_ANSWER, COHERENCE_TIP_PROMPT, ORGANIZATION_TIP_PROMPT
 )
 
 load_dotenv()
@@ -403,6 +403,53 @@ def academic_sentence_correction():
         })
     else:
         return jsonify({"error": "Failed to parse the generated output"}), 500
+    
+@app.route('/question/explain-answer', methods=['POST'])
+def explain_answer():
+    data = request.json
+    question = data['question']
+    text = data.get('text', '')
+    word = data.get('word', '')
+    sentence = data.get('sentence', '')
+    options = data.get('options', [])
+    correct_answer = data['correct_answer']
+    user_answer = data['user_answer']
+
+    options_str = '\n'.join(options)
+
+    prompt = EXPLAIN_ANSWER.format(
+        question=question,
+        text=text,
+        word=word,
+        sentence=sentence,
+        options=options_str,
+        correct_answer=correct_answer,
+        user_answer=user_answer
+    )
+
+    response = openai.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {"role": "system", "content": "You are an expert in the subject matter. I will provide you with a question, the correct answer, and the user's answer."},
+            {"role": "user", "content": prompt}
+        ],
+        max_tokens=1000
+    )
+
+    logger.info(f"Explain answer response: {response}")
+
+    output = response.choices[0].message.content
+
+    explanation_match = re.search(r'Explanation:\s*(.*)', output, re.DOTALL)
+
+    if explanation_match:
+        explanation = explanation_match.group(1).strip()
+        return jsonify({
+            "type": "explanation",
+            "explanation": explanation
+        })
+    else:
+        return jsonify({"error": "Failed to parse the generated output"}), 500
 
 @app.route('/review/generate', methods=['POST'])
 def generate_review():
@@ -421,7 +468,7 @@ def generate_review():
                 {"role": "system", "content": SYSTEM_PROMPT_6},
                 {"role": "user", "content": coherence_prompt}
             ],
-            max_tokens=2000
+            max_tokens=1000
         )
         coherence_tip = coherence_response.choices[0].message.content.strip()
 
@@ -433,7 +480,7 @@ def generate_review():
                 {"role": "system", "content": SYSTEM_PROMPT_6},
                 {"role": "user", "content": organization_prompt}
             ],
-            max_tokens=2000
+            max_tokens=1000
         )
         organization_tip = organization_response.choices[0].message.content.strip()
 

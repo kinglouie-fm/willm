@@ -40,4 +40,19 @@ export class QuestionController {
     const evaluation = await this.questionService.evaluateAcademicSentence(originalSentence, correctedSentence);
     return evaluation;
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('explain-answer')
+  async explainAnswer(
+    @Body('question') question: string,
+    @Body('correct_answer') correctAnswer: string,
+    @Body('user_answer') userAnswer: string,
+    @Body('options') options: string[],
+    @Body('text') text?: string,
+    @Body('word') word?: string,
+    @Body('sentence') sentence?: string,
+  ) {
+    const explanation = await this.questionService.explainAnswer(question, correctAnswer, userAnswer, options, text, word, sentence);
+    return explanation;
+  }
 }

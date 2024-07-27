@@ -138,4 +138,18 @@ export class QuestionService {
 
     return response.data;
   }
+
+  async explainAnswer(question: string, correctAnswer: string, userAnswer: string, options: string[], text?: string, word?: string, sentence?: string) {
+    const response = await lastValueFrom(this.httpService.post('http://flask-api:8000/question/explain-answer', {
+      question: question,
+      options: options,
+      text: text || '',
+      word: word || '',
+      sentence: sentence || '',
+      correct_answer: correctAnswer,
+      user_answer: userAnswer
+    }));
+
+    return response.data;
+  }
 }

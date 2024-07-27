@@ -59,6 +59,7 @@ export class QuestionService {
     console.log("Making request to flask-api for question generation");
 
     const response = await lastValueFrom(this.httpService.post('http://flask-api:8000/question/generate', {
+      user_id: userId,
       type: questionType,
       text: combinedText,
     }));

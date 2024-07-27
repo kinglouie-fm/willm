@@ -265,6 +265,7 @@ def suggest_question_type():
 @app.route('/question/generate', methods=['POST'])
 def generate_question():
     data = request.json
+    user_id = data['user_id']
     question_type = data['type']
     text = data['text']
     
@@ -323,7 +324,7 @@ def generate_question():
         'type': question_type,
     }
 
-    document_id = chroma_langchain_handler.add_document(generated_question, metadata)
+    document_id = chroma_langchain_handler.add_document(user_id, generated_question, metadata)
 
     return jsonify({
         "type": question_type,

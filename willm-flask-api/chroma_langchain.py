@@ -1,4 +1,3 @@
-# chroma_langchain.py
 import os
 import uuid
 from dotenv import load_dotenv
@@ -13,7 +12,6 @@ logger = logging.getLogger(__name__)
 
 load_dotenv()
 
-# chroma_langchain.py
 class ChromaLangChainHandler:
     def __init__(self):
         self.chromadb_client = chromadb.HttpClient(host="chromaDB", port=8000, settings=Settings(allow_reset=True, anonymized_telemetry=False))
@@ -41,5 +39,4 @@ class ChromaLangChainHandler:
         documents = collection.get(include=["metadatas", "documents", "embeddings"])
         return documents
 
-# Initialize the handler
 chroma_langchain_handler = ChromaLangChainHandler()

@@ -39,18 +39,18 @@ export class CorrectionController {
     const session = await this.sessionService.getCurrentSession(userId);
 
     // Find or create the section
-    let section = await this.sectionService.findSectionByPayload(userId, body.section);
-    if (!section) {
-      section = await this.sectionService.addSection(userId, {
-        payload: body.section,
-        date_created: new Date(),
-      });
-    }
+    // let section = await this.sectionService.findSectionByPayload(userId, body.section);
+    // if (!section) {
+    //   section = await this.sectionService.addSection(userId, {
+    //     payload: body.section,
+    //     date_created: new Date(),
+    //   });
+    // }
 
     // Create a new Text document
     const text = await this.textService.addText(userId, {
       session_id: session._id,
-      section_id: section._id,
+      section: body.section,
       content: body.text,
       mode: body.mode,
       language: body.language,
@@ -67,7 +67,7 @@ export class CorrectionController {
       }
 
       const issue = await this.issueService.addIssue(userId, {
-        section: section._id,
+        section: body.section,
         session: session._id,
         text: text._id,
         type: 'grammar_vocab',
@@ -104,7 +104,7 @@ export class CorrectionController {
           }
 
           const issue = await this.issueService.addIssue(userId, {
-            section: section._id,
+            section: body.section,
             session: session._id,
             text: text._id,
             type: combinedMistakes[i].type,

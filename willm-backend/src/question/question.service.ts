@@ -13,37 +13,54 @@ export class QuestionService {
     'synonyms',
     'academic_sentence',
     'argument_strengthening',
+    'coherence',
+    'organization',
   ];
   private currentQuestionIndex = 0;
 
   constructor(
     private readonly httpService: HttpService,
-    // TODO: not sure if this is good practice
     @Inject(forwardRef(() => TextService))
     private readonly textService: TextService,
     @InjectModel(QuestionCount.name) private questionCountModel: Model<QuestionCount>,
   ) {}
 
   async generateQuestions(userId: Types.ObjectId) {
-    const submissions = await this.textService.findLastSubmissions(userId, 3);
+    const submissions = await this.textService.findLastSubmissions(userId, 5);
 
-    if (submissions.length < 3) {
+    if (submissions.length < 5) {
       throw new Error('Not enough submissions to generate questions');
     }
 
-    const combinedText = submissions.map(sub => sub.content).join(' ');
-    const lastSubmission = submissions[0].content;
-    console.log(`Last submission: ${lastSubmission}`);
+    const sectionTexts = submissions.reduce((acc, sub) => {
+      if (!acc[sub.section]) {
+        acc[sub.section] = [];
+      }
+      acc[sub.section].push(sub.content);
+      return acc;
+    }, {});
 
-    const suggestedQuestionType = await this.suggestQuestionType(combinedText);
+    const sections = Object.keys(sectionTexts);
+    let combinedText = '';
+    if (sections.length >= 2) {
+      combinedText = sections.map(section => {
+        const sectionContent = sectionTexts[section].join(' ');
+        return `Section ${section}\n${sectionContent}`;
+      }).join('\n\n');
+    } else {
+      combinedText = submissions.map(sub => sub.content).join(' ');
+    }
 
-    const questionType = await this.selectQuestionType(suggestedQuestionType);
+    const lastThreeSubmissions = submissions.slice(0, 3).map(sub => sub.content).join(' ');
+    const suggestedQuestionType = await this.suggestQuestionType(lastThreeSubmissions);
+
+    const questionType = await this.selectQuestionType(suggestedQuestionType, userId);
 
     console.log("Making request to flask-api for question generation");
 
     const response = await lastValueFrom(this.httpService.post('http://flask-api:8000/question/generate', {
       type: questionType,
-      lastSubmission: lastSubmission,
+      text: combinedText,
     }));
 
     await this.updateQuestionCount(questionType);
@@ -51,24 +68,44 @@ export class QuestionService {
     return response.data;
   }
 
-  private async suggestQuestionType(text: string): Promise<string> {
-    console.log("Making request to flask-api for question type suggestion")
-    const response = await lastValueFrom(this.httpService.post('http://flask-api:8000/question/suggest-type', { text }));
+  private async suggestQuestionType(lastThreeSubmissions: string): Promise<string> {
+    console.log("Making request to flask-api for question type suggestion");
+    const response = await lastValueFrom(this.httpService.post('http://flask-api:8000/question/suggest-type', { lastThreeSubmissions }));
     const questionType = response.data.type;
     return this.questionTypes.includes(questionType) ? questionType : null;
   }
 
-  private async selectQuestionType(suggestedType: string): Promise<string> {
+  private async selectQuestionType(suggestedType: string, userId: Types.ObjectId): Promise<string> {
     if (suggestedType && await this.isBalanced(suggestedType)) {
       console.log(`Suggested question type ${suggestedType} is balanced`);
       return suggestedType;
     }
-    const questionType = this.questionTypes[this.currentQuestionIndex];
+    
+    let questionType = this.questionTypes[this.currentQuestionIndex];
     this.currentQuestionIndex = (this.currentQuestionIndex + 1) % this.questionTypes.length;
+
+    // Check for coherence and organization specific conditions
+    if (questionType === 'coherence' || questionType === 'organization') {
+      const submissions = await this.textService.findLastSubmissions(userId, 5);
+      const sectionTexts = submissions.reduce((acc, sub) => {
+        if (!acc[sub.section]) {
+          acc[sub.section] = [];
+        }
+        acc[sub.section].push(sub.content);
+        return acc;
+      }, {});
+      const sections = Object.keys(sectionTexts);
+
+      if (sections.length < 2) {
+        console.log(`Skipping ${questionType} due to insufficient sections`);
+        this.updateQuestionCount(questionType);
+        return this.selectQuestionType(null, userId);
+      }
+    }
+
     console.log(`Selected question type ${questionType} with round robin`);
     return questionType;
   }
-
   // checks if question type's generation count is within a balanced range by comparing it to the average count 
   // of all question types plus a threshold.
   private async isBalanced(questionType: string): Promise<boolean> {

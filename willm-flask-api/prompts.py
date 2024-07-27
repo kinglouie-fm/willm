@@ -454,7 +454,7 @@ Sentence: [The original sentence]
 """
 
 ACADEMIC_SENTENCE_CORRECTING_PROMPT = """
-You are an expert in academic writing. I will provide you with an original sentence and a corrected sentence. Your task is to evaluate whether the corrected sentence is good or not good based on academic writing standards.
+These are the original sentence and the corrected sentence.
 
 Text:
 Original Sentence: {original_sentence}

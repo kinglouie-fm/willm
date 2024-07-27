@@ -9,8 +9,8 @@ export class Text extends Document {
   @Prop({ type: Types.ObjectId, ref: 'Session', required: true })
   session_id: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, ref: 'Section', required: true })
-  section_id: Types.ObjectId;
+  @Prop({ required: true })
+  section: string;
 
   @Prop({ required: true })
   content: string;

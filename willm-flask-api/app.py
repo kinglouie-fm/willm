@@ -7,15 +7,17 @@ import os
 import re
 import asyncio
 import aiohttp
-from prompts import (SYSTEM_PROMPT_1, SYSTEM_PROMPT_2, SYSTEM_PROMPT_4, SYSTEM_PROMPT_5,
-                     UNIFIED_PROMPT, UNIFIED_PROMPT_2, SCORES, 
-                     REVISION_PROMPT, SYNONYMS_PROMPT, ACADEMIC_SENTENCE_PROMPT, ACADEMIC_SENTENCE_CORRECTING_PROMPT,
-                     ARGUMENT_STRENGTHENING_PROMPT)
 import logging
 from langchain_chroma import Chroma
 from langchain_openai import OpenAIEmbeddings
 import chromadb
 from chromadb.config import Settings
+from prompts import (
+    SYSTEM_PROMPT_1, SYSTEM_PROMPT_2, SYSTEM_PROMPT_4, SYSTEM_PROMPT_5,
+    SYSTEM_PROMPT_6, UNIFIED_PROMPT, UNIFIED_PROMPT_2, SCORES, 
+    REVISION_PROMPT, SYNONYMS_PROMPT, ACADEMIC_SENTENCE_PROMPT, ACADEMIC_SENTENCE_CORRECTING_PROMPT,
+    ARGUMENT_STRENGTHENING_PROMPT, COHERENCE_TIP_PROMPT, ORGANIZATION_TIP_PROMPT
+)
 
 load_dotenv()
 
@@ -65,7 +67,6 @@ async def handle_unified_2(session, data, section, language):
 
 async def handle_scores(session, data):
     return await fetch_openai_response(session, SYSTEM_PROMPT_4, SCORES, data)
-
 
 @app.route('/handle-correction', methods=['POST'])
 async def handle_correction():
@@ -168,7 +169,6 @@ def extract_issues(result):
 
     return issues
 
-
 def process_initial_result(result):
     mistakes = []
     corrections = []
@@ -253,6 +253,8 @@ question_prompts = {
     'synonyms': SYNONYMS_PROMPT,
     'academic_sentence': ACADEMIC_SENTENCE_PROMPT,
     'argument_strengthening': ARGUMENT_STRENGTHENING_PROMPT,
+    'coherence': COHERENCE_TIP_PROMPT,
+    'organization': ORGANIZATION_TIP_PROMPT,
 }
 
 @app.route('/question/suggest-type', methods=['POST'])
@@ -279,19 +281,24 @@ def suggest_question_type():
 def generate_question():
     data = request.json
     question_type = data['type']
-    lastSubmission = data.get('lastSubmission')
+    text = data['text']
     
     if question_type not in question_prompts:
         return jsonify({"error": "Invalid question type"}), 400
 
     prompt_template = question_prompts[question_type]
+    prompt = prompt_template.format(text=text)
 
-    prompt = prompt_template.format(lastSubmission=lastSubmission)
+    # Determine which system prompt to use
+    if question_type in ['coherence', 'organization']:
+        system_prompt = SYSTEM_PROMPT_6
+    else:
+        system_prompt = SYSTEM_PROMPT_5
 
     response = openai.chat.completions.create(
         model="gpt-4o",
         messages=[
-            {"role": "system", "content": SYSTEM_PROMPT_5},
+            {"role": "system", "content": system_prompt},
             {"role": "user", "content": prompt}
         ],
         max_tokens=2000
@@ -376,7 +383,7 @@ def academic_sentence_correction():
     response = openai.chat.completions.create(
         model="gpt-4o",
         messages=[
-            {"role": "system", "content": SYSTEM_PROMPT_5},
+            {"role": "system", "content": 'You are an expert in academic writing. I will provide you with an original sentence and a corrected sentence. Your task is to evaluate whether the corrected sentence is good or not good based on academic writing standards.'},
             {"role": "user", "content": prompt}
         ],
         max_tokens=2000
@@ -396,6 +403,3 @@ def academic_sentence_correction():
         })
     else:
         return jsonify({"error": "Failed to parse the generated output"}), 500
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000)

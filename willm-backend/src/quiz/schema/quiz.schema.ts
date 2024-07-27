@@ -22,6 +22,12 @@ export class Quiz extends Document {
     user_answer: string;
     result: boolean;
   }[];
+
+  @Prop({ required: true })
+  interval_days: number;
+
+  @Prop({ required: true })
+  next_quiz_date: Date;
 }
 
 export const QuizSchema = SchemaFactory.createForClass(Quiz);

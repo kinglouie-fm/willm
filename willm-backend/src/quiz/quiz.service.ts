@@ -11,6 +11,8 @@ import { lastValueFrom } from 'rxjs';
 
 @Injectable()
 export class QuizService {
+  private readonly intervals = [1, 2, 4, 6]; // days for quizzes after 1st, 2nd, 3rd, and 4th quiz
+
   constructor(
     @InjectModel(Quiz.name) private quizModel: Model<Quiz>,
     private readonly issueService: IssueService,
@@ -40,6 +42,32 @@ export class QuizService {
     const response = await lastValueFrom(this.httpService.post('http://flask-api:8000/quiz/similarity-search', { query }));
     const questions = response.data;
 
+    // Determine the next quiz interval and date
+    const lastQuiz = await this.quizModel.findOne({ user_id: userId }).sort({ date_created: -1 }).exec();
+    let intervalIndex = 0;
+    let nextQuizDate = new Date();
+
+    if (lastQuiz) {
+      intervalIndex = this.intervals.indexOf(lastQuiz.interval_days);
+      if (intervalIndex === -1) {
+        intervalIndex = 0;
+      } else {
+        intervalIndex = Math.min(intervalIndex + 1, this.intervals.length - 1);
+      }
+
+      nextQuizDate.setDate(nextQuizDate.getDate() + this.intervals[intervalIndex]);
+
+      // Adjust if the last quiz was missed
+      const daysSinceLastQuiz = (new Date().getTime() - new Date(lastQuiz.next_quiz_date).getTime()) / (1000 * 60 * 60 * 24);
+      if (daysSinceLastQuiz > this.intervals[intervalIndex] * 2) {
+        intervalIndex = Math.max(intervalIndex - 1, 0);
+        nextQuizDate.setDate(new Date().getDate() + this.intervals[intervalIndex]);
+      }
+    } else {
+      // Schedule first quiz after 1 day (or the next session)
+      nextQuizDate.setDate(nextQuizDate.getDate() + this.intervals[intervalIndex]);
+    }
+
     // Store the quiz
     const quiz = new this.quizModel({
       user_id: userId,
@@ -48,12 +76,14 @@ export class QuizService {
       questions: questions.map(q => ({
         question_id: q.question_id,
         question_text: q.question_text,
-        question_type: q.question_type,
+        question_type: q.question_type, // Assuming this comes from the search result
         options: q.options,
         correct_answer: q.correct_answer,
         user_answer: '',
         result: false,
       })),
+      interval_days: this.intervals[intervalIndex],
+      next_quiz_date: nextQuizDate,
     });
     await quiz.save();
 

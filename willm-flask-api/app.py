@@ -403,3 +403,44 @@ def academic_sentence_correction():
         })
     else:
         return jsonify({"error": "Failed to parse the generated output"}), 500
+
+@app.route('/review/generate', methods=['POST'])
+def generate_review():
+    data = request.json
+    coherence_text = data.get('coherence_text', '')
+    organization_text = data.get('organization_text', '')
+
+    coherence_tip = ''
+    organization_tip = ''
+
+    if coherence_text:
+        coherence_prompt = COHERENCE_TIP_PROMPT.format(text=coherence_text)
+        coherence_response = openai.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT_6},
+                {"role": "user", "content": coherence_prompt}
+            ],
+            max_tokens=2000
+        )
+        coherence_tip = coherence_response.choices[0].message.content.strip()
+
+    if organization_text:
+        organization_prompt = ORGANIZATION_TIP_PROMPT.format(text=organization_text)
+        organization_response = openai.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT_6},
+                {"role": "user", "content": organization_prompt}
+            ],
+            max_tokens=2000
+        )
+        organization_tip = organization_response.choices[0].message.content.strip()
+
+    return jsonify({
+        "coherence_tip": coherence_tip,
+        "organization_tip": organization_tip
+    })
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=8000)

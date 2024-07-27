@@ -24,6 +24,12 @@ export class Review extends Document {
     coherence: { improvements: string[], tips: string[] },
     writingStyle: { improvements: string[], tips: string[] },
   };
+
+  @Prop({ type: String, default: '' })
+  coherence_tip: string;
+
+  @Prop({ type: String, default: '' })
+  organization_tip: string;
 }
 
 export const ReviewSchema = SchemaFactory.createForClass(Review);

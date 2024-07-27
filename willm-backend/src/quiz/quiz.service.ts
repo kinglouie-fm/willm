@@ -154,4 +154,8 @@ export class QuizService {
 
     return question;
   }
+
+  async getLastQuizForUser(userId: Types.ObjectId): Promise<Quiz> {
+    return this.quizModel.findOne({ user_id: userId }).sort({ date_created: -1 }).exec();
+  }
 }

@@ -1,16 +1,18 @@
 import { Injectable, UnauthorizedException, Inject, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
 import { User } from './schema/user.schema';
+import { QuizService } from 'src/quiz/quiz.service';
 
 const JWT_SECRET = 'your_jwt_secret';
 
 @Injectable()
 export class UserService {
   constructor(
-    @InjectModel(User.name) private userModel: Model<User>
+    @InjectModel(User.name) private userModel: Model<User>,
+    @Inject(forwardRef(() => QuizService)) private quizService: QuizService,
   ) {}
 
   async userExists(username: string): Promise<boolean> {
@@ -107,5 +109,13 @@ export class UserService {
   async getPreTestSections(userId: string): Promise<string[]> {
     const user = await this.userModel.findById(userId);
     return user.preTestSubmissions.map(submission => submission.section);
+  }
+
+  async triggerQuizGeneration(user: User): Promise<void> {
+    const lastQuiz = await this.quizService.getLastQuizForUser(user._id as Types.ObjectId);
+    const currentDate = new Date();
+    if (!lastQuiz || currentDate >= lastQuiz.next_quiz_date) {
+      await this.quizService.generateQuiz(user._id as Types.ObjectId);
+    }
   }
 }

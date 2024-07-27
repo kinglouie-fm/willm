@@ -40,6 +40,9 @@ export class UserController {
     }
     const token = this.userService.generateJwtToken(username);
     res.cookie('auth_token', token, { httpOnly: true, secure: false });
+
+    // Trigger quiz generation on login
+    await this.userService.triggerQuizGeneration(user);
     return res.status(200).json({ message: 'Login successful', preTestsCompleted: user.preTestsCompleted, postTestsCompleted: user.postTestsCompleted });
   }
 

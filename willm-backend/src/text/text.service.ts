@@ -25,4 +25,9 @@ export class TextService {
   async getSubmissionCount(userId: Types.ObjectId): Promise<number> {
     return this.textModel.countDocuments({ user_id: userId });
   }
+
+  async getLastTextIds(userId: Types.ObjectId, limit: number): Promise<Types.ObjectId[]> {
+    const texts = await this.textModel.find({ user_id: userId }).sort({ createdAt: -1 }).limit(limit).select('_id').exec();
+    return texts.map(text => text._id) as Types.ObjectId[];
+  }
 }

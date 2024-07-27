@@ -523,5 +523,35 @@ def get_questions(user_id):
 
     return jsonify(result)
 
+@app.route('/quiz/similarity-search', methods=['POST'])
+def similarity_search():
+    data = request.json
+    query = data.get('query')
+
+    if not query:
+        return jsonify({"error": "No query provided"}), 400
+
+    # Embed the query
+    embedding = chroma_langchain_handler.embedding_function.embed_query(query)
+
+    # Perform similarity search in ChromaDB
+    user_id = "some_user_id"  # This should be derived based on your logic
+    collection = chroma_langchain_handler.get_user_collection(user_id)
+    results = collection.query(embedding, include=["metadatas", "documents"], n_results=10)
+
+    # Extract relevant information from the results
+    questions = []
+    for result in results['documents']:
+        question_data = {
+            "question_id": result["id"],
+            "question_text": result["document"],
+            "question_type": result["metadata"].get("type", ""),
+            "options": result["metadata"].get("options", "").split("\n"),
+            "correct_answer": result["metadata"].get("answer", ""),
+        }
+        questions.append(question_data)
+
+    return jsonify(questions)
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000)

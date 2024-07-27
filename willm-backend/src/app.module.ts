@@ -10,6 +10,7 @@ import { ScoreModule } from './score/score.module';
 import { ReviewModule } from './review/review.module';
 import { QuestionModule } from './question/question.module';
 import { TextModule } from './text/text.module';
+import { QuizModule } from './quiz/quiz.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { TextModule } from './text/text.module';
     ReviewModule,
     QuestionModule,
     TextModule,
+    QuizModule,
   ],
   controllers: [],
   providers: [],

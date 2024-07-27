@@ -140,4 +140,8 @@ export class ScoreService {
       writing_style: median(scoresToCalculate.map(score => score.writing_style)),
     };
   }
+
+  async findScoresByTextIds(textIds: Types.ObjectId[]): Promise<Score[]> {
+    return this.scoreModel.find({ text_id: { $in: textIds } }).exec();
+  }
 }

@@ -5,7 +5,6 @@ import { UserModule } from './user/user.module';
 import { CorrectionModule } from './correction/correction.module';
 import { IssueModule } from './issue/issue.module';
 import { SessionModule } from './session/session.module';
-import { ImprovementModule } from './improvement/improvement.module';
 import { SectionModule } from './section/section.module';
 import { ScoreModule } from './score/score.module';
 import { ReviewModule } from './review/review.module';
@@ -20,7 +19,6 @@ import { TextModule } from './text/text.module';
     CorrectionModule,
     IssueModule,
     SessionModule,
-    ImprovementModule,
     SectionModule,
     ScoreModule,
     ReviewModule,

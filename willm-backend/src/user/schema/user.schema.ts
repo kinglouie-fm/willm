@@ -25,9 +25,6 @@ export class User extends Document {
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Issue' }] })
   issues: Types.ObjectId[];
 
-  @Prop({ type: [{ type: Types.ObjectId, ref: 'Improvement' }] })
-  improvements: Types.ObjectId[];
-
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Session' }] })
   sessions: Types.ObjectId[];
 

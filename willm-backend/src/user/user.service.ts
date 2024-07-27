@@ -5,6 +5,7 @@ import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
 import { User } from './schema/user.schema';
 import { QuizService } from 'src/quiz/quiz.service';
+import { SessionService } from 'src/session/session.service';
 
 const JWT_SECRET = 'your_jwt_secret';
 
@@ -13,6 +14,7 @@ export class UserService {
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
     @Inject(forwardRef(() => QuizService)) private quizService: QuizService,
+    @Inject(forwardRef(() => SessionService)) private sessionService: SessionService,
   ) {}
 
   async userExists(username: string): Promise<boolean> {
@@ -112,10 +114,26 @@ export class UserService {
   }
 
   async triggerQuizGeneration(user: User): Promise<void> {
+  const sessions = await this.sessionService.getSessionsByUserId(user._id.toString());
+  const distinctDates = new Set(sessions.map(session => {
+    const date = new Date(session.date_created);
+    return date.toISOString().split('T')[0]; // Keep only the date part
+  }));
+
+  // If the user has completed 3 distinct days of sessions, schedule the first quiz
+  if (distinctDates.size >= 3) {
     const lastQuiz = await this.quizService.getLastQuizForUser(user._id as Types.ObjectId);
     const currentDate = new Date();
-    if (!lastQuiz || currentDate >= lastQuiz.next_quiz_date) {
+
+    if (!lastQuiz) {
+      // Schedule the first quiz within 24 hours of the fourth session or day
       await this.quizService.generateQuiz(user._id as Types.ObjectId);
+    } else {
+      // For further quizzes, use the existing logic
+      if (currentDate >= lastQuiz.next_quiz_date) {
+        await this.quizService.generateQuiz(user._id as Types.ObjectId);
+      }
     }
   }
+}
 }

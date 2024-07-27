@@ -20,12 +20,12 @@ export class QuestionController {
     const userId = req.user._id;
 
     // Check submission count
-    // const submissionCount = await this.textService.getSubmissionCount(userId);
-    // if (submissionCount % 3 !== 0) {
-    //   return {
-    //     message: "Not generating questions for this submission",
-    //   };
-    // }
+    const submissionCount = await this.textService.getSubmissionCount(userId);
+    if (submissionCount % 5 !== 0) {
+      return {
+        message: "Not generating questions for this submission",
+      };
+    }
 
     const questions = await this.questionService.generateQuestions(userId);
     return questions;

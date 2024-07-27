@@ -32,16 +32,18 @@ export class QuestionService {
     }
 
     const combinedText = submissions.map(sub => sub.content).join(' ');
+    const lastSubmission = submissions[0].content;
+    console.log(`Last submission: ${lastSubmission}`);
 
     const suggestedQuestionType = await this.suggestQuestionType(combinedText);
 
     const questionType = await this.selectQuestionType(suggestedQuestionType);
 
-    console.log("Making request to flask-api for question generation")
+    console.log("Making request to flask-api for question generation");
 
     const response = await lastValueFrom(this.httpService.post('http://flask-api:8000/question/generate', {
-      text: combinedText,
       type: questionType,
+      lastSubmission: lastSubmission,
     }));
 
     await this.updateQuestionCount(questionType);
@@ -84,5 +86,14 @@ export class QuestionService {
       { $inc: { count: 1 } },
       { upsert: true, new: true },
     );
+  }
+
+  async evaluateAcademicSentence(originalSentence: string, correctedSentence: string) {
+    const response = await lastValueFrom(this.httpService.post('http://flask-api:8000/question/academic_sentence_correction', {
+      original_sentence: originalSentence,
+      corrected_sentence: correctedSentence,
+    }));
+
+    return response.data;
   }
 }

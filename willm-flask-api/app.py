@@ -9,7 +9,7 @@ import asyncio
 import aiohttp
 from prompts import (SYSTEM_PROMPT_1, SYSTEM_PROMPT_2, SYSTEM_PROMPT_4, SYSTEM_PROMPT_5,
                      UNIFIED_PROMPT, UNIFIED_PROMPT_2, SCORES, 
-                     REVISION_PROMPT, SYNONYMS_PROMPT, ACADEMIC_SENTENCE_PROMPT, 
+                     REVISION_PROMPT, SYNONYMS_PROMPT, ACADEMIC_SENTENCE_PROMPT, ACADEMIC_SENTENCE_CORRECTING_PROMPT,
                      ARGUMENT_STRENGTHENING_PROMPT)
 import logging
 from langchain_chroma import Chroma
@@ -62,15 +62,6 @@ async def handle_unified(session, data, language):
 async def handle_unified_2(session, data, section, language):
     logging.info(f"Received language for unified 2: {language}")
     return await fetch_openai_response(session, SYSTEM_PROMPT_2, UNIFIED_PROMPT_2, data, section, language=language)
-
-async def handle_organization(session, data, section):
-    return await fetch_openai_response(session, SYSTEM_PROMPT_2, ORGANIZATION_PROMPT, data, section)
-
-async def handle_coherence(session, data, section):
-    return await fetch_openai_response(session, SYSTEM_PROMPT_2, COHERENCE_PROMPT, data, section)
-
-async def handle_writing_style(session, data, section):
-    return await fetch_openai_response(session, SYSTEM_PROMPT_2, WRITING_STYLE_PROMPT, data, section)
 
 async def handle_scores(session, data):
     return await fetch_openai_response(session, SYSTEM_PROMPT_4, SCORES, data)
@@ -288,11 +279,14 @@ def suggest_question_type():
 def generate_question():
     data = request.json
     question_type = data['type']
+    lastSubmission = data.get('lastSubmission')
     
     if question_type not in question_prompts:
         return jsonify({"error": "Invalid question type"}), 400
 
-    prompt = question_prompts[question_type]
+    prompt_template = question_prompts[question_type]
+
+    prompt = prompt_template.format(lastSubmission=lastSubmission)
 
     response = openai.chat.completions.create(
         model="gpt-4o",
@@ -367,6 +361,41 @@ def generate_question():
         "answer": generated_answer,
         "document_id": document_id
     })
+
+@app.route('/question/academic_sentence_correction', methods=['POST'])
+def academic_sentence_correction():
+    data = request.json
+    original_sentence = data['original_sentence']
+    corrected_sentence = data['corrected_sentence']
+
+    prompt = ACADEMIC_SENTENCE_CORRECTING_PROMPT.format(
+        original_sentence=original_sentence,
+        corrected_sentence=corrected_sentence
+    )
+
+    response = openai.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {"role": "system", "content": SYSTEM_PROMPT_5},
+            {"role": "user", "content": prompt}
+        ],
+        max_tokens=2000
+    )
+
+    logger.info(f"Academic sentence correction response: {response}")
+
+    output = response.choices[0].message.content
+
+    answer_match = re.search(r'Answer:\s*(Good|Not Good)', output)
+
+    if answer_match:
+        answer = answer_match.group(1).strip()
+        return jsonify({
+            "type": "academic_sentence_evaluation",
+            "answer": answer
+        })
+    else:
+        return jsonify({"error": "Failed to parse the generated output"}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000)

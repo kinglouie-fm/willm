@@ -420,7 +420,7 @@ REVISION_PROMPT = """
 I will provide you with a text that includes a submission from a user. Identify the grammatical errors in the submission and generate a revision type question based on these errors. The text should have grammatical errors with no two possible answers to correct them. The text should be max 100 words. Provide the question and the corresponding correct text.
 
 Text:
-{text}
+{lastSubmission}
 
 Output format:
 Type: revision
@@ -432,7 +432,7 @@ SYNONYMS_PROMPT = """
 I will provide you with a text that includes a submission from a user. Identify a word in the submission that could be replaced with an academic synonym and generate a multiple choice question for identifying academic synonyms. Provide the word and five options, with only one correct synonym. The difficulty should be medium.
 
 Text:
-{text}
+{lastSubmission}
 
 Output format:
 Type: synonyms
@@ -445,7 +445,7 @@ ACADEMIC_SENTENCE_PROMPT = """
 I will provide you with a text that includes a submission from a user. Identify a sentence in the submission that needs to be paraphrased into academic style and generate a question based on this sentence. Provide only the original sentence of it.
 
 Text:
-{text}
+{lastSubmission}
 
 Output format:
 Type: academic_sentence
@@ -463,14 +463,13 @@ Corrected Sentence: {corrected_sentence}
 Output format:
 Type: academic_sentence_evaluation
 Answer: [Good/Not Good]
-Reason: [Reason for your evaluation]
 """
 
 ARGUMENT_STRENGTHENING_PROMPT = """
 I will provide you with a text that includes a submission from a user. Identify an argument in the submission that could be strengthened and generate a multiple choice question to strengthen the academic argument. Provide the argument and five options, with only one correct option to strengthen the argument.
 
 Text:
-{text}
+{lastSubmission}
 
 Output format:
 Type: argument_strengthening

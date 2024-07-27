@@ -285,7 +285,7 @@ const updateText = () => {
 };
 
 const limitTextLength = () => {
-  const maxLength = 2000;
+  const maxLength = 1000;
   let textContent = editableDiv.value.innerText;
   if (textContent.length > maxLength) {
     editableDiv.value.innerText = textContent.slice(0, maxLength);

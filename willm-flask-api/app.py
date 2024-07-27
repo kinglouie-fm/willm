@@ -50,7 +50,7 @@ async def fetch_openai_response(session, system_prompt_template, prompt_template
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": prompt}
             ],
-            "max_tokens": 2000
+            "max_tokens": 1000
         }
     ) as response:
         response_json = await response.json()
@@ -301,7 +301,7 @@ def generate_question():
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": prompt}
         ],
-        max_tokens=2000
+        max_tokens=1000
     )
 
     logger.info(f"Generated question response: {response}")
@@ -386,7 +386,7 @@ def academic_sentence_correction():
             {"role": "system", "content": 'You are an expert in academic writing. I will provide you with an original sentence and a corrected sentence. Your task is to evaluate whether the corrected sentence is good or not good based on academic writing standards.'},
             {"role": "user", "content": prompt}
         ],
-        max_tokens=2000
+        max_tokens=1000
     )
 
     logger.info(f"Academic sentence correction response: {response}")

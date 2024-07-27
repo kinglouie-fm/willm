@@ -99,6 +99,11 @@ export class QuestionService {
       if (sections.length < 2) {
         console.log(`Skipping ${questionType} due to insufficient sections`);
         this.updateQuestionCount(questionType);
+
+        // Add skipped question type to the front of the queue
+        this.currentQuestionIndex = (this.currentQuestionIndex - 1 + this.questionTypes.length) % this.questionTypes.length;
+        this.questionTypes.splice(this.currentQuestionIndex, 0, this.questionTypes.splice(this.questionTypes.indexOf(questionType), 1)[0]);
+
         return this.selectQuestionType(null, userId);
       }
     }

@@ -154,4 +154,29 @@ export class QuestionService {
 
     return response.data;
   }
+
+  // For testing purposes only
+  async addQuestionManually(data: any, userId: string) {
+    const response = await lastValueFrom(this.httpService.post('http://flask-api:8000/question/add', {
+      user_id: userId,
+      type: data.type,
+      question: data.question,
+      text: data.text,
+      answer: data.answer,
+      word: data.word,
+      options: data.options,
+      sentence: data.sentence,
+      argument: data.argument,
+      excerpts: data.excerpts,
+      sentences: data.sentences,
+    }));
+
+    return response.data;
+  }
+
+  // For testing purposes only
+  async getQuestionsForUser(userId: string) {
+    const response = await lastValueFrom(this.httpService.get(`http://flask-api:8000/question/get/${userId}`));
+    return response.data;
+  }
 }

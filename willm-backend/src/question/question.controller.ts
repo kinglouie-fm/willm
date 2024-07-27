@@ -1,4 +1,4 @@
-import { Controller, Post, Req, UseGuards, Body } from '@nestjs/common';
+import { Controller, Post, Req, UseGuards, Body, Get } from '@nestjs/common';
 import { QuestionService } from './question.service';
 import { TextService } from '../text/text.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -48,11 +48,28 @@ export class QuestionController {
     @Body('correct_answer') correctAnswer: string,
     @Body('user_answer') userAnswer: string,
     @Body('options') options: string[],
+    @Body('excerpts') excerpts: string[],
     @Body('text') text?: string,
     @Body('word') word?: string,
     @Body('sentence') sentence?: string,
   ) {
-    const explanation = await this.questionService.explainAnswer(question, correctAnswer, userAnswer, options, text, word, sentence);
+    const explanation = await this.questionService.explainAnswer(question, correctAnswer, userAnswer, options, excerpts, text, word, sentence);
     return explanation;
+  }
+
+  // For testing purposes only
+  @UseGuards(JwtAuthGuard)
+  @Post('add')
+  async addQuestion(@Body() data: any, @Req() req: Request) {
+    const userId = '669d73dc7025c301e4c9a4c0';
+    return this.questionService.addQuestionManually(data, userId);
+  }
+
+  // For testing purposes only
+  @UseGuards(JwtAuthGuard)
+  @Get('get')
+  async getQuestions(@Req() req) {
+    const userId = '669d73dc7025c301e4c9a4c0';
+    return this.questionService.getQuestionsForUser(userId);
   }
 }

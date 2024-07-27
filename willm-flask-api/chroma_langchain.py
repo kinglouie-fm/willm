@@ -6,6 +6,10 @@ from langchain_chroma import Chroma
 from langchain_openai import OpenAIEmbeddings
 import chromadb
 from chromadb.config import Settings
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 
@@ -22,6 +26,7 @@ class ChromaLangChainHandler:
     def add_document(self, user_id, generated_question, metadata):
         collection = self.get_user_collection(user_id)
         embedded_question = self.embedding_function.embed_query(generated_question)
+        logging.info(f"Embedded question: {embedded_question}")
         document_id = str(uuid.uuid4())
         collection.add(
             documents=[generated_question],
@@ -33,7 +38,8 @@ class ChromaLangChainHandler:
 
     def get_documents(self, user_id):
         collection = self.get_user_collection(user_id)
-        return collection.get()
+        documents = collection.get(include=["metadatas", "documents", "embeddings"])
+        return documents
 
 # Initialize the handler
 chroma_langchain_handler = ChromaLangChainHandler()

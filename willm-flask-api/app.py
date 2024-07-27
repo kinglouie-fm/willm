@@ -465,5 +465,63 @@ def generate_review():
         "organization_tip": organization_tip
     })
 
+# FOR TESTING ONLY
+@app.route('/question/add', methods=['POST'])
+def add_question():
+    data = request.json
+    user_id = data.get('user_id')
+    question_type = data.get('type')
+    logging.info(f"user: {user_id}, type: {question_type}")
+    
+    if not user_id or not question_type:
+        return jsonify({"error": "user_id and type are required"}), 400
+
+    # Metadata construction based on the provided data
+    metadata = {
+        'type': question_type,
+        'question': data.get('question', ''),
+        'text': data.get('text', ''),
+        'answer': data.get('answer', ''),
+        'word': data.get('word', ''),
+        'options': data.get('options', ''),
+        'sentence': data.get('sentence', ''),
+        'argument': data.get('argument', ''),
+        'excerpts': data.get('excerpts', ''),
+        'sentences': data.get('sentences', '')
+    }
+
+    document_id = chroma_langchain_handler.add_document(user_id, metadata['question'], metadata)
+
+    return jsonify({
+        "type": metadata['type'],
+        "question": metadata['question'],
+        "text": metadata['text'],
+        "answer": metadata['answer'],
+        "word": metadata['word'],
+        "options": metadata['options'],
+        "sentence": metadata['sentence'],
+        "argument": metadata['argument'],
+        "excerpts": metadata['excerpts'],
+        "sentences": metadata['sentences'],
+        "document_id": document_id
+    })
+
+# FOR TESTING ONLY
+@app.route('/question/get/<user_id>', methods=['GET'])
+def get_questions(user_id):
+    documents = chroma_langchain_handler.get_documents(user_id)
+
+    result = []
+    ids = documents.get('ids', [])
+    metadatas = documents.get('metadatas', [])
+
+    for doc_id, metadata in zip(ids, metadatas):
+        result.append({
+            "document_id": doc_id,
+            "metadata": metadata
+        })
+
+    return jsonify(result)
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000)

@@ -572,3 +572,20 @@ User Answer: {user_answer}
 Output format:
 Explanation: [Detailed explanation]
 """
+
+DECIDE_QUESTIONS = """
+You will be provided with a set of new questions and the history of the last two quizzes taken by a user. 
+Each quiz history includes the question type and whether the user answered correctly (result: true) or incorrectly (result: false).
+
+Your task is to decide which questions to include in the next quiz, prioritizing the questions that the user got wrong previously while ensuring a balance across different question types. 
+If the user got a question type wrong more than once, that question type should have a higher priority.
+
+Here are the new questions:
+{new_questions}
+
+Here is the quiz history:
+{quiz_history}
+
+Please return the five best question ids from the new questions for the next quiz in the following output format:
+Question IDs: [The question ids separated by commas]
+"""

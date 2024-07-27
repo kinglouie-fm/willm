@@ -9,7 +9,7 @@ from prompts import (
     SYSTEM_PROMPT_1, SYSTEM_PROMPT_2, SYSTEM_PROMPT_4, SYSTEM_PROMPT_5,
     SYSTEM_PROMPT_6, UNIFIED_PROMPT, UNIFIED_PROMPT_2, SCORES, 
     REVISION_PROMPT, SYNONYMS_PROMPT, ACADEMIC_SENTENCE_PROMPT, ACADEMIC_SENTENCE_CORRECTING_PROMPT,
-    ARGUMENT_STRENGTHENING_PROMPT, EXPLAIN_ANSWER, COHERENCE_TIP_PROMPT, ORGANIZATION_TIP_PROMPT
+    ARGUMENT_STRENGTHENING_PROMPT, EXPLAIN_ANSWER, COHERENCE_TIP_PROMPT, ORGANIZATION_TIP_PROMPT, DECIDE_QUESTIONS
 )
 
 load_dotenv()
@@ -524,9 +524,12 @@ def get_questions(user_id):
     return jsonify(result)
 
 @app.route('/quiz/similarity-search', methods=['POST'])
-def similarity_search():
+async def similarity_search():
     data = request.json
+    user_id = data.get('user_id')
     query = data.get('query')
+    k = data.get('k')
+    quiz_history = data.get('quiz_history', [])
 
     if not query:
         return jsonify({"error": "No query provided"}), 400
@@ -535,9 +538,8 @@ def similarity_search():
     embedding = chroma_langchain_handler.embedding_function.embed_query(query)
 
     # Perform similarity search in ChromaDB
-    user_id = "some_user_id"  # This should be derived based on your logic
     collection = chroma_langchain_handler.get_user_collection(user_id)
-    results = collection.query(embedding, include=["metadatas", "documents"], n_results=10)
+    results = collection.query(embedding, include=["metadatas", "documents"], n_results=k)
 
     # Extract relevant information from the results
     questions = []
@@ -551,7 +553,40 @@ def similarity_search():
         }
         questions.append(question_data)
 
+    # If quiz history is provided, give it to LLM along with the questions
+    if quiz_history:
+        new_questions_str = '\n'.join([f"ID: {q['question_id']}, Type: {q['question_type']}" for q in questions])
+        quiz_history_str = '\n'.join([f"Quiz: {idx + 1}\n" + '\n'.join([f"Type: {q['question_type']}, Result: {q['result']}" for q in quiz['questions']]) for idx, quiz in enumerate(quiz_history)])
+
+        selected_question_ids = await llm_decide_questions(new_questions_str, quiz_history_str)
+        questions = [q for q in questions if q['question_id'] in selected_question_ids]
+
     return jsonify(questions)
+
+async def llm_decide_questions(new_questions, quiz_history):
+    prompt = DECIDE_QUESTIONS.format(new_questions=new_questions, quiz_history=quiz_history)
+
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+            'https://api.openai.com/v1/chat/completions',
+            headers={
+                'Authorization': f'Bearer {openai.api_key}',
+                'Content-Type': 'application/json'
+            },
+            json={
+                "model": "gpt-4o",
+                "messages": [
+                    {"role": "system", "content": "You are an expert in spaced repetition and educational testing."},
+                    {"role": "user", "content": prompt}
+                ],
+                "max_tokens": 500
+            }
+        ) as response:
+            response_json = await response.json()
+            question_ids_str = response_json['choices'][0]['message']['content']
+            question_ids = re.findall(r'\[(.*?)\]', question_ids_str)[0].split(', ')
+            return question_ids
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000)

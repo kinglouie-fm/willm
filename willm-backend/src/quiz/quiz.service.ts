@@ -38,16 +38,40 @@ export class QuizService {
     // Create a query for semantic similarity search
     const query = this.createQueryFromData(issues, recentReview, scores);
 
-    // Perform similarity search using the query
-    const response = await lastValueFrom(this.httpService.post('http://flask-api:8000/quiz/similarity-search', { query }));
-    const questions = response.data;
+    // Check quiz history
+    const quizHistory = await this.quizModel.find({ user_id: userId }).sort({ date_created: -1 }).limit(2).exec();
+
+    let questions;
+    if (quizHistory.length === 0 || quizHistory.length < 2) {
+      // If no history or less than 2 quizzes, use top-k of similarity search with k=5
+      const response = await lastValueFrom(this.httpService.post('http://flask-api:8000/quiz/similarity-search', { 
+        user_id: userId.toString(), 
+        query, 
+        k: 5 
+      }));
+      questions = response.data;
+    } else {
+      // If at least 2 quizzes, give history to LLM along with top-k of similarity search with k=10
+      const response = await lastValueFrom(this.httpService.post('http://flask-api:8000/quiz/similarity-search', {
+        user_id: userId.toString(),
+        query,
+        k: 10,
+        quiz_history: quizHistory.map(qh => ({
+          questions: qh.questions.map(q => ({
+            question_type: q.question_type,
+            result: q.result
+          }))
+        }))
+      }));
+      questions = response.data;
+    }
 
     // Determine the next quiz interval and date
-    const lastQuiz = await this.quizModel.findOne({ user_id: userId }).sort({ date_created: -1 }).exec();
     let intervalIndex = 0;
     let nextQuizDate = new Date();
 
-    if (lastQuiz) {
+    if (quizHistory.length > 0) {
+      const lastQuiz = quizHistory[0];
       intervalIndex = this.intervals.indexOf(lastQuiz.interval_days);
       if (intervalIndex === -1) {
         intervalIndex = 0;
@@ -76,7 +100,7 @@ export class QuizService {
       questions: questions.map(q => ({
         question_id: q.question_id,
         question_text: q.question_text,
-        question_type: q.question_type, // Assuming this comes from the search result
+        question_type: q.question_type,
         options: q.options,
         correct_answer: q.correct_answer,
         user_answer: '',
@@ -97,7 +121,7 @@ export class QuizService {
     });
 
     query += 'Reviews: ';
-    const reviewData = recentReview.reviewData;
+    const reviewData = recentReview.review_data;
     for (const key in reviewData) {
       query += `${key} improvements: ${reviewData[key].improvements.join(', ')} tips: ${reviewData[key].tips.join(', ')} `;
     }

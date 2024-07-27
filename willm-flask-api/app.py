@@ -1,17 +1,10 @@
-import json
-import uuid
 from flask import Flask, request, jsonify
 import openai
 from dotenv import load_dotenv
-import os
 import re
-import asyncio
 import aiohttp
 import logging
-from langchain_chroma import Chroma
-from langchain_openai import OpenAIEmbeddings
-import chromadb
-from chromadb.config import Settings
+from chroma_langchain import chroma_langchain_handler
 from prompts import (
     SYSTEM_PROMPT_1, SYSTEM_PROMPT_2, SYSTEM_PROMPT_4, SYSTEM_PROMPT_5,
     SYSTEM_PROMPT_6, UNIFIED_PROMPT, UNIFIED_PROMPT_2, SCORES, 
@@ -25,14 +18,6 @@ app = Flask(__name__)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-openai.api_key = os.getenv('FLASK_API_KEY')
-chromadb_client = chromadb.HttpClient(host="chromaDB", port = 8000, settings=Settings(allow_reset=True, anonymized_telemetry=False))
-collection = chromadb_client.get_or_create_collection(name='questions')
-embedding_function = OpenAIEmbeddings(api_key=os.getenv('FLASK_API_KEY'))
-
-# LangChain Chroma setup - for similarity search
-db = Chroma(client=chromadb_client, collection_name='questions', embedding_function=embedding_function)
 
 async def fetch_openai_response(session, system_prompt_template, prompt_template, data, section=None, language='English'):
     system_prompt = system_prompt_template.format(language=language)
@@ -289,11 +274,7 @@ def generate_question():
     prompt_template = question_prompts[question_type]
     prompt = prompt_template.format(text=text)
 
-    # Determine which system prompt to use
-    if question_type in ['coherence', 'organization']:
-        system_prompt = SYSTEM_PROMPT_6
-    else:
-        system_prompt = SYSTEM_PROMPT_5
+    system_prompt = SYSTEM_PROMPT_6 if question_type in ['coherence', 'organization'] else SYSTEM_PROMPT_5
 
     response = openai.chat.completions.create(
         model="gpt-4o",
@@ -308,12 +289,11 @@ def generate_question():
 
     output = response.choices[0].message.content
 
-    # Extract the generated question and answer based on question type
     generated_question = None
     generated_answer = None
     options = None
     
-    if question_type == 'synonyms' or question_type == 'argument_strengthening':
+    if question_type in ['synonyms', 'argument_strengthening']:
         question_match = re.search(r'Question:\s*(.*?)\nOptions:', output, re.DOTALL)
         options_match = re.search(r'Options:\s*(A\..*?B\..*?C\..*?D\..*?E\..*)\nAnswer:', output, re.DOTALL)
         answer_match = re.search(r'Answer:\s*(.*)', output, re.DOTALL)
@@ -336,11 +316,6 @@ def generate_question():
         else:
             return jsonify({"error": "Failed to parse the generated output"}), 500
 
-    # Embed the generated question using Langchain
-    embeddings = OpenAIEmbeddings(api_key=os.getenv('FLASK_API_KEY'))
-    embedded_question = embeddings.embed_query(generated_question)
-
-    # Prepare metadata ensuring no None values
     metadata = {
         'question': generated_question,
         'options': options if options else "",
@@ -348,18 +323,7 @@ def generate_question():
         'type': question_type,
     }
 
-    # Store the embedded question in ChromaDB
-    document_id = str(uuid.uuid4())
-    collection.add(
-        documents=[generated_question],
-        embeddings=[embedded_question],
-        ids=[document_id],
-        metadatas=[{k: (v if v is not None else "") for k, v in metadata.items()}]
-    )
-
-    # Verify document addition
-    documents = collection.get()
-    logger.info(f"Documents: {documents}")
+    document_id = chroma_langchain_handler.add_document(generated_question, metadata)
 
     return jsonify({
         "type": question_type,

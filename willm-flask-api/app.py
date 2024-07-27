@@ -290,49 +290,57 @@ def generate_question():
 
     output = response.choices[0].message.content
 
-    generated_question = None
-    generated_answer = None
-    options = None
-    
-    if question_type in ['synonyms', 'argument_strengthening']:
-        question_match = re.search(r'Question:\s*(.*?)\nOptions:', output, re.DOTALL)
-        options_match = re.search(r'Options:\s*(A\..*?B\..*?C\..*?D\..*?E\..*)\nAnswer:', output, re.DOTALL)
-        answer_match = re.search(r'Answer:\s*(.*)', output, re.DOTALL)
-        
-        if question_match and options_match and answer_match:
-            generated_question = question_match.group(1).strip()
-            options = options_match.group(1).strip()
-            generated_answer = answer_match.group(1).strip()
-            logger.info(f"Generated triple: {generated_question}, {options}, {generated_answer}")
-        else:
-            return jsonify({"error": "Failed to parse the generated output"}), 500
-    else:
-        question_match = re.search(r'Question:\s*(.*?)\nAnswer:', output, re.DOTALL)
-        answer_match = re.search(r'Answer:\s*(.*)', output, re.DOTALL)
-        
-        if question_match and answer_match:
-            generated_question = question_match.group(1).strip()
-            generated_answer = answer_match.group(1).strip()
-            logger.info(f"Generated pair: {generated_question}, {generated_answer}")
-        else:
-            return jsonify({"error": "Failed to parse the generated output"}), 500
-
+    # Initialize metadata with the type key
     metadata = {
-        'question': generated_question,
-        'options': options if options else "",
-        'answer': generated_answer,
-        'type': question_type,
+        'type': question_type
     }
 
-    document_id = chroma_langchain_handler.add_document(user_id, generated_question, metadata)
+    # Extract and add relevant keys to the metadata
+    question_match = re.search(r'Question:\s*(.*?)\n', output, re.DOTALL)
+    if question_match:
+        metadata['question'] = question_match.group(1).strip()
+    
+    answer_match = re.search(r'Answer:\s*(.*)', output, re.DOTALL)
+    if answer_match:
+        metadata['answer'] = answer_match.group(1).strip()
 
-    return jsonify({
-        "type": question_type,
-        "question": generated_question,
-        "options": options,
-        "answer": generated_answer,
-        "document_id": document_id
-    })
+    if question_type in ['synonyms', 'argument_strengthening', 'coherence', 'organization']:
+        options_match = re.search(r'Options:\s*(.*?)\n', output, re.DOTALL)
+        if options_match:
+            metadata['options'] = options_match.group(1).strip()
+
+        if question_type == 'synonyms':
+            word_match = re.search(r'Word:\s*(.*?)\n', output, re.DOTALL)
+            if word_match:
+                metadata['word'] = word_match.group(1).strip()
+        elif question_type == 'argument_strengthening':
+            argument_match = re.search(r'Argument:\s*(.*?)\n', output, re.DOTALL)
+            if argument_match:
+                metadata['argument'] = argument_match.group(1).strip()
+        elif question_type == 'coherence':
+            excerpts_match = re.search(r'Excerpts:\s*(.*?)\n', output, re.DOTALL)
+            if excerpts_match:
+                metadata['excerpts'] = excerpts_match.group(1).strip()
+        elif question_type == 'organization':
+            sentences_match = re.search(r'Sentences:\s*(.*?)\n', output, re.DOTALL)
+            if sentences_match:
+                metadata['sentences'] = sentences_match.group(1).strip()
+    else:
+        if question_type == 'revision':
+            text_match = re.search(r'Text:\s*(.*?)\n', output, re.DOTALL)
+            if text_match:
+                metadata['text'] = text_match.group(1).strip()
+        elif question_type == 'academic_sentence':
+            sentence_match = re.search(r'Sentence:\s*(.*?)\n', output, re.DOTALL)
+            if sentence_match:
+                metadata['sentence'] = sentence_match.group(1).strip()
+
+    document_id = chroma_langchain_handler.add_document(user_id, metadata['question'], metadata)
+
+    # Add document_id to the metadata
+    metadata['document_id'] = document_id
+
+    return jsonify(metadata)
 
 @app.route('/question/academic_sentence_correction', methods=['POST'])
 def academic_sentence_correction():
@@ -377,10 +385,12 @@ def explain_answer():
     word = data.get('word', '')
     sentence = data.get('sentence', '')
     options = data.get('options', [])
+    excerpts = data.get('excerpts', [])
     correct_answer = data['correct_answer']
     user_answer = data['user_answer']
 
     options_str = '\n'.join(options)
+    excerpts_str = '\n'.join(excerpts)
 
     prompt = EXPLAIN_ANSWER.format(
         question=question,
@@ -388,6 +398,7 @@ def explain_answer():
         word=word,
         sentence=sentence,
         options=options_str,
+        excerpts=excerpts_str,
         correct_answer=correct_answer,
         user_answer=user_answer
     )

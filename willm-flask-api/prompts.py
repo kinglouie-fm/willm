@@ -526,7 +526,7 @@ Your generated sentences should not be a copy of the provided text, they should 
 Output format:
 Type: coherence
 Question: Analyze the following sentences from two different sections of an academic paper. Select the best revision for the second sentence to improve coherence and maintain logical flow.
-Sentenes: [The generated sentences that only cover the topic of the provided text]
+Sentences: [The generated sentences that only cover the topic of the provided text]
 Options: [The options enumerated with A, B, C, D]
 Answer: [The correct option]
 """

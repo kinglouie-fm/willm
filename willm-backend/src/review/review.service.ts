@@ -100,12 +100,18 @@ export class ReviewService {
       }
     }
 
-    const response = await lastValueFrom(this.httpService.post('http://flask-api:8000/review/generate', {
-      coherence_text: coherenceSections.length >= 2 ? coherenceSections.join('\n\n') : '',
-      organization_text: organizationSections.length >= 3 ? organizationSections.join('\n\n') : '',
-    }));
+    let coherence_tip = 'coherence_tip not generated';
+    let organization_tip = 'organization_tip not generated';
 
-    const { coherence_tip, organization_tip } = response.data;
+    // Make the request only if the conditions are met
+    if (coherenceSections.length >= 2 || organizationSections.length >= 3) {
+      const response = await lastValueFrom(this.httpService.post('http://flask-api:8000/review/generate', {
+        coherence_text: coherenceSections.length >= 2 ? coherenceSections.join('\n\n') : 'coherence_tip not generated',
+        organization_text: organizationSections.length >= 3 ? organizationSections.join('\n\n') : 'organization_tip not generated',
+      }));
+      coherence_tip = response.data.coherence_tip;
+      organization_tip = response.data.organization_tip;
+    }
 
     if (previousReview) {
       const previousFrequencies = {

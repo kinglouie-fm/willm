@@ -538,10 +538,10 @@ async def similarity_search():
     # Extract relevant information from the results
     questions = []
     for result in results:
-        metadata = result["metadata"]
+        metadata = result.metadata
         question_data = {
             "question_id": metadata.get("id"),
-            "question_text": result["document"],
+            "question_text": result.page_content,
             "question_type": metadata.get("type", ""),
             "options": metadata.get("options", "").split("\n"),
             "correct_answer": metadata.get("answer", ""),

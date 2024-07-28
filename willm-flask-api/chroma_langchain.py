@@ -47,6 +47,7 @@ class ChromaLangChainHandler:
         collection = self.get_user_collection(user_id)
         embedding_vector = self.embedding_function.embed_query(query)
         results = collection.similarity_search_by_vector(embedding_vector, k=k)
+        logging.info(f"Similarity search results: {results}")
         return results
 
 chroma_langchain_handler = ChromaLangChainHandler()

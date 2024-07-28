@@ -122,6 +122,7 @@ export class UserService {
 
   // If the user has completed 3 distinct days of sessions, schedule the first quiz
   if (distinctDates.size >= 3) {
+    console.log("Generating quiz for user");
     const lastQuiz = await this.quizService.getLastQuizForUser(user._id as Types.ObjectId);
     const currentDate = new Date();
 
@@ -134,6 +135,8 @@ export class UserService {
         await this.quizService.generateQuiz(user._id as Types.ObjectId);
       }
     }
+  } else {
+    console.log("Not enough sessions to generate quiz");
   }
 }
 }

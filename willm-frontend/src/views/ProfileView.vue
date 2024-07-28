@@ -3,11 +3,12 @@ import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import ScoreProgressBar from '../components/ScoreProgressBar.vue';
 import * as bootstrap from 'bootstrap';
+import { message } from 'ant-design-vue';
 
 const sections = ref([]);
 const selectedSection = ref('');
 const comparisonData = ref(null);
-const message = ref('');
+const response_message = ref('');
 
 const getSections = async () => {
     try {
@@ -28,11 +29,11 @@ const fetchComparison = async () => {
         try {
             const response = await axios.get(`http://localhost:3000/score/comparison/${selectedSection.value}`, { withCredentials: true });
             if (response.data.message) {
-                message.value = response.data.message;
+                response_message.value = response.data.message;
                 comparisonData.value = null;
             } else {
                 comparisonData.value = response.data;
-                message.value = '';
+                response_message.value = '';
             }
         } catch (error) {
             console.error("Error fetching comparison data: ", error);
@@ -81,8 +82,8 @@ onMounted(() => {
                     </button>
                 </div>
             </div>
-            <div v-if="message">
-                <p>{{ message }}</p>
+            <div v-if="response_message">
+                <p>{{ response_message }}</p>
             </div>
             <div class="container" v-if="comparisonData">
                 <div class="d-flex flex-wrap">

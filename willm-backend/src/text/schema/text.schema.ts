@@ -1,7 +1,7 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 
-@Schema()
+@Schema({ timestamps: true })  // This automatically adds `createdAt` and `updatedAt` fields
 export class Text extends Document {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   user_id: Types.ObjectId;
@@ -23,3 +23,6 @@ export class Text extends Document {
 }
 
 export const TextSchema = SchemaFactory.createForClass(Text);
+
+// Add an index on createdAt to optimize sorting
+TextSchema.index({ createdAt: -1 });

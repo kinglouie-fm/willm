@@ -15,7 +15,7 @@ export class CorrectionController {
     private readonly correctionService: CorrectionService,
     private readonly issueService: IssueService,
     private readonly sessionService: SessionService,
-    private readonly sectionService: SectionService,
+    // private readonly sectionService: SectionService,
     private readonly textService: TextService,
     private readonly scoreService: ScoreService
   ) {}
@@ -54,6 +54,7 @@ export class CorrectionController {
       content: body.text,
       mode: body.mode,
       language: body.language,
+      createdAt: new Date()
     });
 
     // Generate scores for the text and save them with the text_id

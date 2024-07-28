@@ -178,6 +178,36 @@ export class QuizService {
     await quiz.save();
   }
 
+  async markQuizAsMissed(userId: Types.ObjectId, quizId: string): Promise<void> {
+    const quiz = await this.quizModel.findOne({ user_id: userId, quiz_id: quizId });
+
+    if (!quiz) {
+      throw new Error('Quiz not found');
+    }
+
+    quiz.missed = true;
+
+    const intervalIndex = this.intervals.indexOf(quiz.interval_days);
+    const adjustedIntervalIndex = Math.max(intervalIndex - 1, 0);
+    const nextQuizDate = new Date();
+    nextQuizDate.setDate(nextQuizDate.getDate() + this.intervals[adjustedIntervalIndex]);
+
+    quiz.next_quiz_date = nextQuizDate;
+    quiz.interval_days = this.intervals[adjustedIntervalIndex];
+    await quiz.save();
+  }
+
+  async markQuizAsCompleted(userId: Types.ObjectId, quizId: string): Promise<void> {
+    const quiz = await this.quizModel.findOne({ user_id: userId, quiz_id: quizId });
+
+    if (!quiz) {
+      throw new Error('Quiz not found');
+    }
+
+    quiz.completed = true;
+    await quiz.save();
+  }
+
   async getLastQuizForUser(userId: Types.ObjectId): Promise<Quiz> {
     return this.quizModel.findOne({ user_id: userId }).sort({ date_created: -1 }).exec();
   }

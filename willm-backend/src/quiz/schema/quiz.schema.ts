@@ -31,6 +31,12 @@ export class Quiz extends Document {
 
   @Prop({ default: false })
   skipped: boolean;
+
+  @Prop({ default: false })
+  missed: boolean;
+  
+  @Prop({ default: false })
+  completed: boolean;
 }
 
 export const QuizSchema = SchemaFactory.createForClass(Quiz);

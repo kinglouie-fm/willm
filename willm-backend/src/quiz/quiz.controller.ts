@@ -30,4 +30,13 @@ export class QuizController {
     await this.quizService.markQuizAsSkipped(userId, quizId);
     return { message: 'Quiz marked as skipped' };
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('complete')
+  async completeQuiz(@Req() req: Request, @Body() body) {
+    const userId = req.user._id;
+    const { quizId } = body;
+    await this.quizService.markQuizAsCompleted(userId, quizId);
+    return { message: 'Quiz marked as completed' };
+  }
 }

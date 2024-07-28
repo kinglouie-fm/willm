@@ -136,10 +136,15 @@ export class UserService {
           return;
         }
 
+        // Mark quiz as missed if it is past its due date and not completed
+        if (currentDate >= lastQuiz.next_quiz_date && !lastQuiz.completed) {
+          await this.quizService.markQuizAsMissed(user._id as Types.ObjectId, lastQuiz.quiz_id);
+        }
+
         const intervalIndex = intervals.indexOf(lastQuiz.interval_days);
         const daysSinceLastQuiz = Math.floor((currentDate.getTime() - lastQuiz.next_quiz_date.getTime()) / (1000 * 60 * 60 * 24));
 
-        if (daysSinceLastQuiz > intervals[intervalIndex] * 2 || lastQuiz.skipped) {
+        if (daysSinceLastQuiz > intervals[intervalIndex] * 2 || lastQuiz.skipped || lastQuiz.missed) {
           // If the quiz was missed or skipped, adjust the interval down one step
           const adjustedIntervalIndex = Math.max(intervalIndex - 1, 0);
           const nextQuizDate = new Date();

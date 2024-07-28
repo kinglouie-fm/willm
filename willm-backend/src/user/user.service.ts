@@ -130,6 +130,12 @@ export class UserService {
         // Schedule the first quiz within 24 hours of the fourth session or day
         await this.quizService.generateQuiz(user._id as Types.ObjectId);
       } else {
+        // Check if the last quiz is scheduled for a future date
+        if (currentDate < lastQuiz.next_quiz_date) {
+          console.log('A quiz is already scheduled in the future. No new quiz will be generated.');
+          return;
+        }
+
         const intervalIndex = intervals.indexOf(lastQuiz.interval_days);
         const daysSinceLastQuiz = Math.floor((currentDate.getTime() - lastQuiz.next_quiz_date.getTime()) / (1000 * 60 * 60 * 24));
 

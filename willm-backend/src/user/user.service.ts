@@ -13,8 +13,6 @@ const JWT_SECRET = 'your_jwt_secret';
 export class UserService {
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
-    @Inject(forwardRef(() => QuizService)) private quizService: QuizService,
-    @Inject(forwardRef(() => SessionService)) private sessionService: SessionService,
   ) {}
 
   async userExists(username: string): Promise<boolean> {

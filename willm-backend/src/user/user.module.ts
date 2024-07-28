@@ -5,11 +5,13 @@ import { UserController } from './user.controller';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { User, UserSchema } from './schema/user.schema';
 import { SessionModule } from '../session/session.module';
+import { QuizModule } from 'src/quiz/quiz.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     forwardRef(() => SessionModule),
+    forwardRef(() => QuizModule),
   ],
   controllers: [UserController],
   providers: [UserService, JwtAuthGuard],

@@ -2,6 +2,50 @@ import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 
 @Schema()
+class Question extends Document {
+  @Prop({ required: true })
+  question_id: string;
+
+  @Prop({ required: true })
+  question_type: string;
+
+  @Prop({ required: true })
+  question_text: string;
+
+  @Prop()
+  text: string;
+
+  @Prop()
+  correct_answer: string;
+
+  @Prop()
+  user_answer: string;
+
+  @Prop()
+  word: string;
+
+  @Prop([String])
+  options: string[];
+
+  @Prop()
+  sentence: string;
+
+  @Prop()
+  argument: string;
+
+  @Prop([String])
+  excerpts: string[];
+
+  @Prop([String])
+  sentences: string[];
+
+  @Prop({ default: false })
+  result: boolean;
+}
+
+const QuestionSchema = SchemaFactory.createForClass(Question);
+
+@Schema()
 export class Quiz extends Document {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   user_id: Types.ObjectId;
@@ -12,16 +56,8 @@ export class Quiz extends Document {
   @Prop({ required: true })
   date_created: Date;
 
-  @Prop({ type: Array, default: [] })
-  questions: {
-    question_id: string;
-    question_text: string;
-    question_type: string;
-    options: string[];
-    correct_answer: string;
-    user_answer: string;
-    result: boolean;
-  }[];
+  @Prop({ type: [QuestionSchema], default: [] })
+  questions: Question[];
 
   @Prop({ required: true })
   interval_days: number;

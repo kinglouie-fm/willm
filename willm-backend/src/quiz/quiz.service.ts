@@ -70,6 +70,23 @@ export class QuizService {
       questions = response.data;
     }
 
+    // Prepare each question ensuring all required fields are present
+    const preparedQuestions = questions.map(q => ({
+      question_id: q.question_id || new Types.ObjectId().toString(),
+      question_type: q.question_type || '',
+      question_text: q.question_text || '',
+      text: q.text || '',
+      correct_answer: q.correct_answer || '',
+      user_answer: '',
+      word: q.word || '',
+      options: q.options || [],
+      sentence: q.sentence || '',
+      argument: q.argument || '',
+      excerpts: q.excerpts || [],
+      sentences: q.sentences || [],
+      result: false,
+    }));
+
     // Determine the next quiz interval and date
     let intervalIndex = 0;
     let nextQuizDate = new Date();
@@ -101,15 +118,7 @@ export class QuizService {
       user_id: userId,
       quiz_id: new Types.ObjectId().toString(),
       date_created: new Date(),
-      questions: questions.map(q => ({
-        question_id: q.question_id,
-        question_text: q.question_text,
-        question_type: q.question_type,
-        options: q.options,
-        correct_answer: q.correct_answer,
-        user_answer: '',
-        result: false,
-      })),
+      questions: preparedQuestions,
       interval_days: this.intervals[intervalIndex],
       next_quiz_date: nextQuizDate,
     });
@@ -117,6 +126,7 @@ export class QuizService {
 
     return quiz;
   }
+
 
   createQueryFromData(issues, recentReview, scores): string {
     let query = 'Issues: ';
@@ -171,7 +181,6 @@ export class QuizService {
 
     return { question, isCorrect: question.result };
   }
-
 
   async markQuizAsSkipped(userId: Types.ObjectId, quizId: string): Promise<{ message: string, nextQuizDate: Date }> {
     const quiz = await this.quizModel.findOne({ user_id: userId, quiz_id: quizId });

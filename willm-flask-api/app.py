@@ -540,11 +540,17 @@ async def similarity_search():
     for result in results:
         metadata = result.metadata
         question_data = {
-            "question_id": metadata.get("id"),
+            "question_id": metadata.get("id", ""),
             "question_text": result.page_content,
             "question_type": metadata.get("type", ""),
-            "options": metadata.get("options", "").split("\n"),
+            "options": metadata.get("options", "").split("\n") if metadata.get("options") else [],
             "correct_answer": metadata.get("answer", ""),
+            "text": metadata.get("text", ""),
+            "word": metadata.get("word", ""),
+            "sentence": metadata.get("sentence", ""),
+            "argument": metadata.get("argument", ""),
+            "excerpts": metadata.get("excerpts", "").split("\n") if metadata.get("excerpts") else [],
+            "sentences": metadata.get("sentences", "").split("\n") if metadata.get("sentences") else []
         }
         questions.append(question_data)
 

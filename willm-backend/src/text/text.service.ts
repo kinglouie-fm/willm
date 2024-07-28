@@ -30,4 +30,8 @@ export class TextService {
     const texts = await this.textModel.find({ user_id: userId }).sort({ createdAt: -1 }).limit(limit).select('_id').exec();
     return texts.map(text => text._id) as Types.ObjectId[];
   }
+
+  async findTextById(textId: Types.ObjectId): Promise<Text | null> {
+    return this.textModel.findById(textId).exec();
+  }
 }

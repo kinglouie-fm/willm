@@ -417,7 +417,7 @@ You are an expert in academic writing. Your task is to generate various types of
 """
 
 REVISION_PROMPT = """
-I will provide you with a text that includes a submission from a user. Identify the grammatical errors in the submission and generate a revision type question based on these errors. The text should have grammatical errors with no two possible answers to correct them. The text should be max 100 words. Provide the question and the corresponding correct text.
+I will provide you with a text that includes a submission from a user. Identify the grammatical errors in the submission and generate a revision type question based on these errors. If there are none, simply generate a text with grammar mistakes. The text should have grammatical errors with no two possible answers to correct them. The text should be max 100 words. Provide the question and the corresponding correct text.
 
 Text:
 {lastSubmission}

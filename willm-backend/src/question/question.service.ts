@@ -5,6 +5,7 @@ import { Model, Types } from 'mongoose';
 import { QuestionCount } from './schema/question-count.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { lastValueFrom } from 'rxjs';
+import { IssueService } from '../issue/issue.service';
 
 @Injectable()
 export class QuestionService {
@@ -23,6 +24,8 @@ export class QuestionService {
     @Inject(forwardRef(() => TextService))
     private readonly textService: TextService,
     @InjectModel(QuestionCount.name) private questionCountModel: Model<QuestionCount>,
+    @Inject(forwardRef(() => IssueService))
+    private readonly issueService: IssueService,
   ) {}
 
   async generateQuestions(userId: Types.ObjectId) {
@@ -56,12 +59,23 @@ export class QuestionService {
 
     const questionType = await this.selectQuestionType(suggestedQuestionType, userId);
 
+    let textForQuestion = combinedText;
+    if (questionType === 'revision') {
+      const revisionText = await this.findTextWithIssues(userId);
+      if (revisionText) {
+        textForQuestion = revisionText;
+      } else {
+        const firstSubmission = await this.textService.findLastSubmissions(userId, 1);
+        textForQuestion = firstSubmission.length > 0 ? firstSubmission[0].content : combinedText;
+      }
+    }
+
     console.log("Making request to flask-api for question generation");
 
     const response = await lastValueFrom(this.httpService.post('http://flask-api:8000/question/generate', {
       user_id: userId,
       type: questionType,
-      text: combinedText,
+      text: textForQuestion,
     }));
 
     await this.updateQuestionCount(questionType);
@@ -153,6 +167,23 @@ export class QuestionService {
     }));
 
     return response.data;
+  }
+
+  private async findTextWithIssues(userId: Types.ObjectId): Promise<string | null> {
+    const issues = await this.issueService.getLastIssuesByType(userId, 10);
+    const grammarVocabIssues = issues.filter(issue => issue.type === 'grammar_vocab');
+    const textsWithIssues = grammarVocabIssues.reduce((acc, issue) => {
+      const textId = issue.text.toString();
+      acc[textId] = (acc[textId] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const textId = Object.keys(textsWithIssues).find(key => textsWithIssues[key] >= 3);
+    if (textId) {
+      const text = await this.textService.findTextById(new Types.ObjectId(textId));
+      return text ? text.content : null;
+    }
+    return null;
   }
 
   // For testing purposes only

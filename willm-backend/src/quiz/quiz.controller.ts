@@ -27,8 +27,8 @@ export class QuizController {
   async skipQuiz(@Req() req: Request, @Body() body) {
     const userId = req.user._id;
     const { quizId } = body;
-    await this.quizService.markQuizAsSkipped(userId, quizId);
-    return { message: 'Quiz marked as skipped' };
+    const result = await this.quizService.markQuizAsSkipped(userId, quizId);
+    return result;
   }
 
   @UseGuards(JwtAuthGuard)
@@ -36,6 +36,7 @@ export class QuizController {
   async completeQuiz(@Req() req: Request, @Body() body) {
     const userId = req.user._id;
     const { quizId } = body;
-    return this.quizService.markQuizAsCompleted(userId, quizId);
+    const result = await this.quizService.markQuizAsCompleted(userId, quizId);
+    return result;
   }
 }

@@ -160,7 +160,7 @@ export class QuizService {
   }
 
 
-  async markQuizAsSkipped(userId: Types.ObjectId, quizId: string): Promise<void> {
+  async markQuizAsSkipped(userId: Types.ObjectId, quizId: string): Promise<{ message: string, nextQuizDate: Date }> {
     const quiz = await this.quizModel.findOne({ user_id: userId, quiz_id: quizId });
 
     if (!quiz) {
@@ -177,9 +177,11 @@ export class QuizService {
     quiz.next_quiz_date = nextQuizDate;
     quiz.interval_days = this.intervals[adjustedIntervalIndex];
     await quiz.save();
+
+    return { message: 'Quiz marked as skipped', nextQuizDate: quiz.next_quiz_date };
   }
 
-  async markQuizAsMissed(userId: Types.ObjectId, quizId: string): Promise<void> {
+  async markQuizAsMissed(userId: Types.ObjectId, quizId: string): Promise<{ message: string, nextQuizDate: Date }> {
     const quiz = await this.quizModel.findOne({ user_id: userId, quiz_id: quizId });
 
     if (!quiz) {
@@ -196,9 +198,11 @@ export class QuizService {
     quiz.next_quiz_date = nextQuizDate;
     quiz.interval_days = this.intervals[adjustedIntervalIndex];
     await quiz.save();
+
+    return { message: 'Quiz marked as missed', nextQuizDate: quiz.next_quiz_date };
   }
 
-  async markQuizAsCompleted(userId: Types.ObjectId, quizId: string): Promise<{ score: number }> {
+  async markQuizAsCompleted(userId: Types.ObjectId, quizId: string): Promise<{ message: string, score: number, nextQuizDate: Date }> {
     const quiz = await this.quizModel.findOne({ user_id: userId, quiz_id: quizId });
 
     if (!quiz) {
@@ -209,9 +213,14 @@ export class QuizService {
     const score = await this.calculateQuizScore(quizId);
     quiz.score = score;
 
+    // Schedule next quiz
+    const intervalIndex = this.intervals.indexOf(quiz.interval_days);
+    const nextQuizDate = new Date();
+    nextQuizDate.setDate(nextQuizDate.getDate() + this.intervals[Math.min(intervalIndex + 1, this.intervals.length - 1)]);
+
     await quiz.save();
 
-    return { score: quiz.score };
+    return { message: `Quiz marked as completed. Score: ${quiz.score}`, score: quiz.score, nextQuizDate: nextQuizDate };
   }
 
   async calculateQuizScore(quizId: string): Promise<number> {

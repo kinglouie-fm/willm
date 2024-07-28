@@ -113,7 +113,7 @@ export class UserService {
     return user.preTestSubmissions.map(submission => submission.section);
   }
 
-  async triggerQuizGeneration(user: User): Promise<void> {
+  async triggerQuizGeneration(user: User): Promise<{ message: string, nextQuizDate: Date | null }> {
     const sessions = await this.sessionService.getSessionsByUserId(user._id.toString());
     const distinctDates = new Set(sessions.map(session => {
       const date = new Date(session.date_created);
@@ -129,11 +129,12 @@ export class UserService {
       if (!lastQuiz) {
         // Schedule the first quiz within 24 hours of the fourth session or day
         await this.quizService.generateQuiz(user._id as Types.ObjectId);
+        return { message: 'First quiz scheduled', nextQuizDate: new Date() };
       } else {
         // Check if the last quiz is scheduled for a future date
         if (currentDate < lastQuiz.next_quiz_date) {
           console.log('A quiz is already scheduled in the future. No new quiz will be generated.');
-          return;
+          return { message: 'A quiz is already scheduled in the future.', nextQuizDate: lastQuiz.next_quiz_date };
         }
 
         // Mark quiz as missed if it is past its due date and not completed
@@ -153,13 +154,17 @@ export class UserService {
           lastQuiz.next_quiz_date = nextQuizDate;
           lastQuiz.interval_days = intervals[adjustedIntervalIndex];
           await lastQuiz.save();
+
+          return { message: 'Next quiz scheduled after missing/skipping', nextQuizDate: nextQuizDate };
         } else if (currentDate >= lastQuiz.next_quiz_date) {
           // Generate the next quiz if the due date has been reached
           await this.quizService.generateQuiz(user._id as Types.ObjectId);
+          return { message: 'Next quiz scheduled after completing the previous quiz', nextQuizDate: new Date() };
         }
       }
     } else {
       console.log('Not enough sessions to generate quiz');
+      return { message: 'Not enough sessions to generate quiz', nextQuizDate: null };
     }
   }
 }

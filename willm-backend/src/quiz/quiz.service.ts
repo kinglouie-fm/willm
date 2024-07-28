@@ -2,6 +2,9 @@ import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Quiz } from './schema/quiz.schema';
+import { QuizSchedule } from './schema/quiz-schedule.schema';
+import { User } from '../user/schema/user.schema';
+import { SessionService } from '../session/session.service';
 import { IssueService } from '../issue/issue.service';
 import { ReviewService } from '../review/review.service';
 import { ScoreService } from '../score/score.service';
@@ -11,19 +14,68 @@ import { lastValueFrom } from 'rxjs';
 
 @Injectable()
 export class QuizService {
-  private readonly intervals = [1, 2, 4, 6]; // days for quizzes after 1st, 2nd, 3rd, and 4th quiz
+  private readonly intervals = [0, 2, 4, 6]; // days for quizzes after 1st, 2nd, 3rd, and 4th quiz
 
   constructor(
     @InjectModel(Quiz.name) private quizModel: Model<Quiz>,
+    @InjectModel(QuizSchedule.name) private quizScheduleModel: Model<QuizSchedule>,
     private readonly issueService: IssueService,
+    private readonly sessionService: SessionService,
     private readonly reviewService: ReviewService,
     private readonly scoreService: ScoreService,
     private readonly textService: TextService,
     private readonly httpService: HttpService,
   ) {}
 
-  public getIntervals(): number[] {
-    return this.intervals;
+  async handleLoginQuiz(user: User): Promise<{ message: string, nextQuizDate: Date | null, quizDueToday: boolean }> {
+    const sessions = await this.sessionService.getSessionsByUserId(user._id.toString());
+    const distinctDates = new Set(sessions.map(session => {
+      const date = new Date(session.date_created);
+      return date.toISOString().split('T')[0]; // Keep only the date part
+    }));
+
+    if (distinctDates.size >= 3) {
+      const quizSchedule = await this.quizScheduleModel.findOne({ user_id: user._id });
+      const currentDate = new Date();
+      const currentDateStr = currentDate.toISOString().split('T')[0];
+
+      if (!quizSchedule) {
+        // Generate the first quiz and set the next quiz date
+        await this.generateQuiz(user._id as Types.ObjectId);
+        await this.setNextQuizDate(user._id as Types.ObjectId, new Date());
+        return { message: 'First quiz scheduled', nextQuizDate: new Date(), quizDueToday: true };
+      } else {
+        const nextQuizDateStr = quizSchedule.next_quiz_date.toISOString().split('T')[0];
+
+        if (currentDateStr === nextQuizDateStr) {
+          // await this.generateQuiz(user._id as Types.ObjectId);
+          return { message: 'Quiz due today', nextQuizDate: quizSchedule.next_quiz_date, quizDueToday: true };
+        } else {
+          return { message: 'No quiz due today', nextQuizDate: quizSchedule.next_quiz_date, quizDueToday: false };
+        }
+      }
+    } else {
+      return { message: 'Not enough sessions to generate quiz', nextQuizDate: null, quizDueToday: false };
+    }
+  }
+
+  async checkAndGenerateQuizIfDue(userId: Types.ObjectId): Promise<{ message: string, quizDue: boolean, quiz?: any }> {
+    const quizSchedule = await this.quizScheduleModel.findOne({ user_id: userId });
+    const currentDate = new Date();
+    const currentDateStr = currentDate.toISOString().split('T')[0];
+
+    if (!quizSchedule) {
+      return { message: 'No quiz schedule found', quizDue: false };
+    }
+
+    const nextQuizDateStr = quizSchedule.next_quiz_date.toISOString().split('T')[0];
+
+    if (currentDateStr === nextQuizDateStr) {
+      const quiz = await this.generateQuiz(userId);
+      return { message: 'Quiz generated', quizDue: true, quiz };
+    } else {
+      return { message: 'No quiz due today', quizDue: false };
+    }
   }
 
   async generateQuiz(userId: Types.ObjectId): Promise<any> {
@@ -87,46 +139,35 @@ export class QuizService {
       result: false,
     }));
 
-    // Determine the next quiz interval and date
-    let intervalIndex = 0;
-    let nextQuizDate = new Date();
-
-    if (quizHistory.length > 0) {
-      const lastQuiz = quizHistory[0];
-      intervalIndex = this.intervals.indexOf(lastQuiz.interval_days);
-      if (intervalIndex === -1) {
-        intervalIndex = 0;
-      } else {
-        intervalIndex = Math.min(intervalIndex + 1, this.intervals.length - 1);
-      }
-
-      nextQuizDate.setDate(nextQuizDate.getDate() + this.intervals[intervalIndex]);
-
-      // Adjust if the last quiz was missed
-      const daysSinceLastQuiz = (new Date().getTime() - new Date(lastQuiz.next_quiz_date).getTime()) / (1000 * 60 * 60 * 24);
-      if (daysSinceLastQuiz > this.intervals[intervalIndex] * 2) {
-        intervalIndex = Math.max(intervalIndex - 1, 0);
-        nextQuizDate.setDate(new Date().getDate() + this.intervals[intervalIndex]);
-      }
-    } else {
-      // Schedule first quiz after 1 day (or the next session)
-      nextQuizDate.setDate(nextQuizDate.getDate() + this.intervals[intervalIndex]);
-    }
-
     // Store the quiz
     const quiz = new this.quizModel({
       user_id: userId,
       quiz_id: new Types.ObjectId().toString(),
       date_created: new Date(),
       questions: preparedQuestions,
-      interval_days: this.intervals[intervalIndex],
-      next_quiz_date: nextQuizDate,
+      skipped: false,
+      missed: false,
+      completed: false,
+      score: 0,
     });
     await quiz.save();
 
-    return { quiz, nextQuizDate };
+    return { quiz };
   }
 
+  async setNextQuizDate(userId: Types.ObjectId, date: Date): Promise<void> {
+    const existingSchedule = await this.quizScheduleModel.findOne({ user_id: userId });
+    if (existingSchedule) {
+      existingSchedule.next_quiz_date = date;
+      await existingSchedule.save();
+    } else {
+      const newSchedule = new this.quizScheduleModel({
+        user_id: userId,
+        next_quiz_date: date,
+      });
+      await newSchedule.save();
+    }
+  }
 
   createQueryFromData(issues, recentReview, scores): string {
     let query = 'Issues: ';
@@ -190,17 +231,17 @@ export class QuizService {
     }
 
     quiz.skipped = true;
-
-    const intervalIndex = this.intervals.indexOf(quiz.interval_days);
-    const adjustedIntervalIndex = Math.max(intervalIndex - 1, 0);
-    const nextQuizDate = new Date();
-    nextQuizDate.setDate(nextQuizDate.getDate() + this.intervals[adjustedIntervalIndex]);
-
-    quiz.next_quiz_date = nextQuizDate;
-    quiz.interval_days = this.intervals[adjustedIntervalIndex];
     await quiz.save();
 
-    return { message: 'Quiz marked as skipped', nextQuizDate: quiz.next_quiz_date };
+    const quizSchedule = await this.quizScheduleModel.findOne({ user_id: userId });
+    const currentIntervalIndex = this.intervals.indexOf(this.getIntervalForCurrentDate(quizSchedule.next_quiz_date));
+    const newIntervalIndex = Math.max(currentIntervalIndex - 1, 0);
+    const nextQuizDate = new Date();
+    nextQuizDate.setDate(nextQuizDate.getDate() + this.intervals[newIntervalIndex]);
+
+    await this.setNextQuizDate(userId, nextQuizDate);
+
+    return { message: 'Quiz marked as skipped', nextQuizDate };
   }
 
   async markQuizAsMissed(userId: Types.ObjectId, quizId: string): Promise<{ message: string, nextQuizDate: Date }> {
@@ -211,17 +252,17 @@ export class QuizService {
     }
 
     quiz.missed = true;
-
-    const intervalIndex = this.intervals.indexOf(quiz.interval_days);
-    const adjustedIntervalIndex = Math.max(intervalIndex - 1, 0);
-    const nextQuizDate = new Date();
-    nextQuizDate.setDate(nextQuizDate.getDate() + this.intervals[adjustedIntervalIndex]);
-
-    quiz.next_quiz_date = nextQuizDate;
-    quiz.interval_days = this.intervals[adjustedIntervalIndex];
     await quiz.save();
 
-    return { message: 'Quiz marked as missed', nextQuizDate: quiz.next_quiz_date };
+    const quizSchedule = await this.quizScheduleModel.findOne({ user_id: userId });
+    const currentIntervalIndex = this.intervals.indexOf(this.getIntervalForCurrentDate(quizSchedule.next_quiz_date));
+    const newIntervalIndex = Math.max(currentIntervalIndex - 1, 0);
+    const nextQuizDate = new Date();
+    nextQuizDate.setDate(nextQuizDate.getDate() + this.intervals[newIntervalIndex]);
+
+    await this.setNextQuizDate(userId, nextQuizDate);
+
+    return { message: 'Quiz marked as missed', nextQuizDate };
   }
 
   async markQuizAsCompleted(userId: Types.ObjectId, quizId: string): Promise<{ message: string, score: number, nextQuizDate: Date }> {
@@ -234,15 +275,23 @@ export class QuizService {
     quiz.completed = true;
     const score = await this.calculateQuizScore(quizId);
     quiz.score = score;
-
-    // Schedule next quiz
-    const intervalIndex = this.intervals.indexOf(quiz.interval_days);
-    const nextQuizDate = new Date();
-    nextQuizDate.setDate(nextQuizDate.getDate() + this.intervals[Math.min(intervalIndex + 1, this.intervals.length - 1)]);
-
     await quiz.save();
 
-    return { message: `Quiz marked as completed. Score: ${quiz.score}`, score: quiz.score, nextQuizDate: nextQuizDate };
+    const quizSchedule = await this.quizScheduleModel.findOne({ user_id: userId });
+    const currentIntervalIndex = this.intervals.indexOf(this.getIntervalForCurrentDate(quizSchedule.next_quiz_date));
+    const newIntervalIndex = Math.min(currentIntervalIndex + 1, this.intervals.length - 1);
+    const nextQuizDate = new Date();
+    nextQuizDate.setDate(nextQuizDate.getDate() + this.intervals[newIntervalIndex]);
+
+    await this.setNextQuizDate(userId, nextQuizDate);
+
+    return { message: `Quiz marked as completed. Score: ${quiz.score}`, score: quiz.score, nextQuizDate };
+  }
+
+  getIntervalForCurrentDate(nextQuizDate: Date): number {
+    const currentDate = new Date();
+    const daysDiff = Math.ceil((nextQuizDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24));
+    return this.intervals.find(interval => interval === daysDiff) || 0;
   }
 
   async calculateQuizScore(quizId: string): Promise<number> {

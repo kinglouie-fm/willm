@@ -1,7 +1,8 @@
-import { Controller, Post, UseGuards, Req, Body } from '@nestjs/common';
+import { Controller, Post, UseGuards, Req, Body, Get } from '@nestjs/common';
 import { QuizService } from './quiz.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Request } from 'express';
+import { Types } from 'mongoose';
 
 @Controller('quiz')
 export class QuizController {
@@ -37,7 +38,14 @@ export class QuizController {
     const userId = req.user._id;
     const { quizId } = body;
     const result = await this.quizService.markQuizAsCompleted(userId, quizId);
-    const nextQuiz = await this.quizService.generateQuiz(userId); 
-    return { ...result, nextQuizDate: nextQuiz.nextQuizDate };
+    return result;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('check-quiz')
+  async checkQuiz(@Req() req: Request) {
+    const userId = req.user._id;
+    const result = await this.quizService.checkAndGenerateQuizIfDue(userId);
+    return result;
   }
 }

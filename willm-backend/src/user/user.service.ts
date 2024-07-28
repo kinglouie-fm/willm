@@ -4,8 +4,8 @@ import { Model, Types } from 'mongoose';
 import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
 import { User } from './schema/user.schema';
-import { QuizService } from 'src/quiz/quiz.service';
-import { SessionService } from 'src/session/session.service';
+import { QuizService } from '../quiz/quiz.service';
+import { SessionService } from '../session/session.service';
 
 const JWT_SECRET = 'your_jwt_secret';
 
@@ -106,54 +106,10 @@ export class UserService {
 
     await user.save();
     return user;
-}
+  }
 
   async getPreTestSections(userId: string): Promise<string[]> {
     const user = await this.userModel.findById(userId);
     return user.preTestSubmissions.map(submission => submission.section);
-  }
-
-  async triggerQuizGeneration(user: User): Promise<{ message: string, nextQuizDate: Date | null, quizDueToday: boolean }> {
-    const sessions = await this.sessionService.getSessionsByUserId(user._id.toString());
-    const distinctDates = new Set(sessions.map(session => {
-      const date = new Date(session.date_created);
-      return date.toISOString().split('T')[0]; // Keep only the date part
-    }));
-
-    let quizDueToday = false;
-
-    if (distinctDates.size >= 3) {
-      console.log('Generating quiz for user');
-      const lastQuiz = await this.quizService.getLastQuizForUser(user._id as Types.ObjectId);
-      const currentDate = new Date();
-      const currentDateStr = currentDate.toISOString().split('T')[0];
-      const intervals = this.quizService.getIntervals();
-
-      if (!lastQuiz) {
-        // Schedule the first quiz within 24 hours of the fourth session or day
-        await this.quizService.generateQuiz(user._id as Types.ObjectId);
-        return { message: 'First quiz scheduled', nextQuizDate: new Date(), quizDueToday: false };
-      } else {
-        // Check if the last quiz is scheduled for today
-        const lastQuizDateStr = lastQuiz.next_quiz_date.toISOString().split('T')[0];
-
-        if (currentDateStr === lastQuizDateStr && !lastQuiz.missed && !lastQuiz.skipped && !lastQuiz.completed) {
-          quizDueToday = true;
-          return { message: 'Quiz due today', nextQuizDate: lastQuiz.next_quiz_date, quizDueToday };
-        }
-
-        if (lastQuiz.missed || lastQuiz.skipped) {
-          // If the quiz was missed or skipped, adjust the interval down one step and generate a new quiz
-          const intervalIndex = Math.max(intervals.indexOf(lastQuiz.interval_days) - 1, 0);
-          const nextQuizDate = new Date();
-          nextQuizDate.setDate(nextQuizDate.getDate() + intervals[intervalIndex]);
-          await this.quizService.generateQuiz(user._id as Types.ObjectId);
-          return { message: 'Next quiz scheduled after missing/skipping', nextQuizDate, quizDueToday: false };
-        }
-      }
-    } else {
-      console.log('Not enough sessions to generate quiz');
-      return { message: 'Not enough sessions to generate quiz', nextQuizDate: null, quizDueToday: false };
-    }
   }
 }

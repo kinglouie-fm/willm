@@ -2,10 +2,14 @@ import { Controller, Post, Body, Res, UnauthorizedException, Get, Req, BadReques
 import { Response, Request } from 'express';
 import { UserService } from './user.service';
 import { isAfter, parseISO } from 'date-fns';
+import { QuizService } from '../quiz/quiz.service';
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly quizService: QuizService
+  ) {}
 
   @Post('register')
   async register(
@@ -42,8 +46,8 @@ export class UserController {
     res.cookie('auth_token', token, { httpOnly: true, secure: false });
 
     // Trigger quiz generation on login
-    await this.userService.triggerQuizGeneration(user);
-    return res.status(200).json({ message: 'Login successful', preTestsCompleted: user.preTestsCompleted, postTestsCompleted: user.postTestsCompleted });
+    const quizInfo = await this.quizService.handleLoginQuiz(user);
+    return res.status(200).json({ message: 'Login successful', preTestsCompleted: user.preTestsCompleted, postTestsCompleted: user.postTestsCompleted, quizInfo });
   }
 
   @Post('logout')

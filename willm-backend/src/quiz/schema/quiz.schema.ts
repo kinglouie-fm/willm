@@ -59,12 +59,6 @@ export class Quiz extends Document {
   @Prop({ type: [QuestionSchema], default: [] })
   questions: Question[];
 
-  @Prop({ required: true })
-  interval_days: number;
-
-  @Prop({ required: true })
-  next_quiz_date: Date;
-
   @Prop({ default: false })
   skipped: boolean;
 

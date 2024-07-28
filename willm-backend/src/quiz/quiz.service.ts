@@ -152,7 +152,20 @@ export class QuizService {
     }
 
     question.user_answer = userAnswer;
-    question.result = question.correct_answer === userAnswer;
+    if (question.question_type === 'academic_sentence') {
+      const response = await lastValueFrom(this.httpService.post('http://flask-api:8000/question/academic_sentence_correction', { userAnswer }));
+      const result = response.data;
+
+      if (result === 'Good') {
+        question.result = true;
+      } else if (result === 'Not Good') {
+        question.result = false;
+      } else {
+        throw new Error('Unexpected response from academic sentence correction service');
+      }
+    } else {
+      question.result = question.correct_answer === userAnswer;
+    }
     
     await quiz.save();
 

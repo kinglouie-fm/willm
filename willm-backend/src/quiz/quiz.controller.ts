@@ -37,6 +37,7 @@ export class QuizController {
     const userId = req.user._id;
     const { quizId } = body;
     const result = await this.quizService.markQuizAsCompleted(userId, quizId);
-    return result;
+    const nextQuiz = await this.quizService.generateQuiz(userId); 
+    return { ...result, nextQuizDate: nextQuiz.nextQuizDate };
   }
 }

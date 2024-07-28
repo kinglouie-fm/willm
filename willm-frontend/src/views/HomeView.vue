@@ -166,7 +166,6 @@ const handleCorrect = async () => {
 const generateReview = async () => {
   try {
     const response = await axios.post('http://localhost:3000/review/generate');
-    console.log(response.data)
     if (response.data.reviewData === '<2') {
       reviewData.value = 'Not enough sessions to generate the review';
     } else {

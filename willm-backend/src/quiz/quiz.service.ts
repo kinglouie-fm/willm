@@ -124,7 +124,7 @@ export class QuizService {
     });
     await quiz.save();
 
-    return quiz;
+    return { quiz, nextQuizDate };
   }
 
 

@@ -108,7 +108,7 @@ export class ReviewService {
         coherenceSections.push(...sections.slice(0, 2).map((section, i) => `Section ${i + 1}\n${sectionTexts[section].join(' ')}`));
       }
       if (sections.length >= 3) {
-        organizationSections.push(...sections.map((section, i) => `Section ${i + 1}\n${sectionTexts[section].join(' ')}`));
+        organizationSections.push(...sections.slice(0, 3).map((section, i) => `Section ${i + 1}\n${sectionTexts[section].join(' ')}`));
       }
     }
 

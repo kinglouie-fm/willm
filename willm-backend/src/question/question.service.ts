@@ -45,13 +45,19 @@ export class QuestionService {
 
     const sections = Object.keys(sectionTexts);
     let combinedText = '';
+
     if (sections.length >= 2) {
+      // Use only the first text in each section
       combinedText = sections.map(section => {
-        const sectionContent = sectionTexts[section].join(' ');
-        return `Section ${section}\n${sectionContent}`;
-      }).join('\n\n');
+      const sectionContent = sectionTexts[section][0]; 
+      return `Section ${section}\n${sectionContent}`;
+    }).join('\n\n');
     } else {
-      combinedText = submissions.map(sub => sub.content).join(' ');
+      // Collect the first two texts, regardless of their sections
+      const firstTwoTexts = submissions.slice(0, 2);
+      combinedText = firstTwoTexts.map((sub, index) => {
+        return `Section ${sub.section}\n${sub.content}`;
+      }).join('\n\n');
     }
 
     const lastThreeSubmissions = submissions.slice(0, 3).map(sub => sub.content).join(' ');

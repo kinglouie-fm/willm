@@ -275,12 +275,10 @@ def generate_question():
     prompt_template = question_prompts[question_type]
     prompt = prompt_template.format(text=text)
 
-    system_prompt = SYSTEM_PROMPT_6 if question_type in ['coherence', 'organization'] else SYSTEM_PROMPT_5
-
     response = openai.chat.completions.create(
         model="gpt-4o",
         messages=[
-            {"role": "system", "content": system_prompt},
+            {"role": "system", "content": SYSTEM_PROMPT_5},
             {"role": "user", "content": prompt}
         ],
         max_tokens=1000

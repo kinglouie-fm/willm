@@ -36,7 +36,6 @@ export class QuizController {
   async completeQuiz(@Req() req: Request, @Body() body) {
     const userId = req.user._id;
     const { quizId } = body;
-    await this.quizService.markQuizAsCompleted(userId, quizId);
-    return { message: 'Quiz marked as completed' };
+    return this.quizService.markQuizAsCompleted(userId, quizId);
   }
 }

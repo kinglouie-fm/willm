@@ -37,6 +37,9 @@ export class Quiz extends Document {
   
   @Prop({ default: false })
   completed: boolean;
+
+  @Prop({ default: 0 })
+  score: number;
 }
 
 export const QuizSchema = SchemaFactory.createForClass(Quiz);

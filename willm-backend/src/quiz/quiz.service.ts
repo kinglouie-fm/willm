@@ -138,7 +138,7 @@ export class QuizService {
     return query;
   }
 
-  async submitQuizAnswer(userId: Types.ObjectId, quizId: string, questionId: string, userAnswer: string): Promise<any> {
+  async submitQuizAnswer(userId: Types.ObjectId, quizId: string, questionId: string, userAnswer: string): Promise<{ question: any, isCorrect: boolean }> {
     const quiz = await this.quizModel.findOne({ user_id: userId, quiz_id: quizId });
 
     if (!quiz) {
@@ -153,11 +153,12 @@ export class QuizService {
 
     question.user_answer = userAnswer;
     question.result = question.correct_answer === userAnswer;
-
+    
     await quiz.save();
 
-    return question;
+    return { question, isCorrect: question.result };
   }
+
 
   async markQuizAsSkipped(userId: Types.ObjectId, quizId: string): Promise<void> {
     const quiz = await this.quizModel.findOne({ user_id: userId, quiz_id: quizId });
@@ -197,7 +198,7 @@ export class QuizService {
     await quiz.save();
   }
 
-  async markQuizAsCompleted(userId: Types.ObjectId, quizId: string): Promise<void> {
+  async markQuizAsCompleted(userId: Types.ObjectId, quizId: string): Promise<{ score: number }> {
     const quiz = await this.quizModel.findOne({ user_id: userId, quiz_id: quizId });
 
     if (!quiz) {
@@ -205,7 +206,23 @@ export class QuizService {
     }
 
     quiz.completed = true;
+    const score = await this.calculateQuizScore(quizId);
+    quiz.score = score;
+
     await quiz.save();
+
+    return { score: quiz.score };
+  }
+
+  async calculateQuizScore(quizId: string): Promise<number> {
+    const quiz = await this.quizModel.findOne({ quiz_id: quizId });
+
+    if (!quiz) {
+      throw new Error('Quiz not found');
+    }
+
+    const correctAnswers = quiz.questions.filter(q => q.result).length;
+    return correctAnswers;
   }
 
   async getLastQuizForUser(userId: Types.ObjectId): Promise<Quiz> {

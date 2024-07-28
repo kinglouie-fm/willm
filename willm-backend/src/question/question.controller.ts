@@ -31,15 +31,15 @@ export class QuestionController {
     return questions;
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Post('academic_sentence_correction')
-  async academicSentenceCorrection(
-    @Body('original_sentence') originalSentence: string,
-    @Body('corrected_sentence') correctedSentence: string,
-  ) {
-    const evaluation = await this.questionService.evaluateAcademicSentence(originalSentence, correctedSentence);
-    return evaluation;
-  }
+  // @UseGuards(JwtAuthGuard)
+  // @Post('academic_sentence_correction')
+  // async academicSentenceCorrection(
+  //   @Body('original_sentence') originalSentence: string,
+  //   @Body('corrected_sentence') correctedSentence: string,
+  // ) {
+  //   const evaluation = await this.questionService.evaluateAcademicSentence(originalSentence, correctedSentence);
+  //   return evaluation;
+  // }
 
   @UseGuards(JwtAuthGuard)
   @Post('explain-answer')

@@ -91,7 +91,17 @@ export class QuizService {
 
     if (currentDateStr === nextQuizDateStr) {
       const quiz = await this.quizModel.findOne({ user_id: userId, date_created: { $gte: new Date(currentDateStr) } });
-      return quiz ? { quiz } : { message: 'No quiz generated for today yet' };
+      if (quiz) {
+        const quizWithoutAnswers = {
+          ...quiz.toObject(),
+          questions: quiz.questions.map(q => {
+            const { correct_answer, ...questionWithoutAnswer } = q.toObject();
+            return questionWithoutAnswer;
+          })
+        };
+        return { quiz: quizWithoutAnswers };
+      }
+      return { message: 'No quiz generated for today yet' };
     } else {
       return { message: 'No quiz due today' };
     }

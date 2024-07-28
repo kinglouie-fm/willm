@@ -3,8 +3,35 @@
         <h1>Quiz</h1>
         <div v-if="currentQuestion">
             <p>{{ currentQuestion.question_text }}</p>
+
+            <!-- Display specific fields based on the question type -->
+            <div v-if="currentQuestion.text">
+                <p>Text: {{ currentQuestion.text }}</p>
+            </div>
+            <div v-if="currentQuestion.word">
+                <p>Word: {{ currentQuestion.word }}</p>
+            </div>
+            <div v-if="currentQuestion.sentence">
+                <p>Sentence: {{ currentQuestion.sentence }}</p>
+            </div>
+            <div v-if="currentQuestion.excerpts && currentQuestion.excerpts.length">
+                <p>Excerpts:</p>
+                <ul>
+                    <li v-for="(excerpt, index) in currentQuestion.excerpts" :key="index">{{ excerpt }}</li>
+                </ul>
+            </div>
+            <div v-if="currentQuestion.options && currentQuestion.options.length">
+                <p>Options:</p>
+                <ul>
+                    <li v-for="(option, index) in currentQuestion.options" :key="index">{{ option }}</li>
+                </ul>
+            </div>
+
+            <!-- User input for the answer -->
             <input v-model="userAnswer" placeholder="Your answer" />
             <button @click="submitAnswer">Submit Answer</button>
+
+            <!-- Display the result of the submitted answer -->
             <div v-if="answerResult">
                 <p v-if="answerResult.isCorrect">Correct!</p>
                 <p v-else>Incorrect. <button @click="requestExplanation">Get Explanation</button></p>
@@ -17,6 +44,8 @@
         <div v-else>
             <p>No quiz available.</p>
         </div>
+
+        <!-- Modal for quiz completion -->
         <div class="modal fade" id="completionModal" tabindex="-1" aria-labelledby="completionModalLabel"
             aria-hidden="true">
             <div class="modal-dialog">

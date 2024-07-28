@@ -84,7 +84,7 @@ export class ScoreService {
       return { message: "No older scores available for comparison. Please try again later." };
     }
 
-    console.log('Scores used for median calculation:', olderScores);
+    // console.log('Scores used for median calculation:', olderScores); 
     const medianOlderScore = this.calculateMedianScore(olderScores);
     const comparison = {
       grammar: this.calculateImprovement(latestScore.grammar, medianOlderScore.grammar),

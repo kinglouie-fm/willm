@@ -25,9 +25,9 @@ export class ScoreController {
   @Get('sections')
   async getSections(@Req() req: Request) {
     const userId = req.user._id;
-    console.log('Fetching unique sections for user:', userId);
+    // console.log('Fetching unique sections for user:', userId);
     const sections = await this.scoreService.getUniqueSections(userId);
-    console.log('Fetched sections:', sections);
+    // console.log('Fetched sections:', sections);
     return sections;
   }
 
@@ -35,7 +35,7 @@ export class ScoreController {
   @Get('comparison/:section')
   async compareScores(@Param('section') section: string, @Req() req: Request) {
     const userId = req.user._id;
-    console.log('Comparing scores for section:', section, 'user:', userId);
+    // console.log('Comparing scores for section:', section, 'user:', userId);
     const comparisonResult = await this.scoreService.compareScores(userId, section);
     console.log('Comparison result:', comparisonResult);
     return comparisonResult;

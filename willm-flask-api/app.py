@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 import openai
 from dotenv import load_dotenv
 import re
+import os
 import aiohttp
 import logging
 from chroma_langchain import chroma_langchain_handler
@@ -18,6 +19,8 @@ app = Flask(__name__)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+openai.api_key = os.getenv('FLASK_API_KEY')
 
 async def fetch_openai_response(session, system_prompt_template, prompt_template, data, section=None, language='English'):
     system_prompt = system_prompt_template.format(language=language)

@@ -232,6 +232,7 @@ export class QuizService {
     }
 
     question.user_answer = userAnswer;
+    question.answered = true;
     if (question.question_type === 'academic_sentence') {
       const response = await lastValueFrom(this.httpService.post('http://flask-api:8000/question/academic_sentence_correction', { userAnswer }));
       const result = response.data;

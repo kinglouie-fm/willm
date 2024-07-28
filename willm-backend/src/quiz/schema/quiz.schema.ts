@@ -41,6 +41,9 @@ class Question extends Document {
 
   @Prop({ default: false })
   result: boolean;
+
+  @Prop({ default: false })
+  answered: boolean;
 }
 
 const QuestionSchema = SchemaFactory.createForClass(Question);
@@ -64,7 +67,7 @@ export class Quiz extends Document {
 
   @Prop({ default: false })
   missed: boolean;
-  
+
   @Prop({ default: false })
   completed: boolean;
 

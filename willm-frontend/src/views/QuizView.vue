@@ -89,6 +89,10 @@ const fetchQuiz = async () => {
         if (!quiz.value) {
             message.info(response.data.message);
             router.push('/');
+        } else {
+            // Find the first unanswered question
+            const firstUnansweredIndex = quiz.value.questions.findIndex(q => !q.answered);
+            currentQuestionIndex.value = firstUnansweredIndex !== -1 ? firstUnansweredIndex : 0;
         }
     } catch (error) {
         console.error('Error fetching quiz:', error);
@@ -104,6 +108,7 @@ const submitAnswer = async () => {
             userAnswer: userAnswer.value,
         });
         answerResult.value = response.data;
+        currentQuestion.answered = true;
     } catch (error) {
         console.error('Error submitting answer:', error);
         message.error('Error submitting answer.');

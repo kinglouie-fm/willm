@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import axios from 'axios';
 import router from '../router';
+import { message } from 'ant-design-vue';
 
 axios.defaults.withCredentials = true;
 
@@ -9,6 +10,8 @@ export const useAuthStore = defineStore('auth', {
     isAuthenticated: false,
     preTestsCompleted: false,
     postTestsCompleted: false,
+    quizDueToday: false,
+    nextQuizDate: null,
   }),
   actions: {
     async register(username, password) {
@@ -40,6 +43,17 @@ export const useAuthStore = defineStore('auth', {
             alert('You have completed the post-test and can no longer use the tool.');
             this.logout();
           } else {
+            // Check quiz status
+            const quizResponse = await axios.get('http://localhost:3000/quiz/check-quiz');
+            this.quizDueToday = quizResponse.data.quizDue;
+            this.nextQuizDate = quizResponse.data.nextQuizDate;
+
+            if (this.quizDueToday) {
+              message.info('Quiz is due today.');
+            } else {
+              message.info(`Next quiz date: ${this.nextQuizDate}`);
+            }
+
             router.push({ name: 'home' });
           }
         } else {

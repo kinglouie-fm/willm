@@ -48,4 +48,12 @@ export class QuizController {
     const result = await this.quizService.checkAndGenerateQuizIfDue(userId);
     return result;
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('get-todays-quiz')
+  async getTodaysQuiz(@Req() req: Request) {
+    const userId = req.user._id;
+    const quiz = await this.quizService.getTodaysQuiz(userId);
+    return quiz;
+  }
 }

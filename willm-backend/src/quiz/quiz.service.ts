@@ -41,7 +41,7 @@ export class QuizService {
 
       if (!quizSchedule) {
         // Generate the first quiz and set the next quiz date
-        await this.generateQuiz(user._id as Types.ObjectId);
+        // await this.generateQuiz(user._id as Types.ObjectId);
         await this.setNextQuizDate(user._id as Types.ObjectId, new Date());
         return { message: 'First quiz scheduled', nextQuizDate: new Date(), quizDueToday: true };
       } else {
@@ -59,22 +59,41 @@ export class QuizService {
     }
   }
 
-  async checkAndGenerateQuizIfDue(userId: Types.ObjectId): Promise<{ message: string, quizDue: boolean, quiz?: any }> {
+  async checkAndGenerateQuizIfDue(userId: Types.ObjectId): Promise<{ message: string, quizDueToday: boolean, quiz?: any }> {
     const quizSchedule = await this.quizScheduleModel.findOne({ user_id: userId });
     const currentDate = new Date();
     const currentDateStr = currentDate.toISOString().split('T')[0];
 
     if (!quizSchedule) {
-      return { message: 'No quiz schedule found', quizDue: false };
+      return { message: 'No quiz schedule found', quizDueToday: false };
     }
 
     const nextQuizDateStr = quizSchedule.next_quiz_date.toISOString().split('T')[0];
 
     if (currentDateStr === nextQuizDateStr) {
       const quiz = await this.generateQuiz(userId);
-      return { message: 'Quiz generated', quizDue: true, quiz };
+      return { message: 'Quiz generated', quizDueToday: true, quiz };
     } else {
-      return { message: 'No quiz due today', quizDue: false };
+      return { message: 'No quiz due today', quizDueToday: false };
+    }
+  }
+
+  async getTodaysQuiz(userId: Types.ObjectId): Promise<any> {
+    const quizSchedule = await this.quizScheduleModel.findOne({ user_id: userId });
+    const currentDate = new Date();
+    const currentDateStr = currentDate.toISOString().split('T')[0];
+
+    if (!quizSchedule) {
+      return { message: 'No quiz schedule found' };
+    }
+
+    const nextQuizDateStr = quizSchedule.next_quiz_date.toISOString().split('T')[0];
+
+    if (currentDateStr === nextQuizDateStr) {
+      const quiz = await this.quizModel.findOne({ user_id: userId, date_created: { $gte: new Date(currentDateStr) } });
+      return quiz ? { quiz } : { message: 'No quiz generated for today yet' };
+    } else {
+      return { message: 'No quiz due today' };
     }
   }
 

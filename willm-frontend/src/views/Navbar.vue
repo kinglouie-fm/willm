@@ -2,7 +2,8 @@
 import { ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
-import { isAfter } from 'date-fns';
+import { message } from 'ant-design-vue';
+import axios from 'axios';
 import * as bootstrap from 'bootstrap';
 
 const route = useRoute();
@@ -16,6 +17,21 @@ const logout = async () => {
 
 const navigateTo = (path) => {
     router.push(path);
+};
+
+const checkQuiz = async () => {
+    try {
+        const response = await axios.get('http://localhost:3000/quiz/check-quiz');
+        if (response.data.quizDue) {
+            message.info('Quiz is due today. Redirecting...');
+            router.push('/quiz');
+        } else {
+            message.info('No quiz due today.');
+        }
+    } catch (error) {
+        console.error('Error checking quiz:', error);
+        message.error('Error checking quiz.');
+    }
 };
 
 const isPostTestEnabled = ref(isAfter(new Date(), new Date('2024-08-28')));
@@ -40,6 +56,9 @@ const showPostTestModal = () => {
                     <button class="btn me-2" v-if="authStore.isAuthenticated && route.path !== '/'"
                         @click="navigateTo('/')">
                         <h4>Home</h4>
+                    </button>
+                    <button class="btn me-2" v-if="authStore.isAuthenticated" @click="checkQuiz">
+                        <h4>Quiz</h4>
                     </button>
                 </div>
                 <div class="col-4 text-center mt-2">

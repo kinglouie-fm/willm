@@ -3,6 +3,7 @@ import MainView from '../views/MainView.vue';
 import LoginView from '../views/LoginView.vue';
 import RegisterView from '../views/RegisterView.vue';
 import ProfileView from '../views/ProfileView.vue';
+import QuizView from '../views/QuizView.vue';
 import { useAuthStore } from '../stores/auth';
 
 const routes = [
@@ -26,6 +27,12 @@ const routes = [
     path: '/profile',
     name: 'profile',
     component: ProfileView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/quiz',
+    name: 'quiz',
+    component: QuizView,
     meta: { requiresAuth: true }
   }
 ];

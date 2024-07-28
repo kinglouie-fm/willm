@@ -7,12 +7,14 @@ import { TextModule } from '../text/text.module';
 import { QuestionCount, QuestionCountSchema } from './schema/question-count.schema';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { UserModule } from 'src/user/user.module';
+import { IssueModule } from 'src/issue/issue.module';
 
 @Module({
   imports: [
     HttpModule,
     forwardRef(() => UserModule),
     forwardRef(() => TextModule),
+    forwardRef(() => IssueModule),
     MongooseModule.forFeature([{ name: QuestionCount.name, schema: QuestionCountSchema }]),
   ],
   controllers: [QuestionController],

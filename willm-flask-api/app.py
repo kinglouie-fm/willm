@@ -532,22 +532,19 @@ async def similarity_search():
     if not query:
         return jsonify({"error": "No query provided"}), 400
 
-    # Embed the query
-    embedding = chroma_langchain_handler.embedding_function.embed_query(query)
-
     # Perform similarity search in ChromaDB
-    collection = chroma_langchain_handler.get_user_collection(user_id)
-    results = collection.query(embedding, include=["metadatas", "documents"], n_results=k)
+    results = chroma_langchain_handler.similarity_search(user_id, query, k)
 
     # Extract relevant information from the results
     questions = []
-    for result in results['documents']:
+    for result in results:
+        metadata = result["metadata"]
         question_data = {
-            "question_id": result["id"],
+            "question_id": metadata.get("id"),
             "question_text": result["document"],
-            "question_type": result["metadata"].get("type", ""),
-            "options": result["metadata"].get("options", "").split("\n"),
-            "correct_answer": result["metadata"].get("answer", ""),
+            "question_type": metadata.get("type", ""),
+            "options": metadata.get("options", "").split("\n"),
+            "correct_answer": metadata.get("answer", ""),
         }
         questions.append(question_data)
 

@@ -19,7 +19,11 @@ class ChromaLangChainHandler:
 
     def get_user_collection(self, user_id):
         collection_name = f'questions_{user_id}'
-        return self.chromadb_client.get_or_create_collection(name=collection_name)
+        return Chroma(
+            client=self.chromadb_client,
+            collection_name=collection_name,
+            embedding_function=self.embedding_function,
+        )
 
     def add_document(self, user_id, generated_question, metadata):
         collection = self.get_user_collection(user_id)
@@ -38,5 +42,11 @@ class ChromaLangChainHandler:
         collection = self.get_user_collection(user_id)
         documents = collection.get(include=["metadatas", "documents", "embeddings"])
         return documents
+
+    def similarity_search(self, user_id, query, k):
+        collection = self.get_user_collection(user_id)
+        embedding_vector = self.embedding_function.embed_query(query)
+        results = collection.similarity_search_by_vector(embedding_vector, k=k)
+        return results
 
 chroma_langchain_handler = ChromaLangChainHandler()

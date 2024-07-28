@@ -22,6 +22,10 @@ export class QuizService {
     private readonly httpService: HttpService,
   ) {}
 
+  public getIntervals(): number[] {
+    return this.intervals;
+  }
+
   async generateQuiz(userId: Types.ObjectId): Promise<any> {
     // Get the last 3 text IDs
     const textIds = await this.textService.getLastTextIds(userId, 3);
@@ -153,6 +157,25 @@ export class QuizService {
     await quiz.save();
 
     return question;
+  }
+
+  async markQuizAsSkipped(userId: Types.ObjectId, quizId: string): Promise<void> {
+    const quiz = await this.quizModel.findOne({ user_id: userId, quiz_id: quizId });
+
+    if (!quiz) {
+      throw new Error('Quiz not found');
+    }
+
+    quiz.skipped = true;
+
+    const intervalIndex = this.intervals.indexOf(quiz.interval_days);
+    const adjustedIntervalIndex = Math.max(intervalIndex - 1, 0);
+    const nextQuizDate = new Date();
+    nextQuizDate.setDate(nextQuizDate.getDate() + this.intervals[adjustedIntervalIndex]);
+
+    quiz.next_quiz_date = nextQuizDate;
+    quiz.interval_days = this.intervals[adjustedIntervalIndex];
+    await quiz.save();
   }
 
   async getLastQuizForUser(userId: Types.ObjectId): Promise<Quiz> {

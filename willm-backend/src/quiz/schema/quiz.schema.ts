@@ -28,6 +28,9 @@ export class Quiz extends Document {
 
   @Prop({ required: true })
   next_quiz_date: Date;
+
+  @Prop({ default: false })
+  skipped: boolean;
 }
 
 export const QuizSchema = SchemaFactory.createForClass(Quiz);

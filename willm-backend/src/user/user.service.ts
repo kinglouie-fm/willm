@@ -114,29 +114,41 @@ export class UserService {
   }
 
   async triggerQuizGeneration(user: User): Promise<void> {
-  const sessions = await this.sessionService.getSessionsByUserId(user._id.toString());
-  const distinctDates = new Set(sessions.map(session => {
-    const date = new Date(session.date_created);
-    return date.toISOString().split('T')[0]; // Keep only the date part
-  }));
+    const sessions = await this.sessionService.getSessionsByUserId(user._id.toString());
+    const distinctDates = new Set(sessions.map(session => {
+      const date = new Date(session.date_created);
+      return date.toISOString().split('T')[0]; // Keep only the date part
+    }));
 
-  // If the user has completed 3 distinct days of sessions, schedule the first quiz
-  if (distinctDates.size >= 3) {
-    console.log("Generating quiz for user");
-    const lastQuiz = await this.quizService.getLastQuizForUser(user._id as Types.ObjectId);
-    const currentDate = new Date();
+    if (distinctDates.size >= 3) {
+      console.log('Generating quiz for user');
+      const lastQuiz = await this.quizService.getLastQuizForUser(user._id as Types.ObjectId);
+      const currentDate = new Date();
+      const intervals = this.quizService.getIntervals(); // Use the new method to get intervals
 
-    if (!lastQuiz) {
-      // Schedule the first quiz within 24 hours of the fourth session or day
-      await this.quizService.generateQuiz(user._id as Types.ObjectId);
-    } else {
-      // For further quizzes, use the existing logic
-      if (currentDate >= lastQuiz.next_quiz_date) {
+      if (!lastQuiz) {
+        // Schedule the first quiz within 24 hours of the fourth session or day
         await this.quizService.generateQuiz(user._id as Types.ObjectId);
+      } else {
+        const intervalIndex = intervals.indexOf(lastQuiz.interval_days);
+        const daysSinceLastQuiz = Math.floor((currentDate.getTime() - lastQuiz.next_quiz_date.getTime()) / (1000 * 60 * 60 * 24));
+
+        if (daysSinceLastQuiz > intervals[intervalIndex] * 2 || lastQuiz.skipped) {
+          // If the quiz was missed or skipped, adjust the interval down one step
+          const adjustedIntervalIndex = Math.max(intervalIndex - 1, 0);
+          const nextQuizDate = new Date();
+          nextQuizDate.setDate(nextQuizDate.getDate() + intervals[adjustedIntervalIndex]);
+
+          lastQuiz.next_quiz_date = nextQuizDate;
+          lastQuiz.interval_days = intervals[adjustedIntervalIndex];
+          await lastQuiz.save();
+        } else if (currentDate >= lastQuiz.next_quiz_date) {
+          // Generate the next quiz if the due date has been reached
+          await this.quizService.generateQuiz(user._id as Types.ObjectId);
+        }
       }
+    } else {
+      console.log('Not enough sessions to generate quiz');
     }
-  } else {
-    console.log("Not enough sessions to generate quiz");
   }
-}
 }

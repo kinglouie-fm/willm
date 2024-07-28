@@ -21,4 +21,13 @@ export class QuizController {
     const { quizId, questionId, userAnswer } = body;
     return this.quizService.submitQuizAnswer(userId, quizId, questionId, userAnswer);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('skip')
+  async skipQuiz(@Req() req: Request, @Body() body) {
+    const userId = req.user._id;
+    const { quizId } = body;
+    await this.quizService.markQuizAsSkipped(userId, quizId);
+    return { message: 'Quiz marked as skipped' };
+  }
 }

@@ -103,7 +103,6 @@ export class ReviewService {
     let coherence_tip = 'coherence_tip not generated';
     let organization_tip = 'organization_tip not generated';
 
-    // Make the request only if the conditions are met
     if (coherenceSections.length >= 2 || organizationSections.length >= 3) {
       const response = await lastValueFrom(this.httpService.post('http://flask-api:8000/review/generate', {
         coherence_text: coherenceSections.length >= 2 ? coherenceSections.join('\n\n') : 'coherence_tip not generated',
@@ -184,8 +183,6 @@ export class ReviewService {
       user_id: userId,
       date_created: new Date(),
       review_data: reviewData,
-      coherence_tip: coherence_tip,
-      organization_tip: organization_tip
     });
     await newReview.save();
 

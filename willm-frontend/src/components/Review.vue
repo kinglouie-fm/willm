@@ -22,6 +22,12 @@ const filteredReviewData = computed(() => {
     }
     return Object.fromEntries(
         Object.entries(props.reviewData).filter(([key, value]) => {
+            // Filter out 'organization_tip not generated' and 'coherence_tip not generated' from tips
+            if (value.tips) {
+                value.tips = value.tips.filter(tip =>
+                    tip !== 'organization_tip not generated' && tip !== 'coherence_tip not generated'
+                );
+            }
             return (value.improvements && value.improvements.length) || (value.tips && value.tips.length);
         })
     );
@@ -56,32 +62,35 @@ const filteredReviewData = computed(() => {
             <p>{{ props.reviewData }}</p>
         </div>
         <div v-else-if="Object.keys(filteredReviewData).length">
-            <div>
+            <div v-if="Object.values(filteredReviewData).some(data => data.tips.length)">
                 <h5>Tips</h5>
                 <ul>
                     <li>Your most frequent errors are:</li>
                     <ul>
                         <li v-for="(categoryData, key) in filteredReviewData" :key="key">
-                            {{ getDisplayKey(key) }}
-                            <ul>
-                                <li v-for="(tip, index) in categoryData.tips" :key="index">{{ tip }}</li>
-                            </ul>
+                            <template v-if="categoryData.tips.length">
+                                {{ getDisplayKey(key) }}
+                                <ul>
+                                    <li v-for="(tip, index) in categoryData.tips" :key="index">{{ tip }}</li>
+                                </ul>
+                            </template>
                         </li>
                     </ul>
                 </ul>
             </div>
-            <div
-                v-if="Object.keys(filteredReviewData).some(key => filteredReviewData[key].improvements && filteredReviewData[key].improvements.length)">
+            <div v-if="Object.values(filteredReviewData).some(data => data.improvements.length)">
                 <h5>Improvements</h5>
                 <ul>
                     <li>You improved yourself by reducing the following types of mistakes:</li>
                     <ul>
                         <li v-for="(categoryData, key) in filteredReviewData" :key="key">
-                            {{ getDisplayKey(key) }}
-                            <ul>
-                                <li v-for="(improvement, index) in categoryData.improvements" :key="index">{{
+                            <template v-if="categoryData.improvements.length">
+                                {{ getDisplayKey(key) }}
+                                <ul>
+                                    <li v-for="(improvement, index) in categoryData.improvements" :key="index">{{
             improvement }}</li>
-                            </ul>
+                                </ul>
+                            </template>
                         </li>
                     </ul>
                 </ul>

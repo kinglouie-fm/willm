@@ -96,15 +96,8 @@ export class GamificationService {
         user.daily_streak = 1;
       }
 
-      // Update weekly streak
-      const lastWeekStart = new Date(now);
-      lastWeekStart.setDate(now.getDate() - now.getDay());
-      const lastLoginWeekStart = new Date(lastLoginDate);
-      lastLoginWeekStart.setDate(lastLoginDate.getDate() - lastLoginDate.getDay());
-
-      if (lastWeekStart.getTime() !== lastLoginWeekStart.getTime()) {
-        user.weekly_streak = 1;
-      } else {
+      // Update weekly streak based on daily streak using modulo
+      if (user.daily_streak % 7 === 0) {
         user.weekly_streak += 1;
       }
 

@@ -40,8 +40,7 @@ export class QuizService {
       const currentDateStr = currentDate.toISOString().split('T')[0];
 
       if (!quizSchedule) {
-        // Generate the first quiz and set the next quiz date
-        // await this.generateQuiz(user._id as Types.ObjectId);
+        // Generate the first quiz and set the next quiz date to today
         await this.setNextQuizDate(user._id as Types.ObjectId, new Date(), 0);
         return { message: 'First quiz scheduled', nextQuizDate: new Date(), quizDueToday: true };
       } else {
@@ -51,7 +50,7 @@ export class QuizService {
         if (currentDateStr > nextQuizDateStr) {
           await this.markQuizAsMissed(user._id as Types.ObjectId);
           nextQuizDateStr = quizSchedule.next_quiz_date.toISOString().split('T')[0];
-          if(currentDateStr === nextQuizDateStr) { // Next quiz date is today
+          if (currentDateStr === nextQuizDateStr) { // Next quiz date is today
             return { message: 'Missed quiz rescheduled', nextQuizDate: quizSchedule.next_quiz_date, quizDueToday: true };
           } else { // Next quiz date is in the future
             return { message: 'Missed quiz rescheduled', nextQuizDate: quizSchedule.next_quiz_date, quizDueToday: false };

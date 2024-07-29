@@ -66,13 +66,13 @@ export class QuizService {
     }
   }
 
-  async checkAndGenerateQuizIfDue(userId: Types.ObjectId): Promise<{ message: string, quizDueToday: boolean }> {
+  async checkAndGenerateQuizIfDue(userId: Types.ObjectId): Promise<{ message: string, nextQuizDate: Date | null, quizDueToday: boolean }> {
     const quizSchedule = await this.quizScheduleModel.findOne({ user_id: userId });
     const currentDate = new Date();
     const currentDateStr = currentDate.toISOString().split('T')[0];
 
     if (!quizSchedule) {
-      return { message: 'No quiz schedule found', quizDueToday: false };
+      return { message: 'No quiz schedule found', nextQuizDate: null, quizDueToday: false };
     }
 
     const nextQuizDateStr = quizSchedule.next_quiz_date.toISOString().split('T')[0];
@@ -92,16 +92,16 @@ export class QuizService {
         const allAnswered = existingQuiz.questions.every(question => question.answered);
         if (allAnswered) {
           await this.markQuizAsCompleted(userId, existingQuiz.quiz_id);
-          return { message: 'No quiz due today', quizDueToday: false };
+          return { message: 'No quiz due today', nextQuizDate: quizSchedule.next_quiz_date, quizDueToday: false };
         } else {
-          return { message: 'Quiz already exists for today', quizDueToday: true };
+          return { message: 'Quiz already exists for today', nextQuizDate: quizSchedule.next_quiz_date, quizDueToday: true };
         }
       } else {
         await this.generateQuiz(userId);
-        return { message: 'Quiz generated', quizDueToday: true };
+        return { message: 'Quiz generated', nextQuizDate: quizSchedule.next_quiz_date, quizDueToday: true };
       }
     } else {
-      return { message: 'No quiz due today', quizDueToday: false };
+      return { message: 'No quiz due today', nextQuizDate: quizSchedule.next_quiz_date, quizDueToday: false };
     }
   }
 

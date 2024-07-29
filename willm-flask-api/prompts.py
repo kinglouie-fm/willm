@@ -576,13 +576,12 @@ Explanation: [Detailed explanation]
 """
 
 DECIDE_QUESTIONS = """
-You will be provided with a set of new questions and the history of the last two quizzes taken by a user. 
+You will be provided with a set of new questions and the history of the last two quizzes taken by a user. Your task is to return five question ids and add them to an array.
 Each new question only contains the question id and the question type.
 Each quiz history includes the question id, question type and whether the user answered correctly (result: true) or incorrectly (result: false).
 
 Your task is to prioritize questions that the user got wrong previously when deciding which questions to include in the next quiz. Additionally, ensure there is a balance across different question types and sources (the quiz history and new questions). 
 For example, if the user got a question type wrong more than once, that question type should have the highest priority.
-
 Here are the new questions:
 {new_questions}
 
@@ -590,7 +589,7 @@ Here is the quiz history:
 {quiz_history}
 
 Please return the five best question ids from the new questions for the next quiz in the following array output format:
-Question IDs: [The question ids separated by commas]
+Question IDs: [The five question ids separated by commas]
 
 Don't add anything else, such as explanations or additional comments.
 """

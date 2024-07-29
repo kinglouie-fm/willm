@@ -558,6 +558,8 @@ async def similarity_search():
         }
         questions.append(question_data)
 
+    logging.info(f"questions before missing: {questions}")
+
     # If quiz history is provided, give it to LLM along with the questions
     if quiz_history:
         new_questions_str = '\n'.join([f"ID: {q['question_id']}, Type: {q['question_type']}" for q in questions])
@@ -568,12 +570,11 @@ async def similarity_search():
         # Check for missing question IDs
         missing_question_ids = set(selected_question_ids) - found_question_ids
         if missing_question_ids:
-            missing_questions = chroma_langchain_handler.get_documents_by_ids(user_id, list(missing_question_ids))
-            for doc in missing_questions:
-                metadata = doc.metadata
+            missing_documents = chroma_langchain_handler.get_documents_by_ids(user_id, list(missing_question_ids))
+            for metadata, page_content in zip(missing_documents['metadatas'], missing_documents['documents']):
                 question_data = {
                     "question_id": metadata.get("document_id", ""),
-                    "question_text": doc.page_content,
+                    "question_text": page_content,
                     "question_type": metadata.get("type", ""),
                     "options": metadata.get("options", "").split("\n") if metadata.get("options") else [],
                     "correct_answer": metadata.get("answer", ""),
@@ -587,11 +588,12 @@ async def similarity_search():
                 questions.append(question_data)
 
         questions = [q for q in questions if q['question_id'] in selected_question_ids]
+        logging.info(f"questions after missing: {questions}")
 
     return jsonify(questions)
 
-
 async def llm_decide_questions(new_questions, quiz_history):
+    logging.info(f"Quiz history: {quiz_history}")
     prompt = DECIDE_QUESTIONS.format(new_questions=new_questions, quiz_history=quiz_history)
 
     async with aiohttp.ClientSession() as session:

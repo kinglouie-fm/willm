@@ -45,7 +45,7 @@ class ChromaLangChainHandler:
 
     def get_documents_by_ids(self, user_id, document_ids):
         collection = self.get_user_collection(user_id)
-        documents = collection.get(ids=document_ids, include=["metadatas", "documents", "embeddings"])
+        documents = collection.get(ids=document_ids, include=["metadatas", "documents"])
         return documents
 
     def similarity_search(self, user_id, query, k):

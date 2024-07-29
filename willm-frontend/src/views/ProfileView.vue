@@ -139,17 +139,17 @@ const getAchievementProgress = (key, achievements) => {
     const currentStep = achievedStages.length;
     const totalStep = Object.keys(stages).length;
     const rewardXP = nextStage ? stages[nextStage] : stages[Object.keys(stages).pop()];
-    const targetCount = nextStage ? nextStage : Object.keys(stages).pop();
+    const targetCount = nextStage ? Number(nextStage) : Number(Object.keys(stages).pop());
 
     let nextText;
     if (key === 'quizzes_completed') {
-        nextText = `Complete ${nextStage} quizzes`;
+        nextText = `Complete ${targetCount} quizzes`;
     } else if (key === 'correct_answers') {
-        nextText = `Give ${nextStage} correct answers`;
+        nextText = `Give ${targetCount} correct answers`;
     } else if (key === 'weekly_streaks') {
-        nextText = `Reach ${nextStage} weekly streak${nextStage > 1 ? 's' : ''}`;
+        nextText = `Reach ${targetCount} weekly streak${targetCount > 1 ? 's' : ''}`;
     } else if (key === 'consecutive_days') {
-        nextText = `Maintain a ${nextStage}-day streak`;
+        nextText = `Maintain a ${targetCount}-day streak`;
     }
 
     return {
@@ -242,14 +242,16 @@ onMounted(() => {
                     <div>
                         <h3 class="text-center">Progress</h3>
                         <div v-if="gamificationData">
+                            <h5>Your Badge: {{ gamificationData.badges.length ?
+                                gamificationData.badges[gamificationData.badges.length - 1].name : 'No badge yet' }}
+                            </h5>
                             <LevelProgressBar :currentLevel="gamificationData.level" :currentXP="gamificationData.xp"
                                 :maxXP="getNextLevelXP(gamificationData.level)"
                                 :nextLevel="gamificationData.level + 1" />
-                            <h5>Current Badge: {{ gamificationData.badges.length ?
-                                gamificationData.badges[gamificationData.badges.length - 1].name : 'No badge yet' }}
-                            </h5>
-                            <p>Daily Streak: {{ gamificationData.daily_streak }} days</p>
-                            <p>Weekly Streak: {{ gamificationData.weekly_streak }} weeks</p>
+                            <div class="d-flex justify-content-between my-3">
+                                <h5>Daily Streak: {{ gamificationData.daily_streak }}</h5>
+                                <h5>Weekly Streak: {{ gamificationData.weekly_streak }}</h5>
+                            </div>
                         </div>
                         <div v-else>
                             <p>Loading...</p>
@@ -268,7 +270,7 @@ onMounted(() => {
                                     <span>Reward: {{ getAchievementProgress(key, gamificationData.achievements).rewardXP
                                         }} XP</span>
                                     <AchievementProgressBar :currentCount="gamificationData.achievements[key]"
-                                        :targetCount="getAchievementProgress(key, gamificationData.achievements).targetCount" />
+                                        :targetCount="Number(getAchievementProgress(key, gamificationData.achievements).targetCount)" />
                                     <span
                                         v-html="renderStars(getAchievementProgress(key, gamificationData.achievements).currentStep, getAchievementProgress(key, gamificationData.achievements).totalStep)"></span>
                                 </li>

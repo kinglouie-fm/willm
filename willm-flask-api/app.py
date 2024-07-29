@@ -363,11 +363,11 @@ def academic_sentence_correction():
         max_tokens=1000
     )
 
-    logger.info(f"Academic sentence correction response: {response}")
+    logging.info(f"Academic sentence correction response: {response}")
 
     output = response.choices[0].message.content
 
-    answer_match = re.search(r'Answer:\s*(Good|Not Good)', output)
+    answer_match = re.search(r'Answer:\s*(.*)', output)
 
     if answer_match:
         answer = answer_match.group(1).strip()

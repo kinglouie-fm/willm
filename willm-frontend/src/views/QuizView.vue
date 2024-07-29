@@ -116,19 +116,21 @@ watch(currentQuestion, (newQuestion) => {
                 <p>{{ currentQuestion.text }}</p>
             </div>
             <div v-if="currentQuestion.word">
-                <p>Word: {{ currentQuestion.word }}</p>
+                <h5>Word:</h5>
+                <p>{{ currentQuestion.word }}</p>
             </div>
             <div v-if="currentQuestion.sentence">
-                <p>Sentence: {{ currentQuestion.sentence }}</p>
+                <h5>Sentence:</h5>
+                <p>{{ currentQuestion.sentence }}</p>
             </div>
             <div v-if="currentQuestion.excerpts && currentQuestion.excerpts.length">
-                <p>Excerpts:</p>
+                <h5>Excerpts:</h5>
                 <ul>
                     <li v-for="(excerpt, index) in currentQuestion.excerpts" :key="index">{{ excerpt }}</li>
                 </ul>
             </div>
             <div v-if="currentQuestion.options && currentQuestion.options.length">
-                <p>Options:</p>
+                <h5>Options:</h5>
                 <ul>
                     <li v-for="(option, index) in currentQuestion.options" :key="index" class="option"
                         @click="submitAnswer(option, true)">
@@ -140,16 +142,16 @@ watch(currentQuestion, (newQuestion) => {
             <!-- User input for the answer -->
             <textarea v-if="!currentQuestion.options || !currentQuestion.options.length" v-model="userAnswer"
                 placeholder="Your answer" class="form-control textarea-large" required />
-            <!-- <input v-else v-model="userAnswer" type="text" class="form-control" placeholder="Your answer" required /> -->
-            <button v-if="!currentQuestion.options || !currentQuestion.options.length" class="btn mt-2"
-                @click="submitAnswer(null, false)">Submit Answer</button>
+            <button v-if="(!currentQuestion.options || !currentQuestion.options.length) && !answerResult"
+                class="btn mt-2" @click="submitAnswer(null, false)">Submit Answer</button>
 
             <!-- Display the result of the submitted answer -->
             <div v-if="answerResult">
-                <p v-if="answerResult.isCorrect">Correct!</p>
-                <p v-else>Incorrect. <button @click="requestExplanation">Get Explanation</button></p>
+                <h5 v-if="answerResult.isCorrect" class="correct mt-2">Well done, your answer is correct!</h5>
+                <h5 v-else class="incorrect mt-2">Incorrect. <button class="btn" @click="requestExplanation">Get
+                        Explanation</button></h5>
                 <p v-if="explanation">Explanation: {{ explanation }}</p>
-                <button v-if="currentQuestionIndex < quiz.questions.length - 1" @click="nextQuestion">Next
+                <button v-if="currentQuestionIndex < quiz.questions.length - 1" class="btn" @click="nextQuestion">Next
                     Question</button>
                 <button v-else @click="completeQuiz">Complete Quiz</button>
             </div>
@@ -202,5 +204,13 @@ watch(currentQuestion, (newQuestion) => {
 
 .option:hover {
     background-color: #eabc7c;
+}
+
+.correct {
+    color: green;
+}
+
+.incorrect {
+    color: red;
 }
 </style>

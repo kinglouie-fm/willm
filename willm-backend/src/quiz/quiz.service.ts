@@ -272,15 +272,27 @@ export class QuizService {
     question.user_answer = userAnswer;
     question.answered = true;
     if (question.question_type === 'academic_sentence') {
-      const response = await lastValueFrom(this.httpService.post('http://flask-api:8000/question/academic_sentence_correction', { userAnswer }));
+      const response = await lastValueFrom(this.httpService.post('http://flask-api:8000/question/academic_sentence_correction', { 
+        original_sentence: question.sentence,
+        corrected_sentence: userAnswer
+      }));
       const result = response.data;
 
-      if (result === 'Good') {
-        question.result = true;
-      } else if (result === 'Not Good') {
+      if (result.answer.includes('Not Good')) {
         question.result = false;
+      } else if (result.answer.includes('Good')) {
+        question.result = true;
       } else {
         throw new Error('Unexpected response from academic sentence correction service');
+      }
+    } else if (['synonyms', 'argument_strengthening', 'organization', 'coherence'].includes(question.question_type)) {
+      const userAnswerChar = userAnswer.charAt(0);
+      const correctAnswerChar = question.correct_answer.charAt(0);
+
+      if (userAnswerChar === correctAnswerChar) {
+        question.result = true;
+      } else {
+        question.result = false;
       }
     } else {
       question.result = question.correct_answer === userAnswer;

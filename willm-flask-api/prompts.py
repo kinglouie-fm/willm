@@ -462,6 +462,8 @@ Text:
 Original Sentence: {original_sentence}
 Corrected Sentence: {corrected_sentence}
 
+Only provide Good or Not Good as the answer. Don't add anything else, such as explanations or additional comments.
+
 Output format:
 Type: academic_sentence_evaluation
 Answer: [Good/Not Good]

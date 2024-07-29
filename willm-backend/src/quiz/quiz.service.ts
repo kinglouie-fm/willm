@@ -66,7 +66,7 @@ export class QuizService {
     }
   }
 
-  async checkAndGenerateQuizIfDue(userId: Types.ObjectId): Promise<{ message: string, quizDueToday: boolean, quiz?: any }> {
+  async checkAndGenerateQuizIfDue(userId: Types.ObjectId): Promise<{ message: string, quizDueToday: boolean }> {
     const quizSchedule = await this.quizScheduleModel.findOne({ user_id: userId });
     const currentDate = new Date();
     const currentDateStr = currentDate.toISOString().split('T')[0];
@@ -78,8 +78,21 @@ export class QuizService {
     const nextQuizDateStr = quizSchedule.next_quiz_date.toISOString().split('T')[0];
 
     if (currentDateStr === nextQuizDateStr) {
-      const quiz = await this.generateQuiz(userId);
-      return { message: 'Quiz generated', quizDueToday: true, quiz };
+      // Check if there is already a quiz for today
+      const existingQuiz = await this.quizModel.findOne({
+        user_id: userId,
+        date_created: {
+          $gte: new Date(currentDateStr),
+          $lt: new Date(new Date(currentDateStr).setDate(new Date(currentDateStr).getDate() + 1))
+        }
+      });
+
+      if (existingQuiz) {
+        return { message: 'Quiz already exists for today', quizDueToday: true };
+      } else {
+        await this.generateQuiz(userId);
+        return { message: 'Quiz generated', quizDueToday: true };
+      }
     } else {
       return { message: 'No quiz due today', quizDueToday: false };
     }

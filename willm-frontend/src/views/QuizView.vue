@@ -1,74 +1,5 @@
-<template>
-    <div>
-        <h1>Quiz</h1>
-        <div v-if="currentQuestion">
-            <p>{{ currentQuestion.question_text }}</p>
-
-            <!-- Display specific fields based on the question type -->
-            <div v-if="currentQuestion.text">
-                <p>Text: {{ currentQuestion.text }}</p>
-            </div>
-            <div v-if="currentQuestion.word">
-                <p>Word: {{ currentQuestion.word }}</p>
-            </div>
-            <div v-if="currentQuestion.sentence">
-                <p>Sentence: {{ currentQuestion.sentence }}</p>
-            </div>
-            <div v-if="currentQuestion.excerpts && currentQuestion.excerpts.length">
-                <p>Excerpts:</p>
-                <ul>
-                    <li v-for="(excerpt, index) in currentQuestion.excerpts" :key="index">{{ excerpt }}</li>
-                </ul>
-            </div>
-            <div v-if="currentQuestion.options && currentQuestion.options.length">
-                <p>Options:</p>
-                <ul>
-                    <li v-for="(option, index) in currentQuestion.options" :key="index">{{ option }}</li>
-                </ul>
-            </div>
-
-            <!-- User input for the answer -->
-            <input v-model="userAnswer" placeholder="Your answer" />
-            <button @click="submitAnswer">Submit Answer</button>
-
-            <!-- Display the result of the submitted answer -->
-            <div v-if="answerResult">
-                <p v-if="answerResult.isCorrect">Correct!</p>
-                <p v-else>Incorrect. <button @click="requestExplanation">Get Explanation</button></p>
-                <p v-if="explanation">Explanation: {{ explanation }}</p>
-                <button v-if="currentQuestionIndex < quiz.questions.length - 1" @click="nextQuestion">Next
-                    Question</button>
-                <button v-else @click="completeQuiz">Complete Quiz</button>
-            </div>
-        </div>
-        <div v-else>
-            <p>No quiz available.</p>
-        </div>
-
-        <!-- Modal for quiz completion -->
-        <div class="modal fade" id="completionModal" tabindex="-1" aria-labelledby="completionModalLabel"
-            aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="completionModalLabel">Quiz Completed</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p>Quiz completed successfully!</p>
-                        <p>Score: {{ quizScore }}</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</template>
-
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
 import { message } from 'ant-design-vue';
@@ -86,6 +17,7 @@ const fetchQuiz = async () => {
     try {
         const response = await axios.get('http://localhost:3000/quiz/get-todays-quiz');
         quiz.value = response.data.quiz;
+        console.log(quiz.value)
         if (!quiz.value) {
             message.info(response.data.message);
             router.push('/');
@@ -100,15 +32,17 @@ const fetchQuiz = async () => {
     }
 };
 
-const submitAnswer = async () => {
+const submitAnswer = async (selectedAnswer = null) => {
     try {
+        const answer = selectedAnswer !== null ? selectedAnswer : userAnswer.value;
+        console.log('Answer:', answer);
         const response = await axios.post('http://localhost:3000/quiz/submit-answer', {
             quizId: quiz.value.quiz_id,
             questionId: currentQuestion.value.question_id,
-            userAnswer: userAnswer.value,
+            userAnswer: answer,
         });
         answerResult.value = response.data;
-        currentQuestion.answered = true;
+        currentQuestion.value.answered = true;
     } catch (error) {
         console.error('Error submitting answer:', error);
         message.error('Error submitting answer.');
@@ -158,8 +92,110 @@ const completeQuiz = async () => {
 onMounted(fetchQuiz);
 
 const currentQuestion = computed(() => quiz.value?.questions[currentQuestionIndex.value] || null);
+
+watch(currentQuestion, (newQuestion) => {
+    console.log('Current Question:', newQuestion);
+});
 </script>
 
+<template>
+    <div class="container mt-3">
+        <h1 class="text-center">Quiz</h1>
+        <div v-if="currentQuestion">
+            <h4>Question:</h4>
+            <p>{{ currentQuestion.question_text }}</p>
+
+            <!-- Display specific fields based on the question type -->
+            <div v-if="currentQuestion.text">
+                <h5>Text:</h5>
+                <p>{{ currentQuestion.text }}</p>
+            </div>
+            <div v-if="currentQuestion.word">
+                <p>Word: {{ currentQuestion.word }}</p>
+            </div>
+            <div v-if="currentQuestion.sentence">
+                <p>Sentence: {{ currentQuestion.sentence }}</p>
+            </div>
+            <div v-if="currentQuestion.excerpts && currentQuestion.excerpts.length">
+                <p>Excerpts:</p>
+                <ul>
+                    <li v-for="(excerpt, index) in currentQuestion.excerpts" :key="index">{{ excerpt }}</li>
+                </ul>
+            </div>
+            <div v-if="currentQuestion.options && currentQuestion.options.length">
+                <p>Options:</p>
+                <ul>
+                    <li v-for="(option, index) in currentQuestion.options" :key="index" class="option"
+                        @click="submitAnswer(option)">
+                        {{ option }}
+                    </li>
+                </ul>
+            </div>
+
+            <!-- User input for the answer -->
+            <textarea v-if="!currentQuestion.options || !currentQuestion.options.length" v-model="userAnswer"
+                placeholder="Your answer" class="form-control textarea-large" required />
+            <input v-else v-model="userAnswer" type="text" class="form-control" placeholder="Your answer" required />
+            <button v-if="!currentQuestion.options || !currentQuestion.options.length" class="btn mt-2"
+                @click="submitAnswer">Submit Answer</button>
+
+            <!-- Display the result of the submitted answer -->
+            <div v-if="answerResult">
+                <p v-if="answerResult.isCorrect">Correct!</p>
+                <p v-else>Incorrect. <button @click="requestExplanation">Get Explanation</button></p>
+                <p v-if="explanation">Explanation: {{ explanation }}</p>
+                <button v-if="currentQuestionIndex < quiz.questions.length - 1" @click="nextQuestion">Next
+                    Question</button>
+                <button v-else @click="completeQuiz">Complete Quiz</button>
+            </div>
+        </div>
+        <div v-else>
+            <p>No quiz available.</p>
+        </div>
+
+        <!-- Modal for quiz completion -->
+        <div class="modal fade" id="completionModal" tabindex="-1" aria-labelledby="completionModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="completionModalLabel">Quiz Completed</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Quiz completed successfully!</p>
+                        <p>Score: {{ quizScore }}</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
 <style scoped>
-/* Add your styles here */
+.btn {
+    border: 1px solid #c5c5c5;
+    color: #838383;
+}
+
+.btn:hover {
+    background-color: #eabc7c;
+    color: white;
+}
+
+.textarea-large {
+    height: 200px;
+}
+
+.option {
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.option:hover {
+    background-color: #eabc7c;
+}
 </style>

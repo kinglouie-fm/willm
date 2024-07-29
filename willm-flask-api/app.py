@@ -588,9 +588,14 @@ async def llm_decide_questions(new_questions, quiz_history):
         ) as response:
             response_json = await response.json()
             question_ids_str = response_json['choices'][0]['message']['content']
-            question_ids = re.findall(r'\[(.*?)\]', question_ids_str)[0].split(', ')
-            return question_ids
-
+            logging.info(f"Decide question ids: {question_ids_str}")
+            matches = re.findall(r'\[(.*?)\]', question_ids_str)
+            if matches:
+                question_ids = matches[0].split(', ')
+                return question_ids
+            else:
+                logging.error("Failed to extract question IDs from the LLM response.")
+                return []
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000)

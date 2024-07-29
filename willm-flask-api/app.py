@@ -541,7 +541,7 @@ async def similarity_search():
     for result in results:
         metadata = result.metadata
         question_data = {
-            "question_id": metadata.get("id", ""),
+            "question_id": metadata.get("document_id", ""),
             "question_text": result.page_content,
             "question_type": metadata.get("type", ""),
             "options": metadata.get("options", "").split("\n") if metadata.get("options") else [],
@@ -558,7 +558,7 @@ async def similarity_search():
     # If quiz history is provided, give it to LLM along with the questions
     if quiz_history:
         new_questions_str = '\n'.join([f"ID: {q['question_id']}, Type: {q['question_type']}" for q in questions])
-        quiz_history_str = '\n'.join([f"Quiz: {idx + 1}\n" + '\n'.join([f"Type: {q['question_type']}, Result: {q['result']}" for q in quiz['questions']]) for idx, quiz in enumerate(quiz_history)])
+        quiz_history_str = '\n'.join([f"Quiz: {idx + 1}\n" + '\n'.join([f"Question ID: {q['question_id']}, Type: {q['question_type']}, Result: {q['result']}" for q in quiz['questions']]) for idx, quiz in enumerate(quiz_history)])
 
         selected_question_ids = await llm_decide_questions(new_questions_str, quiz_history_str)
         questions = [q for q in questions if q['question_id'] in selected_question_ids]
@@ -586,7 +586,7 @@ async def llm_decide_questions(new_questions, quiz_history):
         ) as response:
             response_json = await response.json()
             question_ids_str = response_json['choices'][0]['message']['content']
-            logging.info(f"Decide question ids: {question_ids_str}")
+            logging.info(f"Decided question ids: {question_ids_str}")
             matches = re.findall(r'\[(.*?)\]', question_ids_str)
             if matches:
                 question_ids = matches[0].split(', ')

@@ -50,7 +50,7 @@ const submitAnswer = async (selectedAnswer = null, option) => {
         if (answerResult.value.isCorrect) {
             message.success('Correct answer!', 3);
         } else {
-            message.error('Incorrect answer. The correct answer was: ' + answerResult.value.correctAnswer, 6);
+            message.error('Incorrect answer. The correct answer was: ' + answerResult.value.correctAnswer.charAt(0), 6);
         }
         currentQuestion.value.answered = true;
     } catch (error) {
@@ -129,6 +129,12 @@ watch(currentQuestion, (newQuestion) => {
                     <li v-for="(excerpt, index) in currentQuestion.excerpts" :key="index">{{ excerpt }}</li>
                 </ul>
             </div>
+            <div v-if="currentQuestion.sentences && currentQuestion.sentences.length">
+                <h5>Sentences:</h5>
+                <ul>
+                    <li v-for="(sentence, index) in currentQuestion.sentences" :key="index">{{ sentence }}</li>
+                </ul>
+            </div>
             <div v-if="currentQuestion.options && currentQuestion.options.length">
                 <h5>Options:</h5>
                 <ul>
@@ -147,6 +153,12 @@ watch(currentQuestion, (newQuestion) => {
 
             <!-- Display the result of the submitted answer -->
             <div v-if="answerResult">
+                <h5 v-if="answerResult.isCorrect" class="correct mt-2">
+                    <button v-if="currentQuestionIndex < quiz.questions.length - 1" class="btn"
+                        @click="nextQuestion">Next Question
+                    </button>
+                    <button v-else class="btn" @click="completeQuiz">Complete Quiz</button>
+                </h5>
                 <h5 v-if="!answerResult.isCorrect" class="incorrect mt-2">
                     <div class="d-flex justify-content-between align-items-center mt-2">
                         <button class="btn" @click="requestExplanation">Get Explanation</button>

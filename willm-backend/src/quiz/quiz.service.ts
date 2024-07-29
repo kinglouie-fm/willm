@@ -170,8 +170,9 @@ export class QuizService {
         k: 10,
         quiz_history: quizHistory.map(qh => ({
           questions: qh.questions.map(q => ({
+            question_id: q.question_id,
             question_type: q.question_type,
-            result: q.result
+            result: q.result,
           }))
         }))
       }));

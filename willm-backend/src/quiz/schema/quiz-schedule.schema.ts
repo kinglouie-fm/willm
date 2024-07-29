@@ -11,6 +11,12 @@ export class QuizSchedule extends Document {
 
   @Prop({ required: true, default: 0 })
   current_interval_index: number;
+
+  @Prop({ default: 0 })
+  total_quizzes: number;
+
+  @Prop({ default: 0 })
+  completed_quizzes: number;
 }
 
 export const QuizScheduleSchema = SchemaFactory.createForClass(QuizSchedule);

@@ -66,9 +66,6 @@ export class Quiz extends Document {
   skipped: boolean;
 
   @Prop({ default: false })
-  missed: boolean;
-
-  @Prop({ default: false })
   completed: boolean;
 
   @Prop({ default: 0 })

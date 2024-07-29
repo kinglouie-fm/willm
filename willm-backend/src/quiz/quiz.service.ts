@@ -45,12 +45,20 @@ export class QuizService {
         await this.setNextQuizDate(user._id as Types.ObjectId, new Date(), 0);
         return { message: 'First quiz scheduled', nextQuizDate: new Date(), quizDueToday: true };
       } else {
-        const nextQuizDateStr = quizSchedule.next_quiz_date.toISOString().split('T')[0];
+        let nextQuizDateStr = quizSchedule.next_quiz_date.toISOString().split('T')[0];
 
-        if (currentDateStr === nextQuizDateStr) {
-          // await this.generateQuiz(user._id as Types.ObjectId);
+        // If the next quiz date is in the past, mark the quiz as missed and reschedule
+        if (currentDateStr > nextQuizDateStr) {
+          await this.markQuizAsMissed(user._id as Types.ObjectId);
+          nextQuizDateStr = quizSchedule.next_quiz_date.toISOString().split('T')[0];
+          if(currentDateStr === nextQuizDateStr) { // Next quiz date is today
+            return { message: 'Missed quiz rescheduled', nextQuizDate: quizSchedule.next_quiz_date, quizDueToday: true };
+          } else { // Next quiz date is in the future
+            return { message: 'Missed quiz rescheduled', nextQuizDate: quizSchedule.next_quiz_date, quizDueToday: false };
+          }
+        } else if (currentDateStr === nextQuizDateStr) { // Next quiz date is today
           return { message: 'Quiz due today', nextQuizDate: quizSchedule.next_quiz_date, quizDueToday: true };
-        } else {
+        } else { // Next quiz date is in the future
           return { message: 'No quiz due today', nextQuizDate: quizSchedule.next_quiz_date, quizDueToday: false };
         }
       }
@@ -175,7 +183,6 @@ export class QuizService {
       date_created: new Date(),
       questions: preparedQuestions,
       skipped: false,
-      missed: false,
       completed: false,
       score: 0,
     });
@@ -198,6 +205,23 @@ export class QuizService {
       });
       await newSchedule.save();
     }
+    await this.incrementTotalQuizzes(userId);
+  }
+
+  async incrementTotalQuizzes(userId: Types.ObjectId): Promise<void> {
+    await this.quizScheduleModel.findOneAndUpdate(
+      { user_id: userId },
+      { $inc: { total_quizzes: 1 } },
+      { new: true }
+    );
+  }
+
+  async incrementCompletedQuizzes(userId: Types.ObjectId): Promise<void> {
+    await this.quizScheduleModel.findOneAndUpdate(
+      { user_id: userId },
+      { $inc: { completed_quizzes: 1 } },
+      { new: true }
+    );
   }
 
   createQueryFromData(issues, recentReview, scores): string {
@@ -275,16 +299,7 @@ export class QuizService {
     return { message: 'Quiz marked as skipped', nextQuizDate };
   }
 
-  async markQuizAsMissed(userId: Types.ObjectId, quizId: string): Promise<{ message: string, nextQuizDate: Date }> {
-    const quiz = await this.quizModel.findOne({ user_id: userId, quiz_id: quizId });
-
-    if (!quiz) {
-      throw new Error('Quiz not found');
-    }
-
-    quiz.missed = true;
-    await quiz.save();
-
+  async markQuizAsMissed(userId: Types.ObjectId): Promise<{ message: string, nextQuizDate: Date }> {
     const quizSchedule = await this.quizScheduleModel.findOne({ user_id: userId });
     const newIntervalIndex = Math.max(quizSchedule.current_interval_index - 1, 0);
     const nextQuizDate = new Date();
@@ -313,6 +328,8 @@ export class QuizService {
     nextQuizDate.setDate(nextQuizDate.getDate() + this.intervals[newIntervalIndex]);
 
     await this.setNextQuizDate(userId, nextQuizDate, newIntervalIndex);
+
+    await this.incrementCompletedQuizzes(userId);
 
     return { message: `Quiz marked as completed. Score: ${quiz.score}`, score: quiz.score, nextQuizDate };
   }

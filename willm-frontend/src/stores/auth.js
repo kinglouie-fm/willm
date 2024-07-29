@@ -45,7 +45,7 @@ export const useAuthStore = defineStore('auth', {
           } else {
             // Check quiz status
             const quizResponse = await axios.get('http://localhost:3000/quiz/check-quiz');
-            this.quizDueToday = quizResponse.data.quizDue;
+            this.quizDueToday = quizResponse.data.quizDueToday;
             this.nextQuizDate = quizResponse.data.nextQuizDate;
 
             if (this.quizDueToday) {

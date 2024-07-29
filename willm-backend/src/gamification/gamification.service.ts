@@ -64,16 +64,17 @@ export class GamificationService {
       },
     },
     levels: {
-        "1": 100,
-        "2": 300,
-        "3": 600,
-        "4": 1000,
-        "5": 1500,
-        "6": 2100,
-        "7": 2800,
-        "8": 3600,
-        "9": 4500,
-        "10": 5500,
+      "0": 0,
+      "1": 100,
+      "2": 300,
+      "3": 600,
+      "4": 1000,
+      "5": 1500,
+      "6": 2100,
+      "7": 2800,
+      "8": 3600,
+      "9": 4500,
+      "10": 5500,
     }
   };
 
@@ -164,11 +165,15 @@ export class GamificationService {
 
     // Update level
     const levels = this.config.levels;
+    let newLevel = 0;
     for (const [level, xp] of Object.entries(levels)) {
       if (user.xp >= xp) {
-        user.level = Number(level);
+        newLevel = Number(level);
+      } else {
+        break;
       }
     }
+    user.level = newLevel;
   }
 
   async resetStreaks(userId: Types.ObjectId): Promise<void> {

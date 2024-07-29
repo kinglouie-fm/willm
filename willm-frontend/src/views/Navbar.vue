@@ -58,7 +58,8 @@ const showPostTestModal = () => {
                         @click="navigateTo('/')">
                         <h4>Home</h4>
                     </button>
-                    <button class="btn me-2" v-if="authStore.isAuthenticated" @click="checkQuiz">
+                    <button class="btn me-2" v-if="authStore.isAuthenticated && route.path !== '/quiz'"
+                        @click="checkQuiz">
                         <h4>Quiz</h4>
                     </button>
                 </div>

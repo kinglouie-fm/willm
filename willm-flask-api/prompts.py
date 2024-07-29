@@ -558,7 +558,7 @@ Tip: [The tip to improve organization]
 """
 
 EXPLAIN_ANSWER = """
-Explain why the correct answer is correct and why the user's answer is not correct. Include any relevant context from the provided text, word, or sentence if available. If the correct answer is not provided, simply explain without the correct answer.
+Explain why the correct answer is correct and why the user's answer is not correct. Include any relevant context from the provided text, word, or sentence if available. If the correct answer is not provided, simply explain without the correct answer. Keep the explanation below 60 words.
 
 Question: {question}
 

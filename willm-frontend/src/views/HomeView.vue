@@ -547,7 +547,7 @@ onMounted(async () => {
         <!-- Lower Left -->
         <div class="col-6">
           <div class="mx-5">
-            <button type="button" class="btn btn-md" @click="handleCorrect">AI Evaluation</button>
+            <button type="button" class="btn btn-md me-2" @click="handleCorrect">AI Evaluation</button>
             <button type="button" class="btn btn-md" @click="generateReview">Review</button>
           </div>
         </div>

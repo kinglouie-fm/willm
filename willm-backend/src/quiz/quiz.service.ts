@@ -256,7 +256,7 @@ export class QuizService {
     return query;
   }
 
-  async submitQuizAnswer(userId: Types.ObjectId, quizId: string, questionId: string, userAnswer: string): Promise<{ question: any, isCorrect: boolean }> {
+  async submitQuizAnswer(userId: Types.ObjectId, quizId: string, questionId: string, userAnswer: string): Promise<{ question: any, isCorrect: boolean, correctAnswer: any }> {
     const quiz = await this.quizModel.findOne({ user_id: userId, quiz_id: quizId });
 
     if (!quiz) {
@@ -300,7 +300,7 @@ export class QuizService {
     
     await quiz.save();
 
-    return { question, isCorrect: question.result };
+    return { question, isCorrect: question.result, correctAnswer: question.correct_answer };
   }
 
   async explainAnswer(userId: Types.ObjectId, quizId: string, questionId: string, userAnswer: string) {

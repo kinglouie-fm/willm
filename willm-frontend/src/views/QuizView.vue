@@ -3,6 +3,7 @@ import { ref, onMounted, computed, watch } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
 import { message } from 'ant-design-vue';
+import * as bootstrap from 'bootstrap';
 
 const quiz = ref(null);
 const currentQuestionIndex = ref(0);
@@ -40,13 +41,17 @@ const submitAnswer = async (selectedAnswer = null, option) => {
         } else {
             answer = userAnswer.value;
         }
-        console.log('Answer:', answer);
         const response = await axios.post('http://localhost:3000/quiz/submit-answer', {
             quizId: quiz.value.quiz_id,
             questionId: currentQuestion.value.question_id,
             userAnswer: answer,
         });
         answerResult.value = response.data;
+        if (answerResult.value.isCorrect) {
+            message.success('Correct answer!', 3);
+        } else {
+            message.error('Incorrect answer. The correct answer was: ' + answerResult.value.correctAnswer, 6);
+        }
         currentQuestion.value.answered = true;
     } catch (error) {
         console.error('Error submitting answer:', error);
@@ -56,15 +61,10 @@ const submitAnswer = async (selectedAnswer = null, option) => {
 
 const requestExplanation = async () => {
     try {
-        const response = await axios.post('http://localhost:3000/question/explain-answer', {
-            question: currentQuestion.value.question_text,
-            correct_answer: currentQuestion.value.correct_answer,
-            user_answer: userAnswer.value,
-            options: currentQuestion.value.options,
-            excerpts: currentQuestion.value.excerpts,
-            text: currentQuestion.value.text,
-            word: currentQuestion.value.word,
-            sentence: currentQuestion.value.sentence,
+        const response = await axios.post('http://localhost:3000/quiz/explain-answer', {
+            quizId: quiz.value.quiz_id,
+            questionId: currentQuestion.value.question_id,
+            userAnswer: userAnswer.value,
         });
         explanation.value = response.data.explanation;
     } catch (error) {
@@ -147,13 +147,19 @@ watch(currentQuestion, (newQuestion) => {
 
             <!-- Display the result of the submitted answer -->
             <div v-if="answerResult">
-                <h5 v-if="answerResult.isCorrect" class="correct mt-2">Well done, your answer is correct!</h5>
-                <h5 v-else class="incorrect mt-2">Incorrect. <button class="btn" @click="requestExplanation">Get
-                        Explanation</button></h5>
-                <p v-if="explanation">Explanation: {{ explanation }}</p>
-                <button v-if="currentQuestionIndex < quiz.questions.length - 1" class="btn" @click="nextQuestion">Next
-                    Question</button>
-                <button v-else @click="completeQuiz">Complete Quiz</button>
+                <h5 v-if="!answerResult.isCorrect" class="incorrect mt-2">
+                    <div class="d-flex justify-content-between align-items-center mt-2">
+                        <button class="btn" @click="requestExplanation">Get Explanation</button>
+                        <button v-if="currentQuestionIndex < quiz.questions.length - 1" class="btn"
+                            @click="nextQuestion">Next
+                            Question</button>
+                        <button v-else class="btn" @click="completeQuiz">Complete Quiz</button>
+                    </div>
+                </h5>
+                <div v-if="explanation" class="container p-3">
+                    <h5>Explanation:</h5>
+                    <p>{{ explanation }}</p>
+                </div>
             </div>
         </div>
         <div v-else>
@@ -171,10 +177,10 @@ watch(currentQuestion, (newQuestion) => {
                     </div>
                     <div class="modal-body">
                         <p>Quiz completed successfully!</p>
-                        <p>Score: {{ quizScore }}</p>
+                        <p>Score: {{ quizScore }} / 5</p>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn" data-bs-dismiss="modal">Close</button>
                     </div>
                 </div>
             </div>

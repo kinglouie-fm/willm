@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import ScoreProgressBar from '../components/ScoreProgressBar.vue';
 import LevelProgressBar from '../components/LevelProgressBar.vue';
@@ -113,25 +113,6 @@ const initPopover = () => {
     });
 };
 
-const achievementsOpen = ref(true);
-
-const toggleSection = (section) => {
-    if (section === 'achievements') {
-        achievementsOpen.value = !achievementsOpen.value;
-    }
-};
-
-const isSectionOpen = (section) => {
-    if (section === 'achievements') {
-        return achievementsOpen.value;
-    }
-    return false;
-};
-
-const sectionIcon = (section) => {
-    return isSectionOpen(section) ? 'arrow-icon open' : 'arrow-icon closed';
-};
-
 const getAchievementProgress = (key, achievements) => {
     const stages = achievementsConfig[key];
     const achievedStages = Object.keys(stages).filter(stage => achievements[key] >= Number(stage));
@@ -243,12 +224,12 @@ onMounted(() => {
                         <h3 class="text-center">Progress</h3>
                         <div v-if="gamificationData">
                             <h5>Your Badge: {{ gamificationData.badges.length ?
-                                gamificationData.badges[gamificationData.badges.length - 1].name : 'No badge yet' }}
+                                gamificationData.badges[gamificationData.badges.length - 1].name : 'None yet' }}
                             </h5>
                             <LevelProgressBar :currentLevel="gamificationData.level" :currentXP="gamificationData.xp"
                                 :maxXP="getNextLevelXP(gamificationData.level)"
                                 :nextLevel="gamificationData.level + 1" />
-                            <div class="d-flex justify-content-between my-3">
+                            <div class="d-flex justify-content-between">
                                 <h5>Daily Streak: {{ gamificationData.daily_streak }}</h5>
                                 <h5>Weekly Streak: {{ gamificationData.weekly_streak }}</h5>
                             </div>
@@ -258,24 +239,21 @@ onMounted(() => {
                         </div>
                     </div>
                     <div>
-                        <h5 @click="toggleSection('achievements')" class="expandable-header">
-                            <span :class="sectionIcon('achievements')"></span>
-                            Achievements
-                        </h5>
-                        <div v-show="achievementsOpen">
-                            <ul>
-                                <li v-for="(value, key) in gamificationData?.achievements" :key="key"
-                                    class="achievement-item">
-                                    <span>{{ getAchievementProgress(key, gamificationData.achievements).next }}</span>
-                                    <span>Reward: {{ getAchievementProgress(key, gamificationData.achievements).rewardXP
-                                        }} XP</span>
-                                    <AchievementProgressBar :currentCount="gamificationData.achievements[key]"
-                                        :targetCount="Number(getAchievementProgress(key, gamificationData.achievements).targetCount)" />
-                                    <span
-                                        v-html="renderStars(getAchievementProgress(key, gamificationData.achievements).currentStep, getAchievementProgress(key, gamificationData.achievements).totalStep)"></span>
-                                </li>
-                            </ul>
-                        </div>
+                        <h5 class="text-center">Achievements</h5>
+                        <ul class="list-group">
+                            <li v-for="(value, key) in gamificationData?.achievements" :key="key"
+                                class="list-group-item achievement-item p-2 border rounded d-flex align-items-center justify-content-between">
+                                <div class="me-3">{{ getAchievementProgress(key, gamificationData.achievements).next }}
+                                </div>
+                                <div class="me-3">Reward: {{ getAchievementProgress(key,
+                                gamificationData.achievements).rewardXP }} XP</div>
+                                <AchievementProgressBar :currentCount="gamificationData.achievements[key]"
+                                    :targetCount="Number(getAchievementProgress(key, gamificationData.achievements).targetCount)" />
+                                <div
+                                    v-html="renderStars(getAchievementProgress(key, gamificationData.achievements).currentStep, getAchievementProgress(key, gamificationData.achievements).totalStep)">
+                                </div>
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -313,34 +291,15 @@ onMounted(() => {
     cursor: pointer;
 }
 
-.expandable-header {
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    user-select: none;
-}
-
-.arrow-icon {
-    display: inline-block;
-    width: 1em;
-    height: 1em;
-    background: url('data:image/svg+xml;utf8,<svg fill="%23838383" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>') no-repeat center;
-    transition: transform 0.3s ease;
-    margin-right: 0.5rem;
-}
-
-.arrow-icon.open {
-    transform: rotate(360deg);
-}
-
-.arrow-icon.closed {
-    transform: rotate(270deg);
-}
-
 .achievement-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
     margin-bottom: 10px;
+    flex-wrap: nowrap;
+}
+
+.list-group-item {
+    flex: 1;
 }
 </style>

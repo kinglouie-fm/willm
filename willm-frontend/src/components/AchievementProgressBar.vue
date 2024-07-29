@@ -25,6 +25,7 @@ const progressPercentage = computed(() => {
 <style scoped>
 .achievement-progress-bar-container {
     width: 100%;
+    max-width: 150px;
     margin-top: 5px;
     position: relative;
 }
@@ -34,7 +35,7 @@ const progressPercentage = computed(() => {
     border-radius: 5px;
     background-color: #ddd;
     position: relative;
-    width: 100px;
+    width: 100%;
 }
 
 .progress {

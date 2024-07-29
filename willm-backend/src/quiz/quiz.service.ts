@@ -407,7 +407,14 @@ export class QuizService {
     }
 
     const correctAnswers = quiz.questions.filter(q => q.result).length;
-    return correctAnswers;
+
+    if (correctAnswers <= 2) {
+      return 1;
+    } else if (correctAnswers <= 4) {
+      return 2;
+    } else {
+      return 3;
+    }
   }
 
   async getLastQuizForUser(userId: Types.ObjectId): Promise<Quiz> {

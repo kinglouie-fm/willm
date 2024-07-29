@@ -160,21 +160,6 @@ export class QuestionService {
     return response.data;
   }
 
-  async explainAnswer(question: string, correctAnswer: string, userAnswer: string, options: string[], excerpts: string[], text?: string, word?: string, sentence?: string) {
-    const response = await lastValueFrom(this.httpService.post('http://flask-api:8000/question/explain-answer', {
-      question: question,
-      options: options,
-      excerpts: excerpts,
-      text: text || '',
-      word: word || '',
-      sentence: sentence || '',
-      correct_answer: correctAnswer,
-      user_answer: userAnswer
-    }));
-
-    return response.data;
-  }
-
   private async findTextWithIssues(userId: Types.ObjectId): Promise<string | null> {
     const issues = await this.issueService.getLastIssuesByType(userId, 10);
     const grammarVocabIssues = issues.filter(issue => issue.type === 'grammar_vocab');

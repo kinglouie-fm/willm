@@ -303,6 +303,33 @@ export class QuizService {
     return { question, isCorrect: question.result };
   }
 
+  async explainAnswer(userId: Types.ObjectId, quizId: string, questionId: string, userAnswer: string) {
+    const quiz = await this.quizModel.findOne({ user_id: userId, quiz_id: quizId });
+
+    if (!quiz) {
+      throw new Error('Quiz not found');
+    }
+
+    const question = quiz.questions.find(q => q.question_id === questionId);
+
+    if (!question) {
+      throw new Error('Question not found');
+    }
+
+    const response = await lastValueFrom(this.httpService.post('http://flask-api:8000/question/explain-answer',{
+        question: question,
+        options: question.options || [],
+        excerpts: question.excerpts || [],
+        text: question.text || '',
+        word: question.word || '',
+        sentence: question.sentence || '',
+        correct_answer: question.correct_answer || '',
+        user_answer: userAnswer
+      }));
+
+    return response.data;
+  }
+
   async markQuizAsSkipped(userId: Types.ObjectId, quizId: string): Promise<{ message: string, nextQuizDate: Date }> {
     const quiz = await this.quizModel.findOne({ user_id: userId, quiz_id: quizId });
 

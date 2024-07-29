@@ -363,8 +363,6 @@ def academic_sentence_correction():
         max_tokens=1000
     )
 
-    logging.info(f"Academic sentence correction response: {response}")
-
     output = response.choices[0].message.content
 
     answer_match = re.search(r'Answer:\s*(.*)', output)

@@ -24,6 +24,15 @@ export class QuizController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Post('explain-answer')
+  async explainAnswer(@Req() req: Request, @Body() body) {
+    const userId = req.user._id;
+    const { quizId, questionId, userAnswer } = body;
+    const explanation = await this.quizService.explainAnswer(userId, quizId, questionId, userAnswer);
+    return explanation;
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Post('skip')
   async skipQuiz(@Req() req: Request, @Body() body) {
     const userId = req.user._id;

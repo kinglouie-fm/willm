@@ -15,17 +15,17 @@ const progressPercentage = computed(() => {
 
 <template>
     <div class="level-progress-container">
-        <div class="scores">
-            <span>{{ currentLevel }}</span>
-            <span>{{ nextLevel }}</span>
-        </div>
-        <div class="progress-bar-container">
+        <div class="progress-bar-container my-5">
             <div class="progress">
-                <!-- Fill up to the current XP -->
                 <div class="progress-bar current" :style="{ width: progressPercentage + '%' }"></div>
             </div>
-            <div class="xp-label">
+            <div class="scores mt-2">
+                <span>Level {{ currentLevel }}</span>
                 <span>{{ currentXP }} / {{ maxXP }} XP</span>
+                <span>Level {{ nextLevel }}</span>
+            </div>
+            <div class="xp-label">
+
             </div>
         </div>
     </div>
@@ -45,8 +45,8 @@ const progressPercentage = computed(() => {
 }
 
 .progress {
-    height: 20px;
-    border-radius: 10px;
+    height: 10px;
+    border-radius: 5px;
     background-color: #ddd;
     display: flex;
     position: relative;
@@ -59,7 +59,7 @@ const progressPercentage = computed(() => {
 }
 
 .current {
-    background-color: #4caf50;
+    background-color: #eabc7c;
     z-index: 1;
 }
 

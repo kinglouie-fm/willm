@@ -1,8 +1,9 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
 import ScoreProgressBar from '../components/ScoreProgressBar.vue';
-import LevelProgressBar from '../components/LevelProgressBar.vue'; // Import the new component
+import LevelProgressBar from '../components/LevelProgressBar.vue';
+import AchievementProgressBar from '../components/AchievementProgressBar.vue';
 import * as bootstrap from 'bootstrap';
 import { message } from 'ant-design-vue';
 
@@ -10,11 +11,11 @@ const sections = ref([]);
 const selectedSection = ref('');
 const comparisonData = ref(null);
 const response_message = ref('');
-const achievementsOpen = ref(true);
 
-const gamificationData = ref(null);
+const gamificationData = ref(null); // Initialize as null to check for loading state
 
 const levels = {
+    0: 0,
     1: 100,
     2: 300,
     3: 600,
@@ -25,6 +26,31 @@ const levels = {
     8: 3600,
     9: 4500,
     10: 5500,
+};
+
+const achievementsConfig = {
+    quizzes_completed: {
+        "5": 100,
+        "10": 200,
+        "15": 300,
+    },
+    correct_answers: {
+        "25": 100,
+        "50": 200,
+        "75": 300,
+    },
+    weekly_streaks: {
+        "1": 100,
+        "2": 200,
+        "3": 300,
+        "4": 400,
+    },
+    consecutive_days: {
+        "3": 50,
+        "7": 150,
+        "14": 300,
+        "21": 500,
+    },
 };
 
 const getNextLevelXP = (level) => {
@@ -70,7 +96,6 @@ const fetchGamification = async () => {
     try {
         const response = await axios.get('http://localhost:3000/user/gamification', { withCredentials: true });
         gamificationData.value = response.data;
-        console.log(response.data);
     } catch (error) {
         console.error("Error fetching gamification: ", error)
     }
@@ -88,6 +113,8 @@ const initPopover = () => {
     });
 };
 
+const achievementsOpen = ref(true);
+
 const toggleSection = (section) => {
     if (section === 'achievements') {
         achievementsOpen.value = !achievementsOpen.value;
@@ -103,6 +130,46 @@ const isSectionOpen = (section) => {
 
 const sectionIcon = (section) => {
     return isSectionOpen(section) ? 'arrow-icon open' : 'arrow-icon closed';
+};
+
+const getAchievementProgress = (key, achievements) => {
+    const stages = achievementsConfig[key];
+    const achievedStages = Object.keys(stages).filter(stage => achievements[key] >= Number(stage));
+    const nextStage = Object.keys(stages).find(stage => achievements[key] < Number(stage));
+    const currentStep = achievedStages.length;
+    const totalStep = Object.keys(stages).length;
+    const rewardXP = nextStage ? stages[nextStage] : stages[Object.keys(stages).pop()];
+    const targetCount = nextStage ? nextStage : Object.keys(stages).pop();
+
+    let nextText;
+    if (key === 'quizzes_completed') {
+        nextText = `Complete ${nextStage} quizzes`;
+    } else if (key === 'correct_answers') {
+        nextText = `Give ${nextStage} correct answers`;
+    } else if (key === 'weekly_streaks') {
+        nextText = `Reach ${nextStage} weekly streak${nextStage > 1 ? 's' : ''}`;
+    } else if (key === 'consecutive_days') {
+        nextText = `Maintain a ${nextStage}-day streak`;
+    }
+
+    return {
+        currentStep,
+        totalStep,
+        next: nextText,
+        rewardXP,
+        targetCount
+    };
+};
+
+const renderStars = (currentStep, totalStep) => {
+    const stars = [];
+    for (let i = 0; i < currentStep; i++) {
+        stars.push('<span style="color: #eabc7c;">&#9733;</span>'); // filled star
+    }
+    for (let i = currentStep; i < totalStep; i++) {
+        stars.push('<span style="color: grey;">&#9733;</span>'); // grey star
+    }
+    return stars.join('');
 };
 
 onMounted(() => {
@@ -195,8 +262,15 @@ onMounted(() => {
                         </h5>
                         <div v-show="achievementsOpen">
                             <ul>
-                                <li v-for="(value, key) in gamificationData?.achievements" :key="key">
-                                    {{ key }}: {{ value }}
+                                <li v-for="(value, key) in gamificationData?.achievements" :key="key"
+                                    class="achievement-item">
+                                    <span>{{ getAchievementProgress(key, gamificationData.achievements).next }}</span>
+                                    <span>Reward: {{ getAchievementProgress(key, gamificationData.achievements).rewardXP
+                                        }} XP</span>
+                                    <AchievementProgressBar :currentCount="gamificationData.achievements[key]"
+                                        :targetCount="getAchievementProgress(key, gamificationData.achievements).targetCount" />
+                                    <span
+                                        v-html="renderStars(getAchievementProgress(key, gamificationData.achievements).currentStep, getAchievementProgress(key, gamificationData.achievements).totalStep)"></span>
                                 </li>
                             </ul>
                         </div>
@@ -259,5 +333,12 @@ onMounted(() => {
 
 .arrow-icon.closed {
     transform: rotate(270deg);
+}
+
+.achievement-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
 }
 </style>

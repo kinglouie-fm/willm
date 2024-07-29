@@ -135,16 +135,14 @@ const getAchievementProgress = (key, achievements) => {
 
     const previousStage = achievedStages.length > 0 ? Number(achievedStages[achievedStages.length - 1]) : 0;
     const progress = achievements[key] - previousStage;
-    const currentTargetCount = nextStage ? Number(nextStage) - previousStage : targetCount;
 
     return {
         currentStep,
         totalStep,
         next: nextText,
         rewardXP,
-        progress,
-        currentTargetCount,
-        currentStageCount: previousStage
+        progress: achievements[key],
+        targetCount
     };
 };
 
@@ -260,9 +258,8 @@ onMounted(() => {
                                 </div>
                                 <div class="me-3">Reward: {{ getAchievementProgress(key,
                                 gamificationData.achievements).rewardXP }} XP</div>
-                                <AchievementProgressBar
-                                    :currentCount="getAchievementProgress(key, gamificationData.achievements).progress"
-                                    :targetCount="getAchievementProgress(key, gamificationData.achievements).currentTargetCount" />
+                                <AchievementProgressBar :currentCount="gamificationData.achievements[key]"
+                                    :targetCount="getAchievementProgress(key, gamificationData.achievements).targetCount" />
                                 <div
                                     v-html="renderStars(getAchievementProgress(key, gamificationData.achievements).currentStep, getAchievementProgress(key, gamificationData.achievements).totalStep)">
                                 </div>

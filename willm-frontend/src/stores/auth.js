@@ -46,12 +46,12 @@ export const useAuthStore = defineStore('auth', {
             // Check quiz status
             const quizResponse = await axios.get('http://localhost:3000/quiz/check-quiz');
             this.quizDueToday = quizResponse.data.quizDueToday;
-            console.log('quizResponse:', quizResponse.data);
+            this.nextQuizDate = quizResponse.data.nextQuizDate.split('T')[0].split('-').reverse().join('.');
 
             if (this.quizDueToday) {
               message.info('Quiz is due today.');
             } else {
-              message.info(`Next quiz date: ${this.nextQuizDate}`);
+              message.info(`Next quiz date: ${this.nextQuizDate}`, 3);
             }
 
             router.push({ name: 'home' });

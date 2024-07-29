@@ -13,7 +13,7 @@ export class GamificationService {
 
   constructor(
     @InjectModel(User.name) private userModel: Model<User>) {
-        const configPath = path.resolve(__dirname, '../../config/config.json');
+        const configPath = path.resolve(__dirname, '../config/config.json');
         this.config = JSON.parse(fs.readFileSync(configPath, 'utf-8')) as Config;
     }
 

@@ -18,7 +18,6 @@ const fetchQuiz = async () => {
     try {
         const response = await axios.get('http://localhost:3000/quiz/get-todays-quiz');
         quiz.value = response.data.quiz;
-        console.log(quiz.value)
         if (!quiz.value) {
             message.info(response.data.message);
             router.push('/');
@@ -98,9 +97,9 @@ onMounted(fetchQuiz);
 
 const currentQuestion = computed(() => quiz.value?.questions[currentQuestionIndex.value] || null);
 
-watch(currentQuestion, (newQuestion) => {
-    console.log('Current Question:', newQuestion);
-});
+// watch(currentQuestion, (newQuestion) => {
+//     console.log('Current Question:', newQuestion);
+// });
 </script>
 
 <template>
@@ -118,6 +117,10 @@ watch(currentQuestion, (newQuestion) => {
             <div v-if="currentQuestion.word">
                 <h5>Word:</h5>
                 <p>{{ currentQuestion.word }}</p>
+            </div>
+            <div v-if="currentQuestion.argument">
+                <h5>Argument:</h5>
+                <p>{{ currentQuestion.argument }}</p>
             </div>
             <div v-if="currentQuestion.sentence">
                 <h5>Sentence:</h5>

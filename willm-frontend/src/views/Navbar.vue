@@ -23,7 +23,7 @@ const navigateTo = (path) => {
 const checkQuiz = async () => {
     try {
         const response = await axios.get('http://localhost:3000/quiz/check-quiz');
-        if (response.data.quizDue) {
+        if (response.data.quizDueToday) {
             message.info('Quiz is due today. Redirecting...');
             router.push('/quiz');
         } else {

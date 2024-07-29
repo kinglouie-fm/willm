@@ -8,6 +8,9 @@ export class QuizSchedule extends Document {
 
   @Prop({ required: true })
   next_quiz_date: Date;
+
+  @Prop({ required: true, default: 0 })
+  current_interval_index: number;
 }
 
 export const QuizScheduleSchema = SchemaFactory.createForClass(QuizSchedule);

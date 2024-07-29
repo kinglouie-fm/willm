@@ -42,7 +42,7 @@ export class QuizService {
       if (!quizSchedule) {
         // Generate the first quiz and set the next quiz date
         // await this.generateQuiz(user._id as Types.ObjectId);
-        await this.setNextQuizDate(user._id as Types.ObjectId, new Date());
+        await this.setNextQuizDate(user._id as Types.ObjectId, new Date(), 0);
         return { message: 'First quiz scheduled', nextQuizDate: new Date(), quizDueToday: true };
       } else {
         const nextQuizDateStr = quizSchedule.next_quiz_date.toISOString().split('T')[0];
@@ -184,15 +184,17 @@ export class QuizService {
     return { quiz };
   }
 
-  async setNextQuizDate(userId: Types.ObjectId, date: Date): Promise<void> {
+  async setNextQuizDate(userId: Types.ObjectId, date: Date, intervalIndex: number): Promise<void> {
     const existingSchedule = await this.quizScheduleModel.findOne({ user_id: userId });
     if (existingSchedule) {
       existingSchedule.next_quiz_date = date;
+      existingSchedule.current_interval_index = intervalIndex;
       await existingSchedule.save();
     } else {
       const newSchedule = new this.quizScheduleModel({
         user_id: userId,
         next_quiz_date: date,
+        current_interval_index: intervalIndex,
       });
       await newSchedule.save();
     }
@@ -264,12 +266,11 @@ export class QuizService {
     await quiz.save();
 
     const quizSchedule = await this.quizScheduleModel.findOne({ user_id: userId });
-    const currentIntervalIndex = this.intervals.indexOf(this.getIntervalForCurrentDate(quizSchedule.next_quiz_date));
-    const newIntervalIndex = Math.max(currentIntervalIndex - 1, 0);
+    const newIntervalIndex = Math.max(quizSchedule.current_interval_index - 1, 0);
     const nextQuizDate = new Date();
     nextQuizDate.setDate(nextQuizDate.getDate() + this.intervals[newIntervalIndex]);
 
-    await this.setNextQuizDate(userId, nextQuizDate);
+    await this.setNextQuizDate(userId, nextQuizDate, newIntervalIndex);
 
     return { message: 'Quiz marked as skipped', nextQuizDate };
   }
@@ -285,12 +286,11 @@ export class QuizService {
     await quiz.save();
 
     const quizSchedule = await this.quizScheduleModel.findOne({ user_id: userId });
-    const currentIntervalIndex = this.intervals.indexOf(this.getIntervalForCurrentDate(quizSchedule.next_quiz_date));
-    const newIntervalIndex = Math.max(currentIntervalIndex - 1, 0);
+    const newIntervalIndex = Math.max(quizSchedule.current_interval_index - 1, 0);
     const nextQuizDate = new Date();
     nextQuizDate.setDate(nextQuizDate.getDate() + this.intervals[newIntervalIndex]);
 
-    await this.setNextQuizDate(userId, nextQuizDate);
+    await this.setNextQuizDate(userId, nextQuizDate, newIntervalIndex); 
 
     return { message: 'Quiz marked as missed', nextQuizDate };
   }
@@ -308,12 +308,11 @@ export class QuizService {
     await quiz.save();
 
     const quizSchedule = await this.quizScheduleModel.findOne({ user_id: userId });
-    const currentIntervalIndex = this.intervals.indexOf(this.getIntervalForCurrentDate(quizSchedule.next_quiz_date));
-    const newIntervalIndex = Math.min(currentIntervalIndex + 1, this.intervals.length - 1);
+    const newIntervalIndex = Math.min(quizSchedule.current_interval_index + 1, this.intervals.length - 1);
     const nextQuizDate = new Date();
     nextQuizDate.setDate(nextQuizDate.getDate() + this.intervals[newIntervalIndex]);
 
-    await this.setNextQuizDate(userId, nextQuizDate);
+    await this.setNextQuizDate(userId, nextQuizDate, newIntervalIndex);
 
     return { message: `Quiz marked as completed. Score: ${quiz.score}`, score: quiz.score, nextQuizDate };
   }

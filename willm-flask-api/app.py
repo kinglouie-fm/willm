@@ -42,15 +42,12 @@ async def fetch_openai_response(session, system_prompt_template, prompt_template
         }
     ) as response:
         response_json = await response.json()
-        logging.info(f"Response JSON: {response_json}")
         return response_json['choices'][0]['message']['content']
 
 async def handle_unified(session, data, language):
-    logging.info(f"Received language for unified: {language}")
     return await fetch_openai_response(session, SYSTEM_PROMPT_1, UNIFIED_PROMPT, data, language=language)
 
 async def handle_unified_2(session, data, section, language):
-    logging.info(f"Received language for unified 2: {language}")
     return await fetch_openai_response(session, SYSTEM_PROMPT_2, UNIFIED_PROMPT_2, data, section, language=language)
 
 async def handle_scores(session, data):
@@ -211,7 +208,6 @@ def process_further_result(result):
         section_match = re.search(section_pattern, result, re.DOTALL)
         if section_match:
             section_content = section_match.group(1).strip()
-            # logging.info(f"Section '{section}' content: {section_content}")
             if section_content == "The submitted writing is fine.":
                 feedback[section] = {"message": "The submitted writing is fine."}
             else:
@@ -233,7 +229,6 @@ def process_further_result(result):
         "writingStyle": feedback["WritingStyle"]
     }
 
-    # logging.info(f"Processed feedback: {feedback}")
     return feedback
 
 question_prompts = {
@@ -470,7 +465,6 @@ def add_question():
     data = request.json
     user_id = data.get('user_id')
     question_type = data.get('type')
-    logging.info(f"user: {user_id}, type: {question_type}")
     
     if not user_id or not question_type:
         return jsonify({"error": "user_id and type are required"}), 400
@@ -558,8 +552,6 @@ async def similarity_search():
         }
         questions.append(question_data)
 
-    logging.info(f"questions before missing: {questions}")
-
     # If quiz history is provided, give it to LLM along with the questions
     if quiz_history:
         new_questions_str = '\n'.join([f"ID: {q['question_id']}, Type: {q['question_type']}" for q in questions])
@@ -588,12 +580,10 @@ async def similarity_search():
                 questions.append(question_data)
 
         questions = [q for q in questions if q['question_id'] in selected_question_ids]
-        logging.info(f"questions after missing: {questions}")
 
     return jsonify(questions)
 
 async def llm_decide_questions(new_questions, quiz_history):
-    logging.info(f"Quiz history: {quiz_history}")
     prompt = DECIDE_QUESTIONS.format(new_questions=new_questions, quiz_history=quiz_history)
 
     async with aiohttp.ClientSession() as session:
@@ -614,7 +604,6 @@ async def llm_decide_questions(new_questions, quiz_history):
         ) as response:
             response_json = await response.json()
             question_ids_str = response_json['choices'][0]['message']['content']
-            logging.info(f"Decided question ids: {question_ids_str}")
             matches = re.findall(r'\[(.*?)\]', question_ids_str)
             matches = re.findall(r'\[(.*?)\]', question_ids_str)
             if matches:

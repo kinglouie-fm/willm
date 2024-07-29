@@ -133,12 +133,18 @@ const getAchievementProgress = (key, achievements) => {
         nextText = `Maintain a ${targetCount}-day streak`;
     }
 
+    const previousStage = achievedStages.length > 0 ? Number(achievedStages[achievedStages.length - 1]) : 0;
+    const progress = achievements[key] - previousStage;
+    const currentTargetCount = nextStage ? Number(nextStage) - previousStage : targetCount;
+
     return {
         currentStep,
         totalStep,
         next: nextText,
         rewardXP,
-        targetCount
+        progress,
+        currentTargetCount,
+        currentStageCount: previousStage
     };
 };
 
@@ -151,6 +157,13 @@ const renderStars = (currentStep, totalStep) => {
         stars.push('<span style="color: grey;">&#9733;</span>'); // grey star
     }
     return stars.join('');
+};
+
+const formatKey = (key) => {
+    return key
+        .split('_')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ');
 };
 
 onMounted(() => {
@@ -187,7 +200,7 @@ onMounted(() => {
                     <div v-if="comparisonData">
                         <div class="d-flex flex-wrap">
                             <div v-for="(value, key) in comparisonData.comparison" :key="key" class="me-3 mt-3">
-                                <h5>{{ key.charAt(0).toUpperCase() + key.slice(1) }}:</h5>
+                                <h5>{{ formatKey(key) }}:</h5>
                                 <ScoreProgressBar :latestScore="comparisonData.latestScore[key]"
                                     :medianScore="comparisonData.medianOlderScore[key]" />
                             </div>
@@ -247,8 +260,9 @@ onMounted(() => {
                                 </div>
                                 <div class="me-3">Reward: {{ getAchievementProgress(key,
                                 gamificationData.achievements).rewardXP }} XP</div>
-                                <AchievementProgressBar :currentCount="gamificationData.achievements[key]"
-                                    :targetCount="Number(getAchievementProgress(key, gamificationData.achievements).targetCount)" />
+                                <AchievementProgressBar
+                                    :currentCount="getAchievementProgress(key, gamificationData.achievements).progress"
+                                    :targetCount="getAchievementProgress(key, gamificationData.achievements).currentTargetCount" />
                                 <div
                                     v-html="renderStars(getAchievementProgress(key, gamificationData.achievements).currentStep, getAchievementProgress(key, gamificationData.achievements).totalStep)">
                                 </div>

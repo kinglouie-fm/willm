@@ -64,12 +64,17 @@ export class GamificationService {
       },
     },
     levels: {
-      "1": 0,
-      "2": 100,
-      "3": 300,
-      "4": 600,
-      "5": 1000,
-    },
+        "1": 100,
+        "2": 300,
+        "3": 600,
+        "4": 1000,
+        "5": 1500,
+        "6": 2100,
+        "7": 2800,
+        "8": 3600,
+        "9": 4500,
+        "10": 5500,
+    }
   };
 
   constructor(@InjectModel(User.name) private userModel: Model<User>) {}
@@ -77,35 +82,37 @@ export class GamificationService {
   async handleLogin(userId: Types.ObjectId): Promise<void> {
     const user = await this.userModel.findById(userId);
     const now = new Date();
-
-    // Check for daily streak
     const lastLoginDate = new Date(user.last_login);
-    const isConsecutiveDay = (now.getTime() - lastLoginDate.getTime()) < 24 * 60 * 60 * 1000;
 
-    if (isConsecutiveDay) {
-      user.daily_streak += 1;
-    } else {
-      user.daily_streak = 1;
+    // Check if the last login date is a different day than today
+    const isSameDay = lastLoginDate.toDateString() === now.toDateString();
+
+    if (!isSameDay) {
+      // Update daily streak
+      const isConsecutiveDay = (now.getTime() - lastLoginDate.getTime()) < 24 * 60 * 60 * 1000 + 1;
+      if (isConsecutiveDay) {
+        user.daily_streak += 1;
+      } else {
+        user.daily_streak = 1;
+      }
+
+      // Update weekly streak
+      const lastWeekStart = new Date(now);
+      lastWeekStart.setDate(now.getDate() - now.getDay());
+      const lastLoginWeekStart = new Date(lastLoginDate);
+      lastLoginWeekStart.setDate(lastLoginDate.getDate() - lastLoginDate.getDay());
+
+      if (lastWeekStart.getTime() !== lastLoginWeekStart.getTime()) {
+        user.weekly_streak = 1;
+      } else {
+        user.weekly_streak += 1;
+      }
+
+      user.last_login = now;
+      user.xp += this.getXPForAction('daily_login');
+      await this.checkAchievementsAndBadges(user);
+      await user.save();
     }
-
-    // Check for weekly streak
-    const lastWeekStart = new Date(now);
-    lastWeekStart.setDate(now.getDate() - now.getDay());
-
-    const lastLoginWeekStart = new Date(lastLoginDate);
-    lastLoginWeekStart.setDate(lastLoginDate.getDate() - lastLoginDate.getDay());
-
-    if (lastWeekStart.getTime() !== lastLoginWeekStart.getTime()) {
-      user.weekly_streak = 1;
-    } else {
-      user.weekly_streak += 1;
-    }
-
-    user.last_login = now;
-    user.xp += this.getXPForAction('daily_login');
-
-    await this.checkAchievementsAndBadges(user);
-    await user.save();
   }
 
   async handleQuizCompletion(userId: Types.ObjectId): Promise<void> {
@@ -151,7 +158,7 @@ export class GamificationService {
       if (!user.badges.find(b => b.name === badge)) {
         let meetsCriteria = true;
         for (const [key, value] of Object.entries(criteria.criteria)) {
-          if (user.achievements[key] < value) {
+          if ((user.achievements[key] || 0) < value) {
             meetsCriteria = false;
             break;
           }

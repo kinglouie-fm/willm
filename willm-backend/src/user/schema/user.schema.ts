@@ -42,13 +42,13 @@ export class User extends Document {
   @Prop({ type: [{ name: String, date: Date }], default: [] })
   badges: { name: string, date: Date }[];
 
-  @Prop({ type: Object, default: {} })
+  @Prop({ type: Object, default: { quizzes_completed: 0, correct_answers: 0, weekly_streaks: 0 } })
   achievements: {
     quizzes_completed: number;
     correct_answers: number;
     weekly_streaks: number;
   };
-
+  
   @Prop({ default: 0 })
   daily_streak: number;
 

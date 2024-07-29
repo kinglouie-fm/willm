@@ -33,8 +33,30 @@ export class User extends Document {
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Section' }] })
   sections: Types.ObjectId[];
 
-  @Prop({ type: [{ type: Types.ObjectId, ref: 'Quiz' }] })
-  recent_quiz_history: Types.ObjectId[];
+  @Prop({ default: 0 })
+  xp: number;
+
+  @Prop({ default: 1 })
+  level: number;
+
+  @Prop({ type: [{ name: String, date: Date }], default: [] })
+  badges: { name: string, date: Date }[];
+
+  @Prop({ type: Object, default: {} })
+  achievements: {
+    quizzes_completed: number;
+    correct_answers: number;
+    weekly_streaks: number;
+  };
+
+  @Prop({ default: 0 })
+  daily_streak: number;
+
+  @Prop({ default: 0 })
+  weekly_streak: number;
+
+  @Prop({ default: Date.now })
+  last_login: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

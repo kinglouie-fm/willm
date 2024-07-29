@@ -11,6 +11,7 @@ import { ScoreService } from '../score/score.service';
 import { TextService } from '../text/text.service';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
+import { GamificationService } from '../gamification/gamification.service';
 
 @Injectable()
 export class QuizService {
@@ -24,6 +25,7 @@ export class QuizService {
     private readonly reviewService: ReviewService,
     private readonly scoreService: ScoreService,
     private readonly textService: TextService,
+    private readonly gamificationService: GamificationService,
     private readonly httpService: HttpService,
   ) {}
 
@@ -308,6 +310,10 @@ export class QuizService {
     
     await quiz.save();
 
+    if (question.result) {
+      await this.gamificationService.handleCorrectAnswer(userId);
+    }
+
     return { question, isCorrect: question.result, correctAnswer: question.correct_answer };
   }
 
@@ -380,6 +386,8 @@ export class QuizService {
     const score = await this.calculateQuizScore(quizId);
     quiz.score = score;
     await quiz.save();
+
+    await this.gamificationService.handleQuizCompletion(userId);
 
     const quizSchedule = await this.quizScheduleModel.findOne({ user_id: userId });
     const newIntervalIndex = Math.min(quizSchedule.current_interval_index + 1, this.intervals.length - 1);

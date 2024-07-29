@@ -11,6 +11,7 @@ import { TextModule } from '../text/text.module';
 import { HttpModule } from '@nestjs/axios';
 import { UserModule } from 'src/user/user.module';
 import { SessionModule } from 'src/session/session.module';
+import { GamificationModule } from 'src/gamification/gamification.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { SessionModule } from 'src/session/session.module';
     forwardRef(() => TextModule),
     forwardRef(() => UserModule),
     forwardRef(() => SessionModule),
+    forwardRef(() => GamificationModule),
     HttpModule,
   ],
   providers: [QuizService],

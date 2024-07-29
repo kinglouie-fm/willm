@@ -1,14 +1,18 @@
-import { Controller, Post, Body, Res, UnauthorizedException, Get, Req, BadRequestException } from '@nestjs/common';
+import { Controller, Post, Body, Res, UnauthorizedException, Get, Req, BadRequestException, UseGuards } from '@nestjs/common';
 import { Response, Request } from 'express';
 import { UserService } from './user.service';
 import { isAfter, parseISO } from 'date-fns';
 import { QuizService } from '../quiz/quiz.service';
+import { GamificationService } from '../gamification/gamification.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Types } from 'mongoose';
 
 @Controller('user')
 export class UserController {
   constructor(
     private readonly userService: UserService,
-    private readonly quizService: QuizService
+    private readonly quizService: QuizService,
+    private readonly gamificationService: GamificationService,
   ) {}
 
   @Post('register')
@@ -44,6 +48,8 @@ export class UserController {
     }
     const token = this.userService.generateJwtToken(username);
     res.cookie('auth_token', token, { httpOnly: true, secure: false });
+
+    await this.gamificationService.handleLogin(user._id as Types.ObjectId);
 
     // Trigger quiz generation on login
     const quizInfo = await this.quizService.handleLoginQuiz(user);
@@ -159,5 +165,28 @@ export class UserController {
     } catch (error) {
       return res.status(400).json({ message: error.message });
     }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('gamification')
+  async getGamification(@Req() req: Request) {
+    const userId = req.user._id;
+    const user = await this.userService.findById(userId);
+    return {
+      xp: user.xp,
+      level: user.level,
+      badges: user.badges,
+      achievements: user.achievements,
+      daily_streak: user.daily_streak,
+      weekly_streak: user.weekly_streak
+    };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('reset-streaks')
+  async resetStreaks(@Req() req: Request) {
+    const userId = req.user._id;
+    await this.gamificationService.resetStreaks(userId);
+    return { message: 'Streaks reset' };
   }
 }

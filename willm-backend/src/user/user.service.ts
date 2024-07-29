@@ -69,6 +69,10 @@ export class UserService {
     return this.findUserByUsername(decoded.username);
   }
 
+  async findById(userId: Types.ObjectId): Promise<User> {
+    return this.userModel.findById(userId).exec();
+  }
+
   async addPreTestSubmission(userId: string, text: string, section: string): Promise<void> {
     const user = await this.userModel.findById(userId);
     user.preTestSubmissions.push({ text, section });

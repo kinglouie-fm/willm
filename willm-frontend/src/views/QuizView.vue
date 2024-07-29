@@ -192,7 +192,7 @@ const currentQuestion = computed(() => quiz.value?.questions[currentQuestionInde
                     </div>
                     <div class="modal-body">
                         <p>Quiz completed successfully!</p>
-                        <p>Score: {{ quizScore }} / 5</p>
+                        <p>Score: {{ quizScore }} / 3</p>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn" data-bs-dismiss="modal">Close</button>

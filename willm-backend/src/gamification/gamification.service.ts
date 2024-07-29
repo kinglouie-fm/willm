@@ -3,19 +3,76 @@ import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
 import { User } from '../user/schema/user.schema';
-import * as path from 'path';
-import * as fs from 'fs';
-
 
 @Injectable()
 export class GamificationService {
-  private readonly config: Config;
+  private readonly config = {
+    xp_allocation: {
+      daily_login: 50,
+      correct_answer: 10,
+      max_score_bonus: 30,
+      achievements: {
+        quizzes_completed: {
+          "5": 100,
+          "10": 200,
+          "15": 300,
+        },
+        correct_answers: {
+          "25": 100,
+          "50": 200,
+          "75": 300,
+        },
+        weekly_streaks: {
+          "1": 100,
+          "2": 200,
+          "3": 300,
+          "4": 400,
+        },
+        consecutive_days: {
+          "3": 50,
+          "7": 150,
+          "14": 300,
+          "21": 500,
+        },
+      },
+    },
+    badges: {
+      rookie: {
+        criteria: {
+          quizzes_completed: 2,
+        },
+      },
+      pro: {
+        criteria: {
+          quizzes_completed: 3,
+          consecutive_days: 5,
+          correct_answers: 20,
+        },
+      },
+      leader: {
+        criteria: {
+          quizzes_completed: 4,
+          correct_answers: 25,
+          weekly_streaks: 1,
+        },
+      },
+      guru: {
+        criteria: {
+          quizzes_completed: 5,
+          correct_answers: 30,
+        },
+      },
+    },
+    levels: {
+      "1": 0,
+      "2": 100,
+      "3": 300,
+      "4": 600,
+      "5": 1000,
+    },
+  };
 
-  constructor(
-    @InjectModel(User.name) private userModel: Model<User>) {
-        const configPath = path.resolve(__dirname, '../config/config.json');
-        this.config = JSON.parse(fs.readFileSync(configPath, 'utf-8')) as Config;
-    }
+  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
 
   async handleLogin(userId: Types.ObjectId): Promise<void> {
     const user = await this.userModel.findById(userId);
@@ -75,15 +132,12 @@ export class GamificationService {
   }
 
   getXPForAction(action: string): number {
-    const config = require('path/to/config.json');
-    return config.xp_allocation[action] || 0;
+    return this.config.xp_allocation[action] || 0;
   }
 
   async checkAchievementsAndBadges(user: User): Promise<void> {
-    const config = this.config;
-
     // Check achievements
-    for (const [key, stages] of Object.entries(config.xp_allocation.achievements)) {
+    for (const [key, stages] of Object.entries(this.config.xp_allocation.achievements)) {
       const userProgress = user.achievements[key] || 0;
       for (const [stage, xp] of Object.entries(stages)) {
         if (userProgress >= Number(stage)) {
@@ -93,7 +147,7 @@ export class GamificationService {
     }
 
     // Check badges
-    for (const [badge, criteria] of Object.entries(config.badges)) {
+    for (const [badge, criteria] of Object.entries(this.config.badges)) {
       if (!user.badges.find(b => b.name === badge)) {
         let meetsCriteria = true;
         for (const [key, value] of Object.entries(criteria.criteria)) {
@@ -109,7 +163,7 @@ export class GamificationService {
     }
 
     // Update level
-    const levels = config.levels;
+    const levels = this.config.levels;
     for (const [level, xp] of Object.entries(levels)) {
       if (user.xp >= xp) {
         user.level = Number(level);

@@ -88,7 +88,14 @@ export class QuizService {
       });
 
       if (existingQuiz) {
-        return { message: 'Quiz already exists for today', quizDueToday: true };
+        // Check if all questions are answered
+        const allAnswered = existingQuiz.questions.every(question => question.answered);
+        if (allAnswered) {
+          await this.markQuizAsCompleted(userId, existingQuiz.quiz_id);
+          return { message: 'No quiz due today', quizDueToday: false };
+        } else {
+          return { message: 'Quiz already exists for today', quizDueToday: true };
+        }
       } else {
         await this.generateQuiz(userId);
         return { message: 'Quiz generated', quizDueToday: true };

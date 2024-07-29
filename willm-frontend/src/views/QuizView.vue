@@ -32,9 +32,14 @@ const fetchQuiz = async () => {
     }
 };
 
-const submitAnswer = async (selectedAnswer = null) => {
+const submitAnswer = async (selectedAnswer = null, option) => {
     try {
-        const answer = selectedAnswer !== null ? selectedAnswer : userAnswer.value;
+        let answer;
+        if (option === true) {
+            answer = selectedAnswer;
+        } else {
+            answer = userAnswer.value;
+        }
         console.log('Answer:', answer);
         const response = await axios.post('http://localhost:3000/quiz/submit-answer', {
             quizId: quiz.value.quiz_id,
@@ -126,7 +131,7 @@ watch(currentQuestion, (newQuestion) => {
                 <p>Options:</p>
                 <ul>
                     <li v-for="(option, index) in currentQuestion.options" :key="index" class="option"
-                        @click="submitAnswer(option)">
+                        @click="submitAnswer(option, true)">
                         {{ option }}
                     </li>
                 </ul>
@@ -135,9 +140,9 @@ watch(currentQuestion, (newQuestion) => {
             <!-- User input for the answer -->
             <textarea v-if="!currentQuestion.options || !currentQuestion.options.length" v-model="userAnswer"
                 placeholder="Your answer" class="form-control textarea-large" required />
-            <input v-else v-model="userAnswer" type="text" class="form-control" placeholder="Your answer" required />
+            <!-- <input v-else v-model="userAnswer" type="text" class="form-control" placeholder="Your answer" required /> -->
             <button v-if="!currentQuestion.options || !currentQuestion.options.length" class="btn mt-2"
-                @click="submitAnswer">Submit Answer</button>
+                @click="submitAnswer(null, false)">Submit Answer</button>
 
             <!-- Display the result of the submitted answer -->
             <div v-if="answerResult">

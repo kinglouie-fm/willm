@@ -589,7 +589,7 @@ Here are the new questions:
 Here is the quiz history:
 {quiz_history}
 
-Please return the five best question ids from the new questions for the next quiz in the following output format:
+Please return the five best question ids from the new questions for the next quiz in the following array output format:
 Question IDs: [The question ids separated by commas]
 
 Don't add anything else, such as explanations or additional comments.

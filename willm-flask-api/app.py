@@ -538,10 +538,13 @@ async def similarity_search():
 
     # Extract relevant information from the results
     questions = []
+    found_question_ids = set()
     for result in results:
         metadata = result.metadata
+        question_id = metadata.get("document_id", "")
+        found_question_ids.add(question_id)
         question_data = {
-            "question_id": metadata.get("document_id", ""),
+            "question_id": question_id,
             "question_text": result.page_content,
             "question_type": metadata.get("type", ""),
             "options": metadata.get("options", "").split("\n") if metadata.get("options") else [],
@@ -561,9 +564,32 @@ async def similarity_search():
         quiz_history_str = '\n'.join([f"Quiz: {idx + 1}\n" + '\n'.join([f"Question ID: {q['question_id']}, Type: {q['question_type']}, Result: {q['result']}" for q in quiz['questions']]) for idx, quiz in enumerate(quiz_history)])
 
         selected_question_ids = await llm_decide_questions(new_questions_str, quiz_history_str)
+
+        # Check for missing question IDs
+        missing_question_ids = set(selected_question_ids) - found_question_ids
+        if missing_question_ids:
+            missing_questions = chroma_langchain_handler.get_documents_by_ids(user_id, list(missing_question_ids))
+            for doc in missing_questions:
+                metadata = doc.metadata
+                question_data = {
+                    "question_id": metadata.get("document_id", ""),
+                    "question_text": doc.page_content,
+                    "question_type": metadata.get("type", ""),
+                    "options": metadata.get("options", "").split("\n") if metadata.get("options") else [],
+                    "correct_answer": metadata.get("answer", ""),
+                    "text": metadata.get("text", ""),
+                    "word": metadata.get("word", ""),
+                    "sentence": metadata.get("sentence", ""),
+                    "argument": metadata.get("argument", ""),
+                    "excerpts": metadata.get("excerpts", "").split("\n") if metadata.get("excerpts") else [],
+                    "sentences": metadata.get("sentences", "").split("\n") if metadata.get("sentences") else []
+                }
+                questions.append(question_data)
+
         questions = [q for q in questions if q['question_id'] in selected_question_ids]
 
     return jsonify(questions)
+
 
 async def llm_decide_questions(new_questions, quiz_history):
     prompt = DECIDE_QUESTIONS.format(new_questions=new_questions, quiz_history=quiz_history)
@@ -588,12 +614,21 @@ async def llm_decide_questions(new_questions, quiz_history):
             question_ids_str = response_json['choices'][0]['message']['content']
             logging.info(f"Decided question ids: {question_ids_str}")
             matches = re.findall(r'\[(.*?)\]', question_ids_str)
+            matches = re.findall(r'\[(.*?)\]', question_ids_str)
             if matches:
                 question_ids = matches[0].split(', ')
+                question_ids = [q_id.strip() for q_id in question_ids]
                 return question_ids
-            else:
-                logging.error("Failed to extract question IDs from the LLM response.")
-                return []
+
+            # Check for comma-separated string id, id, id, id
+            elif re.findall(r'(\w+(?:, \w+)*)', question_ids_str):
+                matches = re.findall(r'(\w+(?:, \w+)*)', question_ids_str)
+                question_ids = matches[0].split(', ')
+                question_ids = [q_id.strip() for q_id in question_ids]
+                return question_ids
+            
+            logging.error("Failed to extract question IDs from the LLM response.")
+            return []
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000)

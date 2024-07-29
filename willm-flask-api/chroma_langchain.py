@@ -43,6 +43,11 @@ class ChromaLangChainHandler:
         documents = collection.get(include=["metadatas", "documents", "embeddings"])
         return documents
 
+    def get_documents_by_ids(self, user_id, document_ids):
+        collection = self.get_user_collection(user_id)
+        documents = collection.get(ids=document_ids, include=["metadatas", "documents", "embeddings"])
+        return documents
+
     def similarity_search(self, user_id, query, k):
         collection = self.get_user_collection(user_id)
         embedding_vector = self.embedding_function.embed_query(query)

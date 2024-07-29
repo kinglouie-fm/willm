@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import ScoreProgressBar from '../components/ScoreProgressBar.vue';
+import LevelProgressBar from '../components/LevelProgressBar.vue'; // Import the new component
 import * as bootstrap from 'bootstrap';
 import { message } from 'ant-design-vue';
 
@@ -9,6 +10,26 @@ const sections = ref([]);
 const selectedSection = ref('');
 const comparisonData = ref(null);
 const response_message = ref('');
+const achievementsOpen = ref(true);
+
+const gamificationData = ref(null);
+
+const levels = {
+    1: 100,
+    2: 300,
+    3: 600,
+    4: 1000,
+    5: 1500,
+    6: 2100,
+    7: 2800,
+    8: 3600,
+    9: 4500,
+    10: 5500,
+};
+
+const getNextLevelXP = (level) => {
+    return levels[level + 1] || levels[10];
+};
 
 const getSections = async () => {
     try {
@@ -48,10 +69,12 @@ const selectSection = (section) => {
 const fetchGamification = async () => {
     try {
         const response = await axios.get('http://localhost:3000/user/gamification', { withCredentials: true });
+        gamificationData.value = response.data;
+        console.log(response.data);
     } catch (error) {
         console.error("Error fetching gamification: ", error)
     }
-}
+};
 
 const initPopover = () => {
     const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
@@ -63,6 +86,23 @@ const initPopover = () => {
             customClass: 'wide-popover'
         });
     });
+};
+
+const toggleSection = (section) => {
+    if (section === 'achievements') {
+        achievementsOpen.value = !achievementsOpen.value;
+    }
+};
+
+const isSectionOpen = (section) => {
+    if (section === 'achievements') {
+        return achievementsOpen.value;
+    }
+    return false;
+};
+
+const sectionIcon = (section) => {
+    return isSectionOpen(section) ? 'arrow-icon open' : 'arrow-icon closed';
 };
 
 onMounted(() => {
@@ -134,6 +174,32 @@ onMounted(() => {
                 <div class="container border mt-5 rounded p-3">
                     <div>
                         <h3 class="text-center">Progress</h3>
+                        <div v-if="gamificationData">
+                            <LevelProgressBar :currentLevel="gamificationData.level" :currentXP="gamificationData.xp"
+                                :maxXP="getNextLevelXP(gamificationData.level)"
+                                :nextLevel="gamificationData.level + 1" />
+                            <h5>Current Badge: {{ gamificationData.badges.length ?
+                                gamificationData.badges[gamificationData.badges.length - 1].name : 'No badge yet' }}
+                            </h5>
+                            <p>Daily Streak: {{ gamificationData.daily_streak }} days</p>
+                            <p>Weekly Streak: {{ gamificationData.weekly_streak }} weeks</p>
+                        </div>
+                        <div v-else>
+                            <p>Loading...</p>
+                        </div>
+                    </div>
+                    <div>
+                        <h5 @click="toggleSection('achievements')" class="expandable-header">
+                            <span :class="sectionIcon('achievements')"></span>
+                            Achievements
+                        </h5>
+                        <div v-show="achievementsOpen">
+                            <ul>
+                                <li v-for="(value, key) in gamificationData?.achievements" :key="key">
+                                    {{ key }}: {{ value }}
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -169,5 +235,29 @@ onMounted(() => {
     width: 20px;
     height: 20px;
     cursor: pointer;
+}
+
+.expandable-header {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    user-select: none;
+}
+
+.arrow-icon {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    background: url('data:image/svg+xml;utf8,<svg fill="%23838383" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>') no-repeat center;
+    transition: transform 0.3s ease;
+    margin-right: 0.5rem;
+}
+
+.arrow-icon.open {
+    transform: rotate(360deg);
+}
+
+.arrow-icon.closed {
+    transform: rotate(270deg);
 }
 </style>

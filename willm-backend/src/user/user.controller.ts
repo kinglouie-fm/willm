@@ -38,22 +38,26 @@ export class UserController {
 
   @Post('login')
   async login(@Body('username') username: string, @Body('password') password: string, @Res() res: Response): Promise<any> {
-    const isValid = await this.userService.validateUser(username, password);
-    if (!isValid) {
-      throw new UnauthorizedException('Invalid credentials');
+    try {
+      const isValid = await this.userService.validateUser(username, password);
+      if (!isValid) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
+      const user = await this.userService.findUserByUsername(username);
+      if (user.postTestsCompleted) {
+        return res.status(403).json({ message: 'You have completed the post-test and can no longer use the tool.' });
+      }
+      const token = this.userService.generateJwtToken(username);
+      res.cookie('auth_token', token, { httpOnly: true, secure: false });
+  
+      await this.gamificationService.handleLogin(user._id as Types.ObjectId);
+  
+      // Trigger quiz generation on login
+      const quizInfo = await this.quizService.handleLoginQuiz(user);
+      return res.status(200).json({ message: 'Login successful', preTestsCompleted: user.preTestsCompleted, postTestsCompleted: user.postTestsCompleted, quizInfo });
+    } catch (error) {
+      console.error(error);
     }
-    const user = await this.userService.findUserByUsername(username);
-    if (user.postTestsCompleted) {
-      return res.status(403).json({ message: 'You have completed the post-test and can no longer use the tool.' });
-    }
-    const token = this.userService.generateJwtToken(username);
-    res.cookie('auth_token', token, { httpOnly: true, secure: false });
-
-    await this.gamificationService.handleLogin(user._id as Types.ObjectId);
-
-    // Trigger quiz generation on login
-    const quizInfo = await this.quizService.handleLoginQuiz(user);
-    return res.status(200).json({ message: 'Login successful', preTestsCompleted: user.preTestsCompleted, postTestsCompleted: user.postTestsCompleted, quizInfo });
   }
 
   @Post('logout')

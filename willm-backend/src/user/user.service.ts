@@ -4,8 +4,6 @@ import { Model, Types } from 'mongoose';
 import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
 import { User } from './schema/user.schema';
-import { QuizService } from '../quiz/quiz.service';
-import { SessionService } from '../session/session.service';
 
 const JWT_SECRET = 'your_jwt_secret';
 

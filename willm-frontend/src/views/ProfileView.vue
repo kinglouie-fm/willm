@@ -13,7 +13,6 @@ const response_message = ref('');
 const getSections = async () => {
     try {
         const response = await axios.get('http://localhost:3000/score/sections');
-        console.log("sections: ", response);
         if (response.data.length === 0) {
             message.info("No sections available for comparison. Please ensure you have scores older than 5 days for a section.", 7);
         } else {
@@ -46,6 +45,14 @@ const selectSection = (section) => {
     fetchComparison();
 };
 
+const fetchGamification = async () => {
+    try {
+        const response = await axios.get('http://localhost:3000/user/gamification', { withCredentials: true });
+    } catch (error) {
+        console.error("Error fetching gamification: ", error)
+    }
+}
+
 const initPopover = () => {
     const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
     popoverTriggerList.forEach((popoverTriggerEl) => {
@@ -61,62 +68,75 @@ const initPopover = () => {
 onMounted(() => {
     getSections();
     initPopover();
+    fetchGamification();
 });
 </script>
 
 <template>
-    <div>
-        <div class="container border mt-5 rounded p-3">
-            <div>
-                <h3>
-                    Comparison of your scores
-                    <img class="info-icon" src="/icons/icon-info-01.svg" data-bs-toggle="popover"
-                        data-bs-placement="right" />
-                </h3>
-                <p>Select a section for which you want to compare your scores. </p>
-                <div class="d-flex flex-wrap">
-                    <button v-for="section in sections" :key="section" type="button" class="btn me-2 section-button"
-                        :class="selectedSection === section ? 'btn-selected' : 'btn-unselected'"
-                        @click="selectSection(section)">
-                        {{ section }}
-                    </button>
-                </div>
-            </div>
-            <div v-if="response_message">
-                <p>{{ response_message }}</p>
-            </div>
-            <div class="container" v-if="comparisonData">
-                <div class="d-flex flex-wrap">
-                    <div v-for="(value, key) in comparisonData.comparison" :key="key" class="me-3">
-                        <p>{{ key.charAt(0).toUpperCase() + key.slice(1) }}:</p>
-                        <ScoreProgressBar :latestScore="comparisonData.latestScore[key]"
-                            :medianScore="comparisonData.medianOlderScore[key]" />
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="container border mt-5 rounded p-3">
+                    <div>
+                        <h3>
+                            Comparison of your scores
+                            <img class="info-icon" src="/icons/icon-info-01.svg" data-bs-toggle="popover"
+                                data-bs-placement="right" />
+                        </h3>
+                        <p>Select a section for which you want to compare your scores. </p>
+                        <div class="d-flex flex-wrap">
+                            <button v-for="section in sections" :key="section" type="button"
+                                class="btn me-2 section-button"
+                                :class="selectedSection === section ? 'btn-selected' : 'btn-unselected'"
+                                @click="selectSection(section)">
+                                {{ section }}
+                            </button>
+                        </div>
+                    </div>
+                    <div v-if="response_message">
+                        <p>{{ response_message }}</p>
+                    </div>
+                    <div v-if="comparisonData">
+                        <div class="d-flex flex-wrap">
+                            <div v-for="(value, key) in comparisonData.comparison" :key="key" class="me-3 mt-3">
+                                <h5>{{ key.charAt(0).toUpperCase() + key.slice(1) }}:</h5>
+                                <ScoreProgressBar :latestScore="comparisonData.latestScore[key]"
+                                    :medianScore="comparisonData.medianOlderScore[key]" />
+                            </div>
+                        </div>
+                    </div>
+                    <div id="popover-content" style="display: none;">
+                        <h4>How the scores are calculated:</h4>
+                        <p>
+                            The median of all older scores for the selected section is calculated and compared to your
+                            latest score.
+                            The progress bar represents the comparison:
+                        </p>
+                        <ul>
+                            <li><strong class="median">Median Color:</strong> The median score of all
+                                previous
+                                scores.
+                            </li>
+                            <li><strong class="green">Green:</strong> Improvement above the median score.</li>
+                            <li><strong class="red">Red:</strong> Decline below the median score.</li>
+                        </ul>
+                        <p>
+                            If your latest score is higher than the median, the bar from the median to the latest score
+                            is
+                            green.
+                            If your latest score is lower than the median, the bar up to the latest score is the median
+                            color, and the rest is red.
+                        </p>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <div id="popover-content" style="display: none;">
-            <h4>How the scores are calculated:</h4>
-            <p>
-                The median of all older scores for the selected section is calculated and compared to your
-                latest score.
-                The progress bar represents the comparison:
-            </p>
-            <ul>
-                <li><strong class="median">Median Color:</strong> The median score of all
-                    previous
-                    scores.
-                </li>
-                <li><strong class="green">Green:</strong> Improvement above the median score.</li>
-                <li><strong class="red">Red:</strong> Decline below the median score.</li>
-            </ul>
-            <p>
-                If your latest score is higher than the median, the bar from the median to the latest score is
-                green.
-                If your latest score is lower than the median, the bar up to the latest score is the median
-                color, and the rest is red.
-            </p>
+            <div class="col-md-6">
+                <div class="container border mt-5 rounded p-3">
+                    <div>
+                        <h3 class="text-center">Progress</h3>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </template>

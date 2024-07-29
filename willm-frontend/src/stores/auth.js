@@ -46,12 +46,14 @@ export const useAuthStore = defineStore('auth', {
             // Check quiz status
             const quizResponse = await axios.get('http://localhost:3000/quiz/check-quiz');
             this.quizDueToday = quizResponse.data.quizDueToday;
-            this.nextQuizDate = quizResponse.data.nextQuizDate.split('T')[0].split('-').reverse().join('.');
+            this.nextQuizDate = quizResponse.data.nextQuizDate ? quizResponse.data.nextQuizDate.split('T')[0].split('-').reverse().join('.') : null;
 
             if (this.quizDueToday) {
               message.info('Quiz is due today.');
-            } else {
+            } else if(this.nextQuizDate) {
               message.info(`Next quiz date: ${this.nextQuizDate}`, 3);
+            } else {
+              message.info('No quiz scheduled yet.', 3);
             }
 
             router.push({ name: 'home' });
@@ -63,6 +65,7 @@ export const useAuthStore = defineStore('auth', {
         if (error.response && error.response.status === 403) {
           alert('You have completed the post-test and can no longer use the tool.');
         } else {
+          console.log(error);
           alert('An error occurred. Please try again.');
         }
       }

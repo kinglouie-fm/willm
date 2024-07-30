@@ -66,7 +66,7 @@ export const useAuthStore = defineStore('auth', {
           alert('You have completed the post-test and can no longer use the tool.');
         } else {
           console.log(error);
-          alert('An error occurred. Please try again.');
+          message.error('An error occurred. Please try again.');
         }
       }
     },
@@ -78,7 +78,7 @@ export const useAuthStore = defineStore('auth', {
         this.postTestsCompleted = false;
         router.push({ name: 'login' });
       } catch (error) {
-        alert('An error occurred. Please try again.');
+        message.error('An error occurred. Please try again.');
       }
     },
     async checkAuthStatus() {

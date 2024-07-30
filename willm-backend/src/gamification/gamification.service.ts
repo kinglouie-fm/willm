@@ -85,6 +85,8 @@ export class GamificationService {
     const now = new Date();
     const lastLoginDate = new Date(user.last_login);
 
+    console.log("Initial value: ", user.achievements);
+
     // Check if the last login date is a different day than today
     const isSameDay = lastLoginDate.toDateString() === now.toDateString();
 
@@ -97,7 +99,7 @@ export class GamificationService {
       // Update daily streak
       if (diffInDays === 1) {
           user.daily_streak += 1;
-          user.achievements.consecutive_days += 1;
+          user.achievements.consecutive_days = user.achievements.consecutive_days + 1;
       } else {
           user.daily_streak = 1;
           user.achievements.consecutive_days = 1;
@@ -108,13 +110,21 @@ export class GamificationService {
       // Update weekly streak based on daily streak using modulo
       if (user.daily_streak % 7 === 0) {
           user.weekly_streak += 1;
-          user.achievements.weekly_streaks += 1;
+          user.achievements.weekly_streaks = user.achievements.weekly_streaks + 1;
       }
+
+      console.log('Before save:', user.achievements);
+
+      // Mark nested fields as modified
+      user.markModified('achievements.consecutive_days');
+      user.markModified('achievements.weekly_streaks');
 
       user.last_login = now;
       user.xp += this.getXPForAction('daily_login');
       await this.checkAchievementsAndBadges(user);
       await user.save();
+
+      console.log('After save:', user.achievements);
     }
   }
 
@@ -123,6 +133,8 @@ export class GamificationService {
 
     // Update achievements
     user.achievements.quizzes_completed = (user.achievements.quizzes_completed || 0) + 1;
+
+    user.markModified('achievements.quizzes_completed');
 
     await this.checkAchievementsAndBadges(user);
     await user.save();
@@ -136,6 +148,8 @@ export class GamificationService {
 
     // Grant XP for a correct answer
     user.xp += this.getXPForAction('correct_answer');
+
+    user.markModified('achievements.correct_answers');
 
     await this.checkAchievementsAndBadges(user);
     await user.save();

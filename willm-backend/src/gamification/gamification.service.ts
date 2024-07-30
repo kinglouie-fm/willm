@@ -97,14 +97,18 @@ export class GamificationService {
       // Update daily streak
       if (diffInDays === 1) {
           user.daily_streak += 1;
+          user.achievements.consecutive_days += 1;
       } else {
           user.daily_streak = 1;
+          user.achievements.consecutive_days = 1;
           user.weekly_streak = 0;
+          user.achievements.weekly_streaks = 0;
       }
 
       // Update weekly streak based on daily streak using modulo
       if (user.daily_streak % 7 === 0) {
           user.weekly_streak += 1;
+          user.achievements.weekly_streaks += 1;
       }
 
       user.last_login = now;
@@ -186,7 +190,9 @@ export class GamificationService {
 
     if (user) {
       user.daily_streak = 0;
+      user.achievements.consecutive_days = 0;
       user.weekly_streak = 0;
+      user.achievements.weekly_streaks = 0;
       await user.save();
     }
   }

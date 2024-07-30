@@ -18,17 +18,17 @@ export const useAuthStore = defineStore('auth', {
       try {
         const response = await axios.post('http://localhost:3000/user/register', { username, password, dataPrivacyConsent });
         if (response.status === 201) {
-          alert('Registration successful. Please login.');
+          message.info('Registration successful. Please login.');
           router.push({ name: 'login' });
         } else {
-          alert('Registration failed. Please try again.');
+          message.error('Registration failed. Please try again.');
         }
       } catch (error) {
         if (error.response && error.response.status === 400) {
-          alert('Username already taken. Please choose a different username.');
+          message.error('Username already taken. Please choose a different username.');
         } else {
           console.error(error);
-          alert('An error occurred. Please try again.');
+          message.error('An error occurred. Please try again.');
         }
       }
     },
@@ -86,7 +86,7 @@ export const useAuthStore = defineStore('auth', {
         const response = await axios.get('http://localhost:3000/user/pre-test-status');
         this.preTestsCompleted = response.data.preTestsCompleted;
       } catch (error) {
-        console.error('Error checking auth status:', error);
+        console.error('Error checking auth status');
       }
     },
   },

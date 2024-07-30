@@ -42,14 +42,15 @@ export class User extends Document {
   @Prop({ type: [{ name: String, date: Date }], default: [] })
   badges: { name: string, date: Date }[];
 
-  @Prop({ type: Object, default: { quizzes_completed: 0, correct_answers: 0, weekly_streaks: 0 } })
+  @Prop({ type: Object, default: { quizzes_completed: 0, correct_answers: 0, weekly_streaks: 0, consecutive_days: 1 } })
   achievements: {
     quizzes_completed: number;
     correct_answers: number;
     weekly_streaks: number;
+    consecutive_days: number;
   };
   
-  @Prop({ default: 0 })
+  @Prop({ default: 1 })
   daily_streak: number;
 
   @Prop({ default: 0 })

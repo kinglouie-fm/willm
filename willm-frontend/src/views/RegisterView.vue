@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 import { useAuthStore } from '../stores/auth';
+import { message } from 'ant-design-vue';
 
 const authStore = useAuthStore();
 const username = ref('');
@@ -12,7 +13,7 @@ const register = async () => {
     if (dataPrivacyConsent.value) {
         await authStore.register(username.value, password.value, dataPrivacyConsent.value);
     } else {
-        alert('You must accept the data privacy consent to register.');
+        message.error('You must accept the data privacy consent to register.')
     }
 };
 

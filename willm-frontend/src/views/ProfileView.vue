@@ -96,7 +96,6 @@ const fetchGamification = async () => {
     try {
         const response = await axios.get('http://localhost:3000/user/gamification', { withCredentials: true });
         gamificationData.value = response.data;
-        console.log(gamificationData.value);
     } catch (error) {
         console.error("Error fetching gamification: ", error)
     }
@@ -116,9 +115,8 @@ const initPopover = () => {
 
 const getAchievementProgress = (key, achievements) => {
     const stages = achievementsConfig[key];
-    const progressValue = key === 'consecutive_days' ? gamificationData.value?.daily_streak : achievements[key];
-    const achievedStages = Object.keys(stages).filter(stage => progressValue >= Number(stage));
-    const nextStage = Object.keys(stages).find(stage => progressValue < Number(stage));
+    const achievedStages = Object.keys(stages).filter(stage => achievements[key] >= Number(stage));
+    const nextStage = Object.keys(stages).find(stage => achievements[key] < Number(stage));
     const currentStep = achievedStages.length;
     const totalStep = Object.keys(stages).length;
     const rewardXP = nextStage ? stages[nextStage] : stages[Object.keys(stages).pop()];
@@ -140,7 +138,7 @@ const getAchievementProgress = (key, achievements) => {
         totalStep,
         next: nextText,
         rewardXP,
-        progress: progressValue,
+        progress: achievements[key],
         targetCount
     };
 };
@@ -261,17 +259,6 @@ onMounted(() => {
                                     :targetCount="getAchievementProgress(key, gamificationData.achievements).targetCount" />
                                 <div
                                     v-html="renderStars(getAchievementProgress(key, gamificationData.achievements).currentStep, getAchievementProgress(key, gamificationData.achievements).totalStep)">
-                                </div>
-                            </li>
-                            <li
-                                class="list-group-item achievement-item p-2 border rounded d-flex align-items-center justify-content-between">
-                                <div class="me-3">{{ getAchievementProgress('consecutive_days', {}).next }}</div>
-                                <div class="me-3">Reward: {{ getAchievementProgress('consecutive_days', {}).rewardXP }}
-                                    XP</div>
-                                <AchievementProgressBar :currentCount="gamificationData?.daily_streak"
-                                    :targetCount="getAchievementProgress('consecutive_days', {}).targetCount" />
-                                <div
-                                    v-html="renderStars(getAchievementProgress('consecutive_days', {}).currentStep, getAchievementProgress('consecutive_days', {}).totalStep)">
                                 </div>
                             </li>
                         </ul>

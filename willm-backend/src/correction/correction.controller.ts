@@ -24,7 +24,6 @@ export class CorrectionController {
   @Post()
   async handleCorrection(@Body() body: { text: string, section: string, mode: string, language: string }, @Req() req: Request, @Res() res: Response) {
     console.log("Handling correction request");
-    console.log(body.language);
     const initialResult = await this.correctionService.callPythonService(body.text, body.section, 'initial', body.language);
     const correctedText = initialResult.correctedText;
 
@@ -77,8 +76,6 @@ export class CorrectionController {
         category: categories[i] || 'Uncategorized'
       });
       session.issues.push(issue._id as Types.ObjectId);
-
-      console.log(issue);
     }
 
     await session.save();

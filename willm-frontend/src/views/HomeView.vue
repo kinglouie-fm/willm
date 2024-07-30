@@ -501,7 +501,6 @@ onMounted(async () => {
                     <ul>
                       <li>productive: you only need to click the correction to apply it.</li>
                       <li>learning: you need to type the correction on your own. This enhances the learning process</li>
-                      <li><b>Important</b>: First choose the learning mode, then evaluate your text with the tool by clicking on "AI Evaluation"</li>
                     </ul>
                   </li>
                 </ul>

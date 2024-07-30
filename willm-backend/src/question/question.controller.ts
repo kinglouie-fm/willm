@@ -58,8 +58,9 @@ export class QuestionController {
   // For testing purposes only
   @UseGuards(JwtAuthGuard)
   @Get('get')
-  async getQuestions(@Req() req) {
-    const userId = '669d73dc7025c301e4c9a4c0';
+  async getQuestions(@Req() req: Request) {
+    const userId = req.user._id;
+    console.log(userId);
     return this.questionService.getQuestionsForUser(userId);
   }
 }

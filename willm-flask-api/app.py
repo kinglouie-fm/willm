@@ -10,7 +10,7 @@ from prompts import (
     SYSTEM_PROMPT_1, SYSTEM_PROMPT_2, SYSTEM_PROMPT_4, SYSTEM_PROMPT_5,
     SYSTEM_PROMPT_6, UNIFIED_PROMPT, UNIFIED_PROMPT_2, SCORES, 
     REVISION_PROMPT, SYNONYMS_PROMPT, ACADEMIC_SENTENCE_PROMPT, ACADEMIC_SENTENCE_CORRECTING_PROMPT,
-    ARGUMENT_STRENGTHENING_PROMPT, EXPLAIN_ANSWER, COHERENCE_TIP_PROMPT, ORGANIZATION_TIP_PROMPT, DECIDE_QUESTIONS
+    ARGUMENT_STRENGTHENING_PROMPT, COHERENCE_PROMPT, ORGANIZATION_PROMPT, EXPLAIN_ANSWER, COHERENCE_TIP_PROMPT, ORGANIZATION_TIP_PROMPT, DECIDE_QUESTIONS
 )
 
 load_dotenv()
@@ -42,6 +42,7 @@ async def fetch_openai_response(session, system_prompt_template, prompt_template
         }
     ) as response:
         response_json = await response.json()
+        logging.info(f"LLM Response: {response_json['choices'][0]['message']['content']}")
         return response_json['choices'][0]['message']['content']
 
 async def handle_unified(session, data, language):
@@ -236,14 +237,14 @@ question_prompts = {
     'synonyms': SYNONYMS_PROMPT,
     'academic_sentence': ACADEMIC_SENTENCE_PROMPT,
     'argument_strengthening': ARGUMENT_STRENGTHENING_PROMPT,
-    'coherence': COHERENCE_TIP_PROMPT,
-    'organization': ORGANIZATION_TIP_PROMPT,
+    'coherence': COHERENCE_PROMPT,
+    'organization': ORGANIZATION_PROMPT,
 }
 
 @app.route('/question/suggest-type', methods=['POST'])
 def suggest_question_type():
     data = request.json
-    text = data['text']
+    text = data['lastThreeSubmissions']
 
     response = openai.chat.completions.create(
         model="gpt-4o",
@@ -271,7 +272,10 @@ def generate_question():
         return jsonify({"error": "Invalid question type"}), 400
 
     prompt_template = question_prompts[question_type]
-    prompt = prompt_template.format(text=text)
+    if(question_type in ['revision', 'synonyms', 'academic_sentence', 'argument_strengthening']):
+        prompt = prompt_template.format(lastSubmission=text)
+    else:
+        prompt = prompt_template.format(text=text)
 
     response = openai.chat.completions.create(
         model="gpt-4o",

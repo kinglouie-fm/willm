@@ -35,9 +35,9 @@ const achievementsConfig = {
         "15": 300,
     },
     correct_answers: {
-        "25": 100,
-        "50": 200,
-        "75": 300,
+        "15": 100,
+        "30": 200,
+        "60": 300,
     },
     weekly_streaks: {
         "1": 100,
@@ -101,18 +101,6 @@ const fetchGamification = async () => {
     }
 };
 
-const initPopover = () => {
-    const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
-    popoverTriggerList.forEach((popoverTriggerEl) => {
-        new bootstrap.Popover(popoverTriggerEl, {
-            trigger: 'hover',
-            html: true,
-            content: document.querySelector('#popover-content').innerHTML,
-            customClass: 'wide-popover'
-        });
-    });
-};
-
 const getAchievementProgress = (key, achievements) => {
     const stages = achievementsConfig[key];
     const achievedStages = Object.keys(stages).filter(stage => achievements[key] >= Number(stage));
@@ -161,6 +149,25 @@ const formatKey = (key) => {
         .join(' ');
 };
 
+const initPopover = () => {
+    const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+    popoverTriggerList.forEach((popoverTriggerEl) => {
+        const popover = new bootstrap.Popover(popoverTriggerEl, {
+            trigger: 'hover',
+            html: true,
+            template: '<div class="popover wide-popover" role="tooltip"><div class="popover-arrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+        });
+
+        popoverTriggerEl.addEventListener('inserted.bs.popover', () => {
+            const popoverElement = document.querySelector('.popover.wide-popover');
+            if (popoverElement) {
+                popoverElement.style.maxWidth = '600px';
+                popoverElement.style.fontSize = '16px';
+            }
+        });
+    });
+};
+
 onMounted(() => {
     getSections();
     initPopover();
@@ -177,7 +184,31 @@ onMounted(() => {
                         <h3>
                             Comparison of your scores
                             <img class="info-icon" src="/icons/icon-info-01.svg" data-bs-toggle="popover"
-                                data-bs-placement="right" />
+                                data-bs-placement="bottom" data-bs-content='
+                                <h4>How the scores are calculated:</h4>
+                                <p>
+                                    The median of all older scores for the selected section is calculated and compared to your
+                                    latest score.
+                                    The progress bar represents the comparison:
+                                </p>
+                                <ul>
+                                    <li><strong class=" median">Median Color:</strong> The median score of all
+                                    previous
+                                    scores.
+                                    </li>
+                                    <li><strong class="green">Green:</strong> Improvement above the median score.</li>
+                                    <li><strong class="red">Red:</strong> Decline below the median score.</li>
+                                    </ul>
+                                    <p>
+                                        If your latest score is higher than the median, the bar from the median to the latest
+                                        score
+                                        is
+                                        green.
+                                        If your latest score is lower than the median, the bar up to the latest score is the
+                                        median
+                                        color, and the rest is red.
+                                    </p>
+                                ' />
                         </h3>
                         <p>Select a section for which you want to compare your scores. </p>
                         <div class="d-flex flex-wrap">
@@ -201,35 +232,52 @@ onMounted(() => {
                             </div>
                         </div>
                     </div>
-                    <div id="popover-content" style="display: none;">
-                        <h4>How the scores are calculated:</h4>
-                        <p>
-                            The median of all older scores for the selected section is calculated and compared to your
-                            latest score.
-                            The progress bar represents the comparison:
-                        </p>
-                        <ul>
-                            <li><strong class="median">Median Color:</strong> The median score of all
-                                previous
-                                scores.
-                            </li>
-                            <li><strong class="green">Green:</strong> Improvement above the median score.</li>
-                            <li><strong class="red">Red:</strong> Decline below the median score.</li>
-                        </ul>
-                        <p>
-                            If your latest score is higher than the median, the bar from the median to the latest score
-                            is
-                            green.
-                            If your latest score is lower than the median, the bar up to the latest score is the median
-                            color, and the rest is red.
-                        </p>
-                    </div>
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="container border mt-5 rounded p-3">
                     <div>
-                        <h3 class="text-center">Progress</h3>
+                        <h3 class="text-center">
+                            Progress
+                            <img class="info-icon me-2" src="/icons/icon-info-01.svg" data-bs-toggle="popover"
+                                data-bs-placement="bottom" data-bs-content='
+                                <h5>XP and Levels:</h5>
+                                <ul>
+                                    <li>You earn XP for various actions such as logging in daily, completing quizzes, and giving correct answers. XP is used to level up.</li>
+                                </ul>
+                                
+                                <h5>Daily and Weekly Streaks:</h5>
+                                <ul>
+                                    <li><strong>Daily Streak:</strong> Each consecutive day you log in, your daily streak increases. Missing a day resets the streak.</li>
+                                    <li><strong>Weekly Streak:</strong> Every week you log in at least once, your weekly streak increases. Missing a week resets the streak.</li>
+                                </ul>
+
+                                <h5>Badges:</h5>
+                                <ul>
+                                    <li><strong>Rookie:</strong> Awarded for completing 2 quizzes.</li>
+                                    <li><strong>Pro:</strong>
+                                        <ul>
+                                            <li>Complete 3 quizzes</li>
+                                            <li>Maintain a 5-day streak</li>
+                                            <li>Give 20 correct answers</li>
+                                        </ul>
+                                    </li>
+                                    <li><strong>Leader:</strong>
+                                        <ul>
+                                            <li>Complete 4 quizzes</li>
+                                            <li>Give 25 correct answers</li>
+                                            <li>Reach 1 weekly streak</li>
+                                        </ul>
+                                    </li>
+                                    <li><strong>Guru:</strong>
+                                        <ul>
+                                            <li>Complete 5 quizzes</li>
+                                            <li>Give 30 correct answers</li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            ' />
+                        </h3>
                         <div v-if="gamificationData">
                             <h5>Your Badges: {{ gamificationData.badges.length ?
                                 gamificationData.badges[gamificationData.badges.length - 1].name.charAt(0).toUpperCase()

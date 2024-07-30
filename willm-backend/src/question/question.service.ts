@@ -76,7 +76,7 @@ export class QuestionService {
 
     const response = await lastValueFrom(this.httpService.post('http://flask-api:8000/question/generate', {
       user_id: userId,
-      type: questionType,
+      type: 'synonyms',
       text: textForQuestion,
     }));
 

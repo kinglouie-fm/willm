@@ -98,60 +98,60 @@ const handleCorrect = async () => {
 
   try {
     message.loading("Evaluating text...", 7);
-    const correctionResponse = await axios.post('http://localhost:3000/correct', {
-      text: textToCorrect,
-      section: textareaSmall.value,
-      mode: mode.value,
-      language: selectedLanguage.value
-    });
+    // const correctionResponse = await axios.post('http://localhost:3000/correct', {
+    //   text: textToCorrect,
+    //   section: textareaSmall.value,
+    //   mode: mode.value,
+    //   language: selectedLanguage.value
+    // });
 
-    // Process initial correction response
-    mistakes.value = correctionResponse.data.mistakes;
-    corrections.value = correctionResponse.data.corrections;
-    explanations.value = correctionResponse.data.explanations;
-    categories.value = correctionResponse.data.categories;
-    contexts.value = correctionResponse.data.contexts;
+    // // Process initial correction response
+    // mistakes.value = correctionResponse.data.mistakes;
+    // corrections.value = correctionResponse.data.corrections;
+    // explanations.value = correctionResponse.data.explanations;
+    // categories.value = correctionResponse.data.categories;
+    // contexts.value = correctionResponse.data.contexts;
 
-    explanations.value = correctionResponse.data.explanations.map(explanation => {
-      return explanation.replace(/(\n[T|X]:.*)/g, '').trim();
-    });
+    // explanations.value = correctionResponse.data.explanations.map(explanation => {
+    //   return explanation.replace(/(\n[T|X]:.*)/g, '').trim();
+    // });
 
-    scores.value = correctionResponse.data.scores;
+    // scores.value = correctionResponse.data.scores;
 
-    highlightMistakes();
-    selectedComponent.value = 'Evaluation';
+    // highlightMistakes();
+    // selectedComponent.value = 'Evaluation';
 
-    // Process further correction response if available
-    if (correctionResponse.data.furtherCorrection) {
-      const furtherCorrection = correctionResponse.data.furtherCorrection;
+    // // Process further correction response if available
+    // if (correctionResponse.data.furtherCorrection) {
+    //   const furtherCorrection = correctionResponse.data.furtherCorrection;
 
-      if (furtherCorrection.organization.message) {
-        furtherCorrectionData.value.organization = { message: furtherCorrection.organization.message };
-      } else {
-        furtherCorrectionData.value.organization.mistakes = furtherCorrection.organization.mistakes;
-        furtherCorrectionData.value.organization.corrections = furtherCorrection.organization.corrections;
-        furtherCorrectionData.value.organization.explanations = furtherCorrection.organization.explanations;
-        furtherCorrectionData.value.organization.categories = furtherCorrection.organization.categories;
-      }
+    //   if (furtherCorrection.organization.message) {
+    //     furtherCorrectionData.value.organization = { message: furtherCorrection.organization.message };
+    //   } else {
+    //     furtherCorrectionData.value.organization.mistakes = furtherCorrection.organization.mistakes;
+    //     furtherCorrectionData.value.organization.corrections = furtherCorrection.organization.corrections;
+    //     furtherCorrectionData.value.organization.explanations = furtherCorrection.organization.explanations;
+    //     furtherCorrectionData.value.organization.categories = furtherCorrection.organization.categories;
+    //   }
 
-      if (furtherCorrection.coherence.message) {
-        furtherCorrectionData.value.coherence = { message: furtherCorrection.coherence.message };
-      } else {
-        furtherCorrectionData.value.coherence.mistakes = furtherCorrection.coherence.mistakes;
-        furtherCorrectionData.value.coherence.corrections = furtherCorrection.coherence.corrections;
-        furtherCorrectionData.value.coherence.explanations = furtherCorrection.coherence.explanations;
-        furtherCorrectionData.value.coherence.categories = furtherCorrection.coherence.categories;
-      }
+    //   if (furtherCorrection.coherence.message) {
+    //     furtherCorrectionData.value.coherence = { message: furtherCorrection.coherence.message };
+    //   } else {
+    //     furtherCorrectionData.value.coherence.mistakes = furtherCorrection.coherence.mistakes;
+    //     furtherCorrectionData.value.coherence.corrections = furtherCorrection.coherence.corrections;
+    //     furtherCorrectionData.value.coherence.explanations = furtherCorrection.coherence.explanations;
+    //     furtherCorrectionData.value.coherence.categories = furtherCorrection.coherence.categories;
+    //   }
 
-      if (furtherCorrection.writingStyle.message) {
-        furtherCorrectionData.value.writingStyle = { message: furtherCorrection.writingStyle.message };
-      } else {
-        furtherCorrectionData.value.writingStyle.mistakes = furtherCorrection.writingStyle.mistakes;
-        furtherCorrectionData.value.writingStyle.corrections = furtherCorrection.writingStyle.corrections;
-        furtherCorrectionData.value.writingStyle.explanations = furtherCorrection.writingStyle.explanations;
-        furtherCorrectionData.value.writingStyle.categories = furtherCorrection.writingStyle.categories;
-      }
-    }
+    //   if (furtherCorrection.writingStyle.message) {
+    //     furtherCorrectionData.value.writingStyle = { message: furtherCorrection.writingStyle.message };
+    //   } else {
+    //     furtherCorrectionData.value.writingStyle.mistakes = furtherCorrection.writingStyle.mistakes;
+    //     furtherCorrectionData.value.writingStyle.corrections = furtherCorrection.writingStyle.corrections;
+    //     furtherCorrectionData.value.writingStyle.explanations = furtherCorrection.writingStyle.explanations;
+    //     furtherCorrectionData.value.writingStyle.categories = furtherCorrection.writingStyle.categories;
+    //   }
+    // }
 
     // Trigger question generation if applicable
     await axios.post('http://localhost:3000/question/generate');

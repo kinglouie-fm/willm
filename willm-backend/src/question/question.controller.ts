@@ -51,7 +51,7 @@ export class QuestionController {
   @UseGuards(JwtAuthGuard)
   @Post('add')
   async addQuestion(@Body() data: any, @Req() req: Request) {
-    const userId = '669d73dc7025c301e4c9a4c0';
+    const userId = req.user._id;
     return this.questionService.addQuestionManually(data, userId);
   }
 

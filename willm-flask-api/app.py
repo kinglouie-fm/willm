@@ -249,13 +249,21 @@ def suggest_question_type():
     response = openai.chat.completions.create(
         model="gpt-4o",
         messages=[
-            {"role": "system", "content": SYSTEM_PROMPT_5},
+            {"role": "system", "content": 'Suggest a question type based on the following text. Question types are revision, synonyms, academic sentence, argument strengthening, coherence, or organization. Only provide the question type, don\'t add anything else like an explanation or reasoning.'},
             {"role": "user", "content": text}
         ],
         max_tokens=50
     )
 
-    question_type = response.choices[0].message.content.strip()
+    response_content = response.choices[0].message.content.strip()
+    logging.info(f"Question type suggestion: {response_content}")
+
+    question_type = None
+    for q_type in question_prompts.keys():
+        if q_type in response_content.lower():
+            question_type = q_type
+            break
+
     if question_type in question_prompts:
         logger.info(f"Suggested question type from LLM: {question_type}")
         return jsonify({"type": question_type})
@@ -305,8 +313,10 @@ def generate_question():
         metadata['answer'] = answer_match.group(1).strip()
 
     if question_type in ['synonyms', 'argument_strengthening', 'coherence', 'organization']:
-        options_match = re.search(r'Options:\s*(.*?)\n', output, re.DOTALL)
+        options_match = re.search(r'Options:\s*(A\..*?)(?=\n[A-Z]\.|$)', output, re.DOTALL)
         if options_match:
+            logging.info(f"Options match: {options_match.group(1).strip()}")
+            # Store options as a single string
             metadata['options'] = options_match.group(1).strip()
 
         if question_type == 'synonyms':
@@ -339,6 +349,8 @@ def generate_question():
 
     # Add document_id to the metadata
     metadata['document_id'] = document_id
+
+    logging.info(f"Generated question metadata: {metadata}")
 
     return jsonify(metadata)
 

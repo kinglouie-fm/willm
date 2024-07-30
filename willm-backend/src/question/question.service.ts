@@ -30,11 +30,7 @@ export class QuestionService {
 
   async generateQuestions(userId: Types.ObjectId) {
     const submissions = await this.textService.findLastSubmissions(userId, 5);
-
-    if (submissions.length < 5) {
-      throw new Error('Not enough submissions to generate questions');
-    }
-
+    
     const sectionTexts = submissions.reduce((acc, sub) => {
       if (!acc[sub.section]) {
         acc[sub.section] = [];

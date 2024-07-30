@@ -97,15 +97,13 @@ const handleCorrect = async () => {
   };
 
   try {
-    message.loading("Evaluating text...", 5);
+    message.loading("Evaluating text...", 7);
     const correctionResponse = await axios.post('http://localhost:3000/correct', {
       text: textToCorrect,
       section: textareaSmall.value,
       mode: mode.value,
       language: selectedLanguage.value
     });
-
-    console.log(correctionResponse.data);
 
     // Process initial correction response
     mistakes.value = correctionResponse.data.mistakes;
@@ -156,10 +154,9 @@ const handleCorrect = async () => {
     }
 
     // Trigger question generation if applicable
-    const questionResponse = await axios.post('http://localhost:3000/question/generate');
-    console.log('Question Generation Response:', questionResponse.data);
+    await axios.post('http://localhost:3000/question/generate');
   } catch (error) {
-    console.error('Error processing requests:', error);
+    message.error('Error processing requests.');
   }
 };
 
@@ -176,7 +173,7 @@ const generateReview = async () => {
     }
     selectedComponent.value = 'Review';
   } catch (error) {
-    console.error('Error generating review:', error);
+    message.error('Error generating review.');
   }
 };
 
@@ -186,7 +183,7 @@ const getRecentReview = async () => {
     reviewData.value = response.data.reviewData || 'No recent review available. Click on "Review" to generate one. Remember that you need to have at least 2 sessions to generate a review.';
     selectedComponent.value = 'Review';
   } catch (error) {
-    console.error('Error fetching recent review:', error);
+    message.error('Error fetching recent review.');
   }
 };
 
@@ -356,7 +353,6 @@ const completePreTestProcess = async () => {
     }
   } catch (error) {
     message.error("Error completing pre-test process.");
-    console.error('Error completing pre-test process:', error);
   }
 };
 
@@ -372,7 +368,7 @@ const checkPreTestStatus = async () => {
       preTestModal.show();
     }
   } catch (error) {
-    console.error('Error checking pre-test status:', error);
+    message.error('Error checking pre-test status.');
   }
 };
 
@@ -401,7 +397,7 @@ const submitPreTest = async () => {
       message.success(`Pre-test ${preTestCount.value}/3 submitted. You can submit up to ${3 - preTestCount.value} more pre-tests.`, 5)
     }
   } catch (error) {
-    console.error('Error submitting pre-test:', error);
+    message.error('Error submitting pre-test.');
   }
 };
 
@@ -439,7 +435,6 @@ const submitPostTest = async () => {
     postTestSections.value.push(postTestSection.value);
     postTestSection.value = '';
   } catch (error) {
-    console.error('Error submitting post-test:', error);
     message.error('Error submitting post-test.');
   }
 };
@@ -456,7 +451,7 @@ const fetchPreTestSections = async () => {
       const postTestResponse = await axios.get('http://localhost:3000/user/post-test-sections');
       postTestSections.value = postTestResponse.data.sections;
     } catch (error) {
-      console.error('Error fetching sections:', error);
+      message.error('Error fetching sections');
     }
   }
 };
@@ -510,7 +505,7 @@ onMounted(async () => {
                     </ul>
                   </li>
                 </ul>
-                <p>To prevent bugs, please do not copy and paste the text from the input area!</p>
+                <p>To prevent bugs, please <strong>do not</strong> copy and paste the text from the input area!</p>
                 ' />
                 <h5 class="mb-0 me-auto">How to use the tool?</h5>
                 <div class="form-check form-switch d-flex align-items-center ms-auto" v-if="authStore.isAuthenticated">

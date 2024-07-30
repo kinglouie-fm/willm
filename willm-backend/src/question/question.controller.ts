@@ -14,17 +14,23 @@ export class QuestionController {
   @UseGuards(JwtAuthGuard)
   @Post('generate')
   async generateQuestion(@Req() req: Request) {
-    // return {
-    //   "message": "saving money, change back when needed"
-    // }
     const userId = req.user._id;
 
     // Check submission count
     const submissionCount = await this.textService.getSubmissionCount(userId);
-    if (submissionCount % 3 !== 0) {
+
+    if (submissionCount % 1 !== 0) {
       return {
         message: "Not generating questions for this submission",
       };
+    }
+
+    const submissions = await this.textService.findLastSubmissions(userId, 5);
+
+    if (submissions.length < 5) {
+      return {
+        message: 'Not enough submissions to generate questions',
+      }
     }
 
     const questions = await this.questionService.generateQuestions(userId);

@@ -16,7 +16,6 @@ export class ScoreController {
     @Req() req: Request
   ) {
     const userId = req.user._id;
-    console.log('Generating score for user:', userId, 'section:', body.section, 'textId:', body.textId);
     const scoreData = await this.scoreService.generateScore(body.text, userId, body.section, new Types.ObjectId(body.textId));
     return scoreData;
   }
@@ -25,9 +24,7 @@ export class ScoreController {
   @Get('sections')
   async getSections(@Req() req: Request) {
     const userId = req.user._id;
-    // console.log('Fetching unique sections for user:', userId);
     const sections = await this.scoreService.getUniqueSections(userId);
-    // console.log('Fetched sections:', sections);
     return sections;
   }
 
@@ -35,7 +32,6 @@ export class ScoreController {
   @Get('comparison/:section')
   async compareScores(@Param('section') section: string, @Req() req: Request) {
     const userId = req.user._id;
-    // console.log('Comparing scores for section:', section, 'user:', userId);
     const comparisonResult = await this.scoreService.compareScores(userId, section);
     return comparisonResult;
   }

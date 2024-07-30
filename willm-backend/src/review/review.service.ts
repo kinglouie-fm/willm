@@ -22,19 +22,13 @@ export class ReviewService {
     // Retrieve the last 10 texts for the user
     const texts = await this.textService.findLastSubmissions(userId, 10);
 
-    console.log(texts)
-
     if (!texts || texts.length === 0) {
       return { reviewData: 'No text available.' };
     }
 
     const textIds: Types.ObjectId[] = texts.map(text => text._id) as Types.ObjectId[];
 
-    console.log(textIds);
-
     const issues = await this.issueService.getIssuesByTextIds(textIds);
-
-    console.log(issues);
 
     if (!issues || issues.length === 0) {
       return { reviewData: 'Not enough sessions to generate review.' };
@@ -42,8 +36,6 @@ export class ReviewService {
 
     const grammarVocabIssues = issues.filter(issue => issue.type === 'grammar_vocab');
     const orgCohWritingIssues = issues.filter(issue => ['organization', 'coherence', 'writingStyle'].includes(issue.type));
-
-    console.log(orgCohWritingIssues);
 
     const getCategoryFrequency = (issues) => {
       return issues.reduce((acc, issue) => {
@@ -55,16 +47,12 @@ export class ReviewService {
     const grammarVocabFrequency = getCategoryFrequency(grammarVocabIssues);
     const orgCohWritingFrequency = getCategoryFrequency(orgCohWritingIssues);
 
-    console.log(orgCohWritingFrequency);
-
     const getTopCategories = (frequency) => {
       return Object.keys(frequency).sort((a, b) => frequency[b] - frequency[a]).slice(0, 3);
     };
 
     const topGrammarVocabCategories = getTopCategories(grammarVocabFrequency);
     const topOrgCohWritingCategories = getTopCategories(orgCohWritingFrequency);
-
-    console.log(topOrgCohWritingCategories);
 
     const getCategoryTypeMap = (issues) => {
       return issues.reduce((acc, issue) => {

@@ -253,7 +253,7 @@ onMounted(() => {
                                 class="list-group-item achievement-item p-2 border rounded d-flex align-items-center justify-content-between">
                                 <div class="me-3">{{ getAchievementProgress(key, gamificationData.achievements).next }}
                                 </div>
-                                <div class="me-3">Reward: {{ getAchievementProgress(key,
+                                <div class="me-3"><strong>Reward:</strong> {{ getAchievementProgress(key,
                                 gamificationData.achievements).rewardXP }} XP</div>
                                 <AchievementProgressBar :currentCount="gamificationData.achievements[key]"
                                     :targetCount="getAchievementProgress(key, gamificationData.achievements).targetCount" />

@@ -197,6 +197,10 @@ export class GamificationService {
       }
     }
     user.level = newLevel;
+
+    user.markModified('badges');
+
+    await user.save();
   }
 
   async resetStreaks(userId: Types.ObjectId): Promise<void> {

@@ -46,7 +46,7 @@ router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
   if (to.matched.some(record => record.meta.requiresAuth)) {
     try {
-      const response = await fetch('http://localhost:3000/user/profile', { credentials: 'include' });
+      const response = await fetch('http://http://34.71.205.236:3000//user/profile', { credentials: 'include' });
       if (response.status === 200) {
         authStore.isAuthenticated = true;
         next();

@@ -16,7 +16,7 @@ export const useAuthStore = defineStore('auth', {
   actions: {
     async register(username, password) {
       try {
-        const response = await axios.post('http://localhost:3000/user/register', { username, password, dataPrivacyConsent });
+        const response = await axios.post('http://http://34.71.205.236:3000//user/register', { username, password, dataPrivacyConsent });
         if (response.status === 201) {
           message.info('Registration successful. Please login.');
           router.push({ name: 'login' });
@@ -36,7 +36,7 @@ export const useAuthStore = defineStore('auth', {
       try {
         message.info('Logging in...', 2);
         message.info('Generating quiz if necessary...', 2);
-        const response = await axios.post('http://localhost:3000/user/login', { username, password });
+        const response = await axios.post('http://http://34.71.205.236:3000//user/login', { username, password });
         if (response.status === 200 && response.data.message === 'Login successful') {
           this.isAuthenticated = true;
           this.preTestsCompleted = response.data.preTestsCompleted;
@@ -46,7 +46,7 @@ export const useAuthStore = defineStore('auth', {
             this.logout();
           } else {
             // Check quiz status
-            const quizResponse = await axios.get('http://localhost:3000/quiz/check-quiz');
+            const quizResponse = await axios.get('http://http://34.71.205.236:3000//quiz/check-quiz');
             this.quizDueToday = quizResponse.data.quizDueToday;
             this.nextQuizDate = quizResponse.data.nextQuizDate ? quizResponse.data.nextQuizDate.split('T')[0].split('-').reverse().join('.') : null;
 
@@ -75,7 +75,7 @@ export const useAuthStore = defineStore('auth', {
     },
     async logout() {
       try {
-        await axios.post('http://localhost:3000/user/logout');
+        await axios.post('http://http://34.71.205.236:3000//user/logout');
         this.isAuthenticated = false;
         this.preTestsCompleted = false;
         this.postTestsCompleted = false;
@@ -86,7 +86,7 @@ export const useAuthStore = defineStore('auth', {
     },
     async checkAuthStatus() {
       try {
-        const response = await axios.get('http://localhost:3000/user/pre-test-status');
+        const response = await axios.get('http://http://34.71.205.236:3000//user/pre-test-status');
         this.preTestsCompleted = response.data.preTestsCompleted;
       } catch (error) {
         console.error('Error checking auth status');

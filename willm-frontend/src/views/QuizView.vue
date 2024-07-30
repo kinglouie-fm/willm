@@ -16,7 +16,7 @@ const router = useRouter();
 
 const fetchQuiz = async () => {
     try {
-        const response = await axios.get('http://localhost:3000/quiz/get-todays-quiz');
+        const response = await axios.get('http://http://34.71.205.236:3000//quiz/get-todays-quiz');
         quiz.value = response.data.quiz;
         if (!quiz.value) {
             message.info(response.data.message);
@@ -40,7 +40,7 @@ const submitAnswer = async (selectedAnswer = null, option) => {
         } else {
             answer = userAnswer.value;
         }
-        const response = await axios.post('http://localhost:3000/quiz/submit-answer', {
+        const response = await axios.post('http://http://34.71.205.236:3000//quiz/submit-answer', {
             quizId: quiz.value.quiz_id,
             questionId: currentQuestion.value.question_id,
             userAnswer: answer,
@@ -63,7 +63,7 @@ const submitAnswer = async (selectedAnswer = null, option) => {
 
 const requestExplanation = async () => {
     try {
-        const response = await axios.post('http://localhost:3000/quiz/explain-answer', {
+        const response = await axios.post('http://http://34.71.205.236:3000//quiz/explain-answer', {
             quizId: quiz.value.quiz_id,
             questionId: currentQuestion.value.question_id,
             userAnswer: userAnswer.value,
@@ -84,7 +84,7 @@ const nextQuestion = () => {
 
 const completeQuiz = async () => {
     try {
-        const response = await axios.post('http://localhost:3000/quiz/complete', {
+        const response = await axios.post('http://http://34.71.205.236:3000//quiz/complete', {
             quizId: quiz.value.quiz_id,
         });
         quizScore.value = response.data.score;

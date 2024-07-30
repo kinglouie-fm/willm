@@ -59,7 +59,7 @@ const getNextLevelXP = (level) => {
 
 const getSections = async () => {
     try {
-        const response = await axios.get('http://localhost:3000/score/sections');
+        const response = await axios.get('http://http://34.71.205.236:3000//score/sections');
         if (response.data.length === 0) {
             message.info("Please ensure you have scores older than 5 days for a section.", 5);
         } else {
@@ -73,7 +73,7 @@ const getSections = async () => {
 const fetchComparison = async () => {
     if (selectedSection.value) {
         try {
-            const response = await axios.get(`http://localhost:3000/score/comparison/${selectedSection.value}`, { withCredentials: true });
+            const response = await axios.get(`http://http://34.71.205.236:3000//score/comparison/${selectedSection.value}`, { withCredentials: true });
             if (response.data.message) {
                 response_message.value = response.data.message;
                 comparisonData.value = null;
@@ -94,7 +94,7 @@ const selectSection = (section) => {
 
 const fetchGamification = async () => {
     try {
-        const response = await axios.get('http://localhost:3000/user/gamification', { withCredentials: true });
+        const response = await axios.get('http://http://34.71.205.236:3000//user/gamification', { withCredentials: true });
         gamificationData.value = response.data;
     } catch (error) {
         console.error("Error fetching gamification: ", error)

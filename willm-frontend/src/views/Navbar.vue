@@ -27,7 +27,7 @@ const checkQuiz = async () => {
             message.info('Quiz is due today. Redirecting...');
             router.push('/quiz');
         } else {
-            message.info('No quiz due today.');
+            message.info('No quiz due today.', 2);
         }
     } catch (error) {
         console.error('Error checking quiz:', error);

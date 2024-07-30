@@ -61,7 +61,7 @@ const getSections = async () => {
     try {
         const response = await axios.get('http://localhost:3000/score/sections');
         if (response.data.length === 0) {
-            message.info("No sections available for comparison. Please ensure you have scores older than 5 days for a section.", 7);
+            message.info("Please ensure you have scores older than 5 days for a section.", 5);
         } else {
             sections.value = response.data;
         }
@@ -185,7 +185,7 @@ onMounted(() => {
                             Comparison of your scores
                             <img class="info-icon" src="/icons/icon-info-01.svg" data-bs-toggle="popover"
                                 data-bs-placement="bottom" data-bs-content='
-                                <h4>How the scores are calculated:</h4>
+                                <h5>Calculation of the Scores:</h5>
                                 <p>
                                     The median of all older scores for the selected section is calculated and compared to your
                                     latest score.

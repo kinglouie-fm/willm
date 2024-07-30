@@ -85,8 +85,6 @@ export class GamificationService {
     const now = new Date();
     const lastLoginDate = new Date(user.last_login);
 
-    console.log("Initial value: ", user.achievements);
-
     // Check if the last login date is a different day than today
     const isSameDay = lastLoginDate.toDateString() === now.toDateString();
 
@@ -113,8 +111,6 @@ export class GamificationService {
           user.achievements.weekly_streaks = user.achievements.weekly_streaks + 1;
       }
 
-      console.log('Before save:', user.achievements);
-
       // Mark nested fields as modified
       user.markModified('achievements.consecutive_days');
       user.markModified('achievements.weekly_streaks');
@@ -123,8 +119,6 @@ export class GamificationService {
       user.xp += this.getXPForAction('daily_login');
       await this.checkAchievementsAndBadges(user);
       await user.save();
-
-      console.log('After save:', user.achievements);
     }
   }
 
@@ -174,8 +168,6 @@ export class GamificationService {
       }
     }
 
-    console.log('Before User badges:', user.badges);
-
     // Check badges
     let badgesModified = false;
     for (const [badge, criteria] of Object.entries(this.config.badges)) {
@@ -189,13 +181,10 @@ export class GamificationService {
         }
         if (meetsCriteria) {
           user.badges.push({ name: badge, date: new Date() });
-          console.log(`Badge ${badge} awarded to user.`);
           badgesModified = true;
         }
       }
     }
-
-    console.log('After User badges:', user.badges);
 
     // Update level
     const levels = this.config.levels;

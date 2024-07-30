@@ -313,11 +313,12 @@ def generate_question():
         metadata['answer'] = answer_match.group(1).strip()
 
     if question_type in ['synonyms', 'argument_strengthening', 'coherence', 'organization']:
-        options_match = re.search(r'Options:\s*(A\..*?)(?=\n[A-Z]\.|$)', output, re.DOTALL)
+        options_match = re.search(r'Options:\s*(A\..*?)(?=\nAnswer:)', output, re.DOTALL)
         if options_match:
             logging.info(f"Options match: {options_match.group(1).strip()}")
-            # Store options as a single string
-            metadata['options'] = options_match.group(1).strip()
+            options_raw = options_match.group(1).strip()
+            options = "\n".join([option.strip() for option in options_raw.split('\n')])
+            metadata['options'] = options
 
         if question_type == 'synonyms':
             word_match = re.search(r'Word:\s*(.*?)\n', output, re.DOTALL)

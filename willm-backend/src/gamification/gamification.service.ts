@@ -89,17 +89,22 @@ export class GamificationService {
     const isSameDay = lastLoginDate.toDateString() === now.toDateString();
 
     if (!isSameDay) {
+      // Extract the date parts (year, month, day) to ignore the time part
+      const nowDate = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+      const lastLoginDateOnly = new Date(lastLoginDate.getFullYear(), lastLoginDate.getMonth(), lastLoginDate.getDate()).getTime();
+      const diffInDays = (nowDate - lastLoginDateOnly) / (1000 * 60 * 60 * 24);
+
       // Update daily streak
-      const isConsecutiveDay = (now.getTime() - lastLoginDate.getTime()) < 24 * 60 * 60 * 1000 + 1;
-      if (isConsecutiveDay) {
-        user.daily_streak += 1;
+      if (diffInDays === 1) {
+          user.daily_streak += 1;
       } else {
-        user.daily_streak = 1;
+          user.daily_streak = 1;
+          user.weekly_streak = 0;
       }
 
       // Update weekly streak based on daily streak using modulo
       if (user.daily_streak % 7 === 0) {
-        user.weekly_streak += 1;
+          user.weekly_streak += 1;
       }
 
       user.last_login = now;

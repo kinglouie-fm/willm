@@ -231,8 +231,10 @@ onMounted(() => {
                     <div>
                         <h3 class="text-center">Progress</h3>
                         <div v-if="gamificationData">
-                            <h5>Your Badge: {{ gamificationData.badges.length ?
-                                gamificationData.badges[gamificationData.badges.length - 1].name : 'None yet' }}
+                            <h5>Your Badges: {{ gamificationData.badges.length ?
+                                gamificationData.badges[gamificationData.badges.length - 1].name.charAt(0).toUpperCase()
+                                + gamificationData.badges[gamificationData.badges.length - 1].name.slice(1) : 'None yet'
+                                }}
                             </h5>
                             <LevelProgressBar :currentLevel="gamificationData.level" :currentXP="gamificationData.xp"
                                 :maxXP="getNextLevelXP(gamificationData.level)"

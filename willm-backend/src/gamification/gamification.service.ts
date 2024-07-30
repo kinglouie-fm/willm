@@ -128,8 +128,12 @@ export class GamificationService {
     }
   }
 
-  async handleQuizCompletion(userId: Types.ObjectId): Promise<void> {
+  async handleQuizCompletion(userId: Types.ObjectId, score: number): Promise<void> {
     const user = await this.userModel.findById(userId);
+
+    if(score === 5) {
+      user.xp += this.getXPForAction('max_score_bonus');
+    }
 
     // Update achievements
     user.achievements.quizzes_completed = (user.achievements.quizzes_completed || 0) + 1;
@@ -170,7 +174,10 @@ export class GamificationService {
       }
     }
 
+    console.log('Before User badges:', user.badges);
+
     // Check badges
+    let badgesModified = false;
     for (const [badge, criteria] of Object.entries(this.config.badges)) {
       if (!user.badges.find(b => b.name === badge)) {
         let meetsCriteria = true;
@@ -182,9 +189,13 @@ export class GamificationService {
         }
         if (meetsCriteria) {
           user.badges.push({ name: badge, date: new Date() });
+          console.log(`Badge ${badge} awarded to user.`);
+          badgesModified = true;
         }
       }
     }
+
+    console.log('After User badges:', user.badges);
 
     // Update level
     const levels = this.config.levels;
@@ -198,9 +209,10 @@ export class GamificationService {
     }
     user.level = newLevel;
 
-    user.markModified('badges');
-
-    await user.save();
+    // Mark fields as modified if needed
+    if (badgesModified) {
+      user.markModified('badges');
+    }
   }
 
   async resetStreaks(userId: Types.ObjectId): Promise<void> {

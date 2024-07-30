@@ -387,7 +387,7 @@ export class QuizService {
     quiz.score = score;
     await quiz.save();
 
-    await this.gamificationService.handleQuizCompletion(userId);
+    await this.gamificationService.handleQuizCompletion(userId, score);
 
     const quizSchedule = await this.quizScheduleModel.findOne({ user_id: userId });
     const newIntervalIndex = Math.min(quizSchedule.current_interval_index + 1, this.intervals.length - 1);

@@ -34,6 +34,8 @@ export const useAuthStore = defineStore('auth', {
     },
     async login(username, password) {
       try {
+        message.info('Logging in...', 2);
+        message.info('Generating quiz if necessary...', 2);
         const response = await axios.post('http://localhost:3000/user/login', { username, password });
         if (response.status === 200 && response.data.message === 'Login successful') {
           this.isAuthenticated = true;
@@ -53,7 +55,9 @@ export const useAuthStore = defineStore('auth', {
             } else if(this.nextQuizDate) {
               message.info(`Next quiz date: ${this.nextQuizDate}`, 3);
             } else {
-              message.info('No quiz scheduled yet.', 3);
+              setTimeout(() => {
+                message.info('No quiz scheduled yet.', 3);
+              }, 2000);
             }
 
             router.push({ name: 'home' });

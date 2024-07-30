@@ -5,6 +5,7 @@ import re
 import os
 import aiohttp
 import logging
+from waitress import serve
 from chroma_langchain import chroma_langchain_handler
 from prompts import (
     SYSTEM_PROMPT_1, SYSTEM_PROMPT_2, SYSTEM_PROMPT_4, SYSTEM_PROMPT_5,
@@ -638,4 +639,5 @@ async def llm_decide_questions(new_questions, quiz_history):
             return []
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000)
+    # app.run(host='0.0.0.0', port=8000)
+    serve(app, host='0.0.0.0', port=8000)

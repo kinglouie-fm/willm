@@ -68,8 +68,6 @@ export const useAuthStore = defineStore('auth', {
       } catch (error) {
         if (error.response && error.response.status === 403) {
           alert('You have completed the post-test and can no longer use the tool.');
-        } else if (error.response && error.response.status === 401) {
-          message.info('Please log in again.');
         } else {
           message.error('An error occurred. Please try again.');
         }

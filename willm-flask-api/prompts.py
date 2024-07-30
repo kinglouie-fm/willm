@@ -497,8 +497,8 @@ Answer: [The correct option]
 # """
 
 ORGANIZATION_PROMPT = """
-Given the provided text which includes excerpts from sections (Introduction, Literature Review etc.) of academic papers, create one multiple-choice question that includes different excerpts and options but cover the same topic and test the organization of these sections. 
-Your generated excerpts should not be a copy of the provided text, they should only cover the topic of what each section is about. The question should ask the user to identify which section logically follows the generated excerpts to ensure a coherent and well-organized paper. 
+Given the provided text which includes two excerpts from sections (Introduction, Literature Review etc.) of academic papers, create one multiple-choice question that includes different excerpts and options but cover the same topic and test the organization of these sections. 
+Your two generated excerpts should not be a copy of the provided text, they should only cover the topic of what each section is about. The question should ask the user to identify which section logically follows the generated excerpts to ensure a coherent and well-organized paper. 
 
 Text:
 {text}
@@ -510,7 +510,7 @@ The output should help users learn the logical flow of academic papers.
 Output format:
 Type: organization
 Question: Given the provided excerpts, which section logically follows to ensure a coherent and well-organized paper?
-Excerpts: [The generated excerpts that only cover the topic of the provided text]
+Excerpts: [The two generated excerpts that only cover the topic of the provided text, enumarated with 1 and 2]
 Options: [The options enumerated with A, B, C, D]
 Answer: [The correct option]
 """

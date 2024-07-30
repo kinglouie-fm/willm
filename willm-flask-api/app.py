@@ -280,7 +280,7 @@ def generate_question():
         return jsonify({"error": "Invalid question type"}), 400
 
     prompt_template = question_prompts[question_type]
-    if(question_type in ['revision', 'synonyms', 'academic_sentence', 'argument_strengthening']):
+    if question_type in ['revision', 'synonyms', 'academic_sentence', 'argument_strengthening']:
         prompt = prompt_template.format(lastSubmission=text)
     else:
         prompt = prompt_template.format(text=text)
@@ -315,7 +315,6 @@ def generate_question():
     if question_type in ['synonyms', 'argument_strengthening', 'coherence', 'organization']:
         options_match = re.search(r'Options:\s*(A\..*?)(?=\nAnswer:)', output, re.DOTALL)
         if options_match:
-            logging.info(f"Options match: {options_match.group(1).strip()}")
             options_raw = options_match.group(1).strip()
             options = "\n".join([option.strip() for option in options_raw.split('\n')])
             metadata['options'] = options
@@ -328,12 +327,12 @@ def generate_question():
             argument_match = re.search(r'Argument:\s*(.*?)\n', output, re.DOTALL)
             if argument_match:
                 metadata['argument'] = argument_match.group(1).strip()
-        elif question_type == 'coherence':
-            excerpts_match = re.search(r'Excerpts:\s*(.*?)\n', output, re.DOTALL)
+        elif question_type == 'organization':
+            excerpts_match = re.search(r'Excerpts:\s*(.*?)\nOptions:', output, re.DOTALL)
             if excerpts_match:
                 metadata['excerpts'] = excerpts_match.group(1).strip()
-        elif question_type == 'organization':
-            sentences_match = re.search(r'Sentences:\s*(.*?)\n', output, re.DOTALL)
+        elif question_type == 'coherence':
+            sentences_match = re.search(r'Sentences:\s*(.*?)\nOptions:', output, re.DOTALL)
             if sentences_match:
                 metadata['sentences'] = sentences_match.group(1).strip()
     else:
@@ -342,7 +341,7 @@ def generate_question():
             if text_match:
                 metadata['text'] = text_match.group(1).strip()
         elif question_type == 'academic_sentence':
-            sentence_match = re.search(r'Sentence:\s*(.*?)\n', output, re.DOTALL)
+            sentence_match = re.search(r'Sentence:\s*(.*)', output, re.DOTALL)
             if sentence_match:
                 metadata['sentence'] = sentence_match.group(1).strip()
 

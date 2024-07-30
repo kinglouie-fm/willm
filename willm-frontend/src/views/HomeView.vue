@@ -156,7 +156,11 @@ const handleCorrect = async () => {
     // Trigger question generation if applicable
     await axios.post('http://localhost:3000/question/generate');
   } catch (error) {
-    message.error('Error processing requests.');
+    if (error.response && error.response.status === 401) {
+      message.info('Please log in again.');
+    } else {
+      message.error('Error processing requests.');
+    }
   }
 };
 
@@ -173,7 +177,11 @@ const generateReview = async () => {
     }
     selectedComponent.value = 'Review';
   } catch (error) {
-    message.error('Error generating review.');
+    if (error.response && error.response.status === 401) {
+      message.info('Please log in again.');
+    } else {
+      message.error('Error generating review.');
+    }
   }
 };
 
@@ -182,8 +190,13 @@ const getRecentReview = async () => {
     const response = await axios.get('http://localhost:3000/review/recent');
     reviewData.value = response.data.reviewData || 'No recent review available. Click on "Review" to generate one. Remember that you need to have at least 2 sessions to generate a review.';
     selectedComponent.value = 'Review';
+
   } catch (error) {
-    message.error('Error fetching recent review.');
+    if (error.response && error.response.status === 401) {
+      message.info('Please log in again.');
+    } else {
+      message.error('Error fetching recent review.');
+    }
   }
 };
 
@@ -368,7 +381,11 @@ const checkPreTestStatus = async () => {
       preTestModal.show();
     }
   } catch (error) {
-    message.error('Error checking pre-test status.');
+    if (error.response && error.response.status === 401) {
+      message.info('Please log in again.');
+    } else {
+      message.error('Error checking pre-test status.');
+    }
   }
 };
 
@@ -397,7 +414,11 @@ const submitPreTest = async () => {
       message.success(`Pre-test ${preTestCount.value}/3 submitted. You can submit up to ${3 - preTestCount.value} more pre-tests.`, 5)
     }
   } catch (error) {
-    message.error('Error submitting pre-test.');
+    if (error.response && error.response.status === 401) {
+      message.info('Please log in again.');
+    } else {
+      message.error('Error submitting pre-test.');
+    }
   }
 };
 
@@ -435,7 +456,11 @@ const submitPostTest = async () => {
     postTestSections.value.push(postTestSection.value);
     postTestSection.value = '';
   } catch (error) {
-    message.error('Error submitting post-test.');
+    if (error.response && error.response.status === 401) {
+      message.info('Please log in again.');
+    } else {
+      message.error('Error submitting post-test.');
+    }
   }
 };
 
@@ -451,7 +476,11 @@ const fetchPreTestSections = async () => {
       const postTestResponse = await axios.get('http://localhost:3000/user/post-test-sections');
       postTestSections.value = postTestResponse.data.sections;
     } catch (error) {
-      message.error('Error fetching sections');
+      if (error.response && error.response.status === 401) {
+        message.info('Please log in again.');
+      } else {
+        message.error('Error fetching sections');
+      }
     }
   }
 };

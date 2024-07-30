@@ -266,7 +266,7 @@ export class QuizService {
     return query;
   }
 
-  async submitQuizAnswer(userId: Types.ObjectId, quizId: string, questionId: string, userAnswer: string): Promise<{ question: any, isCorrect: boolean, correctAnswer: any }> {
+  async submitQuizAnswer(userId: Types.ObjectId, quizId: string, questionId: string, userAnswer: string): Promise<{ question: any, isCorrect: boolean, correctAnswer: any, message?: string }> {
     const quiz = await this.quizModel.findOne({ user_id: userId, quiz_id: quizId });
 
     if (!quiz) {
@@ -277,6 +277,10 @@ export class QuizService {
 
     if (!question) {
       throw new Error('Question not found');
+    }
+
+    if (question.answered === true) {
+      return { question, isCorrect: question.result, correctAnswer: question.correct_answer, message: 'Question already answered' };
     }
 
     question.user_answer = userAnswer;

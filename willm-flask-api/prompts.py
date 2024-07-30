@@ -451,7 +451,7 @@ Text:
 
 Output format:
 Type: academic_sentence
-Question: Generate a sentence that needs to be paraphrased into academic style
+Question: Paraphrase the following sentence into academic style
 Sentence: [The original sentence]
 """
 

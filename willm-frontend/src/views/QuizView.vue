@@ -46,9 +46,12 @@ const submitAnswer = async (selectedAnswer = null, option) => {
             userAnswer: answer,
         });
         answerResult.value = response.data;
-        if (answerResult.value.isCorrect) {
-            message.success('Correct answer!', 3);
-        } else {
+        if (answerResult.value.message === 'Question already answered') {
+            message.info('Question already answered. Please proceed.', 2);
+        } else if (answerResult.value.isCorrect) {
+            message.success('Correct answer!', 2);
+        }
+        else {
             message.error('Incorrect answer. The correct answer was: ' + answerResult.value.correctAnswer.charAt(0), 6);
         }
         currentQuestion.value.answered = true;

@@ -41,7 +41,7 @@ export class UserController {
     try {
       const isValid = await this.userService.validateUser(username, password);
       if (!isValid) {
-        throw new UnauthorizedException('Invalid credentials');
+        return res.status(401).json({ message: 'Invalid credentials' });
       }
       const user = await this.userService.findUserByUsername(username);
       if (user.postTestsCompleted) {

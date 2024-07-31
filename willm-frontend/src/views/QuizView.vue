@@ -96,6 +96,18 @@ const completeQuiz = async () => {
     }
 };
 
+const renderQuizScoreStars = (score) => {
+    const totalStars = 3;
+    const stars = [];
+    for (let i = 0; i < score; i++) {
+        stars.push('<span style="color: #eabc7c;">&#9733;</span>');
+    }
+    for (let i = score; i < totalStars; i++) {
+        stars.push('<span style="color: grey;">&#9733;</span>');
+    }
+    return stars.join('');
+};
+
 onMounted(fetchQuiz);
 
 const currentQuestion = computed(() => quiz.value?.questions[currentQuestionIndex.value] || null);
@@ -196,6 +208,7 @@ const currentQuestion = computed(() => quiz.value?.questions[currentQuestionInde
                     <div class="modal-body">
                         <p>Quiz completed successfully!</p>
                         <p>Score: {{ quizScore }} / 3</p>
+                        <div v-html="renderQuizScoreStars(quizScore)"></div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn" data-bs-dismiss="modal">Close</button>

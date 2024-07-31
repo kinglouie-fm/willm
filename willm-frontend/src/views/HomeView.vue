@@ -543,7 +543,6 @@ onMounted(async () => {
                     </ul>
                   </li>
                 </ul>
-                <p>To prevent bugs, please <strong>do not</strong> copy and paste the text from the input area!</p>
                 ' />
                 <h5 class="mb-0 me-auto">How to use the tool?</h5>
                 <div class="form-check form-switch d-flex align-items-center ms-auto" v-if="authStore.isAuthenticated">

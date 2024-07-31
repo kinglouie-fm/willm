@@ -35,7 +35,6 @@ export const useAuthStore = defineStore('auth', {
     async login(username, password) {
       try {
         message.info('Logging in...', 2);
-        message.info('Generating quiz if necessary...', 2);
         const response = await axios.post('http://34.71.205.236:3000/user/login', { username, password });
         if (response.status === 200 && response.data.message === 'Login successful') {
           this.isAuthenticated = true;
@@ -46,6 +45,7 @@ export const useAuthStore = defineStore('auth', {
             this.logout();
           } else {
             // Check quiz status
+            message.info('Generating quiz if necessary...', 2);
             const quizResponse = await axios.get('http://34.71.205.236:3000/quiz/check-quiz');
             this.quizDueToday = quizResponse.data.quizDueToday;
             this.nextQuizDate = quizResponse.data.nextQuizDate ? quizResponse.data.nextQuizDate.split('T')[0].split('-').reverse().join('.') : null;

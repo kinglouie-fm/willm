@@ -38,7 +38,7 @@ async def fetch_openai_response(session, system_prompt_template, prompt_template
             'Content-Type': 'application/json'
         },
         json={
-            "model": "gpt-4o",
+            "model": "gpt-4o-mini",
             "messages": [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": prompt}

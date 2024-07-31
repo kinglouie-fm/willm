@@ -105,6 +105,8 @@ const handleCorrect = async () => {
       language: selectedLanguage.value
     });
 
+    console.log(correctionResponse.data);
+
     // Process initial correction response
     mistakes.value = correctionResponse.data.mistakes;
     corrections.value = correctionResponse.data.corrections;
@@ -290,13 +292,21 @@ const activatePopovers = () => {
   });
 };
 
+const encoder = new TextEncoder();
+
 const updateText = () => {
-  textareaBig.value = editableDiv.value.innerText;
+  const text = editableDiv.value.innerText;
+  const encodedText = encoder.encode(text);
+  const utf8String = new TextDecoder("utf-8").decode(encodedText);
+  textareaBig.value = utf8String;
+
+  console.log("updated")
+
   limitTextLength();
 };
 
 const limitTextLength = () => {
-  const maxLength = 1000;
+  const maxLength = 5000;
   let textContent = editableDiv.value.innerText;
   if (textContent.length > maxLength) {
     editableDiv.value.innerText = textContent.slice(0, maxLength);

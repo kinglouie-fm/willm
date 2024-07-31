@@ -35,7 +35,6 @@ export const useAuthStore = defineStore('auth', {
     async login(username, password) {
       try {
         message.info('Logging in...', 2);
-        message.info('Generating quiz if necessary...', 2);
         const response = await axios.post('http://localhost:3000/user/login', { username, password });
         if (response.status === 200 && response.data.message === 'Login successful') {
           this.isAuthenticated = true;
@@ -46,6 +45,7 @@ export const useAuthStore = defineStore('auth', {
             this.logout();
           } else {
             // Check quiz status
+            message.info('Generating quiz if necessary...', 2);
             const quizResponse = await axios.get('http://localhost:3000/quiz/check-quiz');
             this.quizDueToday = quizResponse.data.quizDueToday;
             this.nextQuizDate = quizResponse.data.nextQuizDate ? quizResponse.data.nextQuizDate.split('T')[0].split('-').reverse().join('.') : null;
@@ -62,12 +62,12 @@ export const useAuthStore = defineStore('auth', {
 
             router.push({ name: 'home' });
           }
-        } else {
-          alert('Invalid username or password');
         }
       } catch (error) {
         if (error.response && error.response.status === 403) {
           alert('You have completed the post-test and can no longer use the tool.');
+        } else if (error.response && error.response.status === 401){
+          message.error('Invalid credentials.')
         } else {
           message.error('An error occurred. Please try again.');
         }

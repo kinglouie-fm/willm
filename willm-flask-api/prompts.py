@@ -5,7 +5,7 @@ You are an assistant designed to help improve academic writing by providing deta
 UNIFIED_PROMPT = """
 Regarding grammar and vocabulary, look for issues with misspelling, subject-verb agreement, tense consistency, pronoun agreement, incorrect use of articles, incorrect prepositions, inappropriate word choice, redundancy, and other grammatical errors. Provide the grammatical rule or reasoning when explaining the mistake. Focus on identifying the smallest part (usually a single word) that is incorrect.
 
-Categorize each mistake into one of the following categories:
+Categorize each mistake into one of the following categories. If the mistake does not fit any of the categories, choose "Uncategorized":
 - misspelling
 - subject-verb agreement
 - tense consistency
@@ -14,6 +14,7 @@ Categorize each mistake into one of the following categories:
 - incorrect prepositions
 - inappropriate word choice
 - redundancy
+- punctuation
 
 For each mistake, you should provide the following:
 

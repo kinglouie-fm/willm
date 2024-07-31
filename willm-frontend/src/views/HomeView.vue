@@ -290,8 +290,16 @@ const activatePopovers = () => {
   });
 };
 
+const encoder = new TextEncoder();
+
 const updateText = () => {
-  textareaBig.value = editableDiv.value.innerText;
+  const text = editableDiv.value.innerText;
+  const encodedText = encoder.encode(text);
+  const utf8String = new TextDecoder("utf-8").decode(encodedText);
+  textareaBig.value = utf8String;
+
+  console.log("updated")
+
   limitTextLength();
 };
 

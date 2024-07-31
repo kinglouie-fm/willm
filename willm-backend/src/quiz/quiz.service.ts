@@ -420,7 +420,9 @@ export class QuizService {
 
     const correctAnswers = quiz.questions.filter(q => q.result).length;
 
-    if (correctAnswers <= 2) {
+    if (correctAnswers === 0) {
+      return 0;
+    } else if (correctAnswers <=2) {
       return 1;
     } else if (correctAnswers <= 4) {
       return 2;

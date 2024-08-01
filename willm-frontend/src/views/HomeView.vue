@@ -66,7 +66,7 @@ const handleSwitchChange = (event) => {
 const selectedComponent = ref('Review');
 
 const handleCorrect = async () => {
-  let textToCorrect = editableDiv.value.innerText;
+  let textToCorrect = editableDiv.value.innerText.replace(/\u00A0/g, ' ');
   if (!textToCorrect) {
     message.info('Please enter some text to correct');
     return;
@@ -292,21 +292,12 @@ const activatePopovers = () => {
   });
 };
 
-const encoder = new TextEncoder();
-
 const updateText = () => {
-  const text = editableDiv.value.innerText;
-  const encodedText = encoder.encode(text);
-  const utf8String = new TextDecoder("utf-8").decode(encodedText);
-  textareaBig.value = utf8String;
-
-  console.log("updated")
-
   limitTextLength();
 };
 
 const limitTextLength = () => {
-  const maxLength = 5000;
+  const maxLength = 1000;
   let textContent = editableDiv.value.innerText;
   if (textContent.length > maxLength) {
     editableDiv.value.innerText = textContent.slice(0, maxLength);
@@ -564,7 +555,6 @@ onMounted(async () => {
           <div class="row mx-5">
             <div class="col-12 p-0">
               <div ref="editableDiv" contenteditable="true" class="form-control textarea-big" @input="updateText">
-                {{ textareaBig }}
               </div>
             </div>
           </div>

@@ -232,10 +232,6 @@ const escapeHTML = (string) => {
     .replace(/'/g, '&#039;');
 };
 
-const escapeNbsp = (string) => {
-  return string.replace(/&nbsp;/g, '');
-}
-
 const activatePopovers = () => {
   if (!editableDiv.value) {
     return;
@@ -301,7 +297,7 @@ const updateText = () => {
   let text = editableDiv.value.innerText.replace(/\u00A0/g, ' ');
 
   // Replace text inside the textareaBig
-  textareaBig.value = text;
+  editableDiv.value = text;
 
   console.log("Text without &nbsp;: ", text);
 

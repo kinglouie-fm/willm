@@ -555,7 +555,6 @@ onMounted(async () => {
           <div class="row mx-5">
             <div class="col-12 p-0">
               <div ref="editableDiv" contenteditable="true" class="form-control textarea-big" @input="updateText">
-                <!-- {{ textareaBig }} -->
               </div>
             </div>
           </div>

@@ -232,6 +232,10 @@ const escapeHTML = (string) => {
     .replace(/'/g, '&#039;');
 };
 
+const escapeNbsp = (string) => {
+  return string.replace(/&nbsp;/g, '');
+}
+
 const activatePopovers = () => {
   if (!editableDiv.value) {
     return;
@@ -290,13 +294,13 @@ const activatePopovers = () => {
   });
 };
 
-const encoder = new TextEncoder();
+// const encoder = new TextEncoder();
 
 const updateText = () => {
   const text = editableDiv.value.innerText;
-  const encodedText = encoder.encode(text);
-  const utf8String = new TextDecoder("utf-8").decode(encodedText);
-  textareaBig.value = utf8String;
+  // const encodedText = encoder.encode(text);
+  // const utf8String = new TextDecoder("utf-8").decode(encodedText);
+  textareaBig.value = escapeNbsp(text);
 
   console.log("updated")
 

@@ -67,7 +67,6 @@ const selectedComponent = ref('Review');
 
 const handleCorrect = async () => {
   let textToCorrect = editableDiv.value.innerText.replace(/\u00A0/g, ' ');
-  console.log("textToCorrect", textToCorrect);
   if (!textToCorrect) {
     message.info('Please enter some text to correct');
     return;
@@ -75,7 +74,6 @@ const handleCorrect = async () => {
 
   textToCorrect = stripHtmlTags(textToCorrect);
   editableDiv.value.innerText = textToCorrect;
-  console.log("editableDiv.value.innerText", editableDiv.value.innerText);
 
   // Reset correction states
   mistakes.value = [];

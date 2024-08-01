@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 import re
 import os
 import aiohttp
+import asyncio
 import logging
 from waitress import serve
 from chroma_langchain import chroma_langchain_handler
@@ -23,6 +24,10 @@ logger = logging.getLogger(__name__)
 
 openai.api_key = os.getenv('FLASK_API_KEY')
 
+def split_into_sentences(text):
+    sentences = re.split(r'(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?)\s', text)
+    return sentences
+
 async def fetch_openai_response(session, system_prompt_template, prompt_template, data, section=None, language='English'):
     system_prompt = system_prompt_template.format(language=language)
     prompt = prompt_template.format(text=data, section=section, language=language)
@@ -34,7 +39,7 @@ async def fetch_openai_response(session, system_prompt_template, prompt_template
             'Content-Type': 'application/json'
         },
         json={
-            "model": "gpt-4o",
+            "model": "gpt-4o-mini",
             "messages": [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": prompt}
@@ -55,6 +60,9 @@ async def handle_unified_2(session, data, section, language):
 async def handle_scores(session, data):
     return await fetch_openai_response(session, SYSTEM_PROMPT_4, SCORES, data)
 
+async def process_sentence(session, sentence, language):
+    return await fetch_openai_response(session, SYSTEM_PROMPT_1, UNIFIED_PROMPT, sentence, language=language)
+
 @app.route('/handle-correction', methods=['POST'])
 async def handle_correction():
     data = request.json.get('text')
@@ -63,10 +71,15 @@ async def handle_correction():
     if not data:
         return jsonify({"error": "No text provided"}), 400
 
-    async with aiohttp.ClientSession() as session:
-        unified_result = await handle_unified(session, data, language)
+    sentences = split_into_sentences(data)
+    results = []
 
-    mistakes, corrections, explanations, categories, contexts, corrected_text = process_initial_result(unified_result)
+    async with aiohttp.ClientSession() as session:
+        tasks = [process_sentence(session, sentence, language) for sentence in sentences]
+        results = await asyncio.gather(*tasks)
+
+    combined_result = ' '.join(results)
+    mistakes, corrections, explanations, categories, contexts, corrected_text = process_initial_result(combined_result)
 
     return jsonify({
         "mistakes": mistakes,

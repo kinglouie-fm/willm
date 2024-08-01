@@ -11,6 +11,7 @@ import { ScoreService } from '../score/score.service';
 
 @Controller('correct')
 export class CorrectionController {
+  private readonly maxLength = 1000;
   constructor(
     private readonly correctionService: CorrectionService,
     private readonly issueService: IssueService,
@@ -23,6 +24,9 @@ export class CorrectionController {
   @UseGuards(JwtAuthGuard)
   @Post()
   async handleCorrection(@Body() body: { text: string, section: string, mode: string, language: string }, @Req() req: Request, @Res() res: Response) {
+    if(body.text.length > this.maxLength) {
+      return res.status(400).send("Text is too long");
+    }
     console.log("Handling correction request");
     const initialResult = await this.correctionService.callPythonService(body.text, body.section, 'initial', body.language);
     const correctedText = initialResult.correctedText;

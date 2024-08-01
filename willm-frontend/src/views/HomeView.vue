@@ -298,7 +298,7 @@ const activatePopovers = () => {
 
 const updateText = () => {
   const text = escapeNbsp(editableDiv.value.innerText);
-  console.log(text);
+  console.log("nbsp: ", text);
   // const encodedText = encoder.encode(text);
   // const utf8String = new TextDecoder("utf-8").decode(encodedText);
   textareaBig.value = text;

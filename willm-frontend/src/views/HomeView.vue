@@ -293,7 +293,7 @@ const activatePopovers = () => {
 };
 
 const updateText = () => {
-  textareaBig.value = editableDiv.value.innerText;
+  // textareaBig.value = editableDiv.value.innerText;
   limitTextLength();
 };
 

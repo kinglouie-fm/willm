@@ -297,12 +297,11 @@ const activatePopovers = () => {
 // const encoder = new TextEncoder();
 
 const updateText = () => {
-  const text = editableDiv.value.innerText;
+  const text = escapeNbsp(editableDiv.value.innerText);
+  console.log(text);
   // const encodedText = encoder.encode(text);
   // const utf8String = new TextDecoder("utf-8").decode(encodedText);
-  textareaBig.value = escapeNbsp(text);
-
-  console.log(textareaBig.value);
+  textareaBig.value = text;
 
   limitTextLength();
 };

@@ -66,7 +66,8 @@ const handleSwitchChange = (event) => {
 const selectedComponent = ref('Review');
 
 const handleCorrect = async () => {
-  let textToCorrect = editableDiv.value.innerText;
+  let textToCorrect = editableDiv.value.innerText.replace(/\u00A0/g, ' ');
+  console.log("textToCorrect", textToCorrect);
   if (!textToCorrect) {
     message.info('Please enter some text to correct');
     return;
@@ -74,6 +75,7 @@ const handleCorrect = async () => {
 
   textToCorrect = stripHtmlTags(textToCorrect);
   editableDiv.value.innerText = textToCorrect;
+  console.log("editableDiv.value.innerText", editableDiv.value.innerText);
 
   // Reset correction states
   mistakes.value = [];
@@ -290,17 +292,8 @@ const activatePopovers = () => {
   });
 };
 
-// const encoder = new TextEncoder();
-
 const updateText = () => {
-  // Escape &nbsp; and replace with regular spaces
-  let text = editableDiv.value.innerText.replace(/\u00A0/g, ' ');
-
-  // Replace text inside the textareaBig
-  editableDiv.value.innerText = text;
-
-  console.log("Text without &nbsp;: ", text);
-
+  textareaBig.value = editableDiv.value.innerText;
   limitTextLength();
 };
 
@@ -563,7 +556,7 @@ onMounted(async () => {
           <div class="row mx-5">
             <div class="col-12 p-0">
               <div ref="editableDiv" contenteditable="true" class="form-control textarea-big" @input="updateText">
-                {{ textareaBig }}
+                <!-- {{ textareaBig }} -->
               </div>
             </div>
           </div>

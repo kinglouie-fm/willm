@@ -302,7 +302,7 @@ const updateText = () => {
   // const utf8String = new TextDecoder("utf-8").decode(encodedText);
   textareaBig.value = escapeNbsp(text);
 
-  console.log("updated")
+  console.log(textareaBig.value);
 
   limitTextLength();
 };

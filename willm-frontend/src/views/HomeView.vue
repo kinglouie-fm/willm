@@ -297,7 +297,7 @@ const updateText = () => {
   let text = editableDiv.value.innerText.replace(/\u00A0/g, ' ');
 
   // Replace text inside the textareaBig
-  editableDiv.value = text;
+  editableDiv.value.innerText = text;
 
   console.log("Text without &nbsp;: ", text);
 

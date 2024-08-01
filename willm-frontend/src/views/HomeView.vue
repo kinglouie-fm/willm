@@ -297,11 +297,13 @@ const activatePopovers = () => {
 // const encoder = new TextEncoder();
 
 const updateText = () => {
-  const text = escapeNbsp(editableDiv.value.innerText);
-  console.log("nbsp: ", text);
-  // const encodedText = encoder.encode(text);
-  // const utf8String = new TextDecoder("utf-8").decode(encodedText);
+  // Escape &nbsp; and replace with regular spaces
+  let text = editableDiv.value.innerText.replace(/\u00A0/g, ' ');
+
+  // Replace text inside the textareaBig
   textareaBig.value = text;
+
+  console.log("Text without &nbsp;: ", text);
 
   limitTextLength();
 };

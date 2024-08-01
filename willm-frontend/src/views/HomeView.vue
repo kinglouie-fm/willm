@@ -105,6 +105,8 @@ const handleCorrect = async () => {
       language: selectedLanguage.value
     });
 
+    console.log(correctionResponse);
+
     // Process initial correction response
     mistakes.value = correctionResponse.data.mistakes;
     corrections.value = correctionResponse.data.corrections;
@@ -246,6 +248,8 @@ const activatePopovers = () => {
       placement: 'top'
     });
 
+    const capturedIndex = index;
+
     el.addEventListener('mouseenter', () => {
       const popoverInstance = bootstrap.Popover.getInstance(el);
       if (popoverInstance) {
@@ -277,9 +281,9 @@ const activatePopovers = () => {
         }
       } else if (mode.value === 'learning') {
         currentMistake.value = el.innerText;
-        currentCategory.value = categories.value[index];
+        currentCategory.value = categories.value[capturedIndex];
         currentCorrection.value = correction;
-        currentExplanation.value = explanations.value[index];
+        currentExplanation.value = explanations.value[capturedIndex];
         userCorrection.value = '';
         correctionError.value = '';
         currentMistakeElement = el;

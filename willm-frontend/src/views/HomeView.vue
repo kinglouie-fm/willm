@@ -222,15 +222,34 @@ const stripHtmlTags = (html) => {
   return div.textContent || div.innerText || '';
 };
 
+const normalizeText = (text) => {
+  // Convert to lower case
+  text = text.toLowerCase();
+  // Remove punctuation (optional, depending on how strict you want the match)
+  text = text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "");
+  // Trim any extra spaces
+  text = text.trim();
+  return text;
+};
+
 const highlightMistakes = () => {
   let htmlContent = editableDiv.value.innerHTML;
+
   contexts.value.forEach((context, index) => {
     const mistake = mistakes.value[index];
-    const regex = new RegExp(`(${context.replace(/\s+/g, '\\s+')})`, 'gi');
+    const normalizedContext = normalizeText(context);
+    const regex = new RegExp(`(${escapeRegExp(normalizedContext)})`, 'gi');
+
     htmlContent = htmlContent.replace(regex, (match) => {
-      return match.replace(new RegExp(`\\b${escapeRegExp(mistake)}\\b`, 'gi'), `<span class="mistake" data-bs-toggle="popover" data-bs-html="true" data-bs-content="${escapeHTML(`<b>Mistake</b>: ${mistake}<br><b>Type</b>: ${categories.value[index]}<br><b>Correction</b>: ${corrections.value[index]}<br><b>Explanation</b>: ${explanations.value[index]}`)}">${mistake}</span>`);
+      const normalizedMatch = normalizeText(match);
+      const mistakeRegex = new RegExp(`\\b${escapeRegExp(mistake)}\\b`, 'gi');
+      if (mistakeRegex.test(normalizedMatch)) {
+        return match.replace(mistakeRegex, `<span class="mistake" data-bs-toggle="popover" data-bs-html="true" data-bs-content="${escapeHTML(`<b>Mistake</b>: ${mistake}<br><b>Type</b>: ${categories.value[index]}<br><b>Correction</b>: ${corrections.value[index]}<br><b>Explanation</b>: ${explanations.value[index]}`)}">${mistake}</span>`);
+      }
+      return match;
     });
   });
+
   editableDiv.value.innerHTML = htmlContent;
   activatePopovers();
 };

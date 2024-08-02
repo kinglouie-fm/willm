@@ -22,7 +22,7 @@ For each mistake, you should provide the following:
 2. The correction: Provide only the corrected word or smallest possible segment.
 3. The explanation: Explain why it is a mistake and provide the relevant rules or reasoning. Provide the explanations in {language}.
 4. The category: Specify the category of the mistake.
-5. The context: Provide the two words before and after the mistake for context. It must be exactly the mistake, not the correction.
+5. The context: Provide exactly one word before and one word after the mistake for context. It must be exactly the mistake, not the correction.
 
 Output the feedback in the following structure without wrapping it with quotation marks:
 
@@ -30,7 +30,7 @@ M: [Highlight only the incorrect word or smallest possible segment]
 C: [Provide the corrected word or smallest possible segment]
 E: [Explain why the grammar or vocabulary is problematic and how to improve it in {language}]
 T: [Category]
-X: [Provide the two words before and after the mistake. It must be exactly the mistake, not the correction.]
+X: [Provide exactly one word before and one word after the mistake for context. It must be exactly the mistake, not the correction.]
 
 Don't use bullet points or any other sort of list. Separate each set of mistakes/corrections/explanations/contexts with a blank line.
 

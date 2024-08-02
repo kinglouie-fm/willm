@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 import openai
+import asyncio
 from dotenv import load_dotenv
 import re
 import os
@@ -7,8 +8,8 @@ import aiohttp
 import logging
 from chroma_langchain import chroma_langchain_handler
 from prompts import (
-    SYSTEM_PROMPT_1, SYSTEM_PROMPT_2, SYSTEM_PROMPT_4, SYSTEM_PROMPT_5,
-    SYSTEM_PROMPT_6, UNIFIED_PROMPT, UNIFIED_PROMPT_2, SCORES, 
+    SYSTEM_PROMPT_1, SYSTEM_PROMPT_1_MULTI, SYSTEM_PROMPT_2, SYSTEM_PROMPT_4, SYSTEM_PROMPT_5,
+    SYSTEM_PROMPT_6, UNIFIED_PROMPT, UNIFIED_PROMPT_MULTI, UNIFIED_PROMPT_2, SCORES, 
     REVISION_PROMPT, SYNONYMS_PROMPT, ACADEMIC_SENTENCE_PROMPT, ACADEMIC_SENTENCE_CORRECTING_PROMPT,
     ARGUMENT_STRENGTHENING_PROMPT, COHERENCE_PROMPT, ORGANIZATION_PROMPT, EXPLAIN_ANSWER, COHERENCE_TIP_PROMPT, ORGANIZATION_TIP_PROMPT, DECIDE_QUESTIONS
 )
@@ -21,6 +22,10 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 openai.api_key = os.getenv('FLASK_API_KEY')
+
+def split_into_sentences(text):
+    sentences = re.split(r'(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?)\s', text)
+    return sentences
 
 async def fetch_openai_response(session, system_prompt_template, prompt_template, data, section=None, language='English', model='3.5-turbo-1106'):
     system_prompt = system_prompt_template.format(language=language)
@@ -48,6 +53,9 @@ async def fetch_openai_response(session, system_prompt_template, prompt_template
 async def handle_unified(session, data, language, model):
     return await fetch_openai_response(session, SYSTEM_PROMPT_1, UNIFIED_PROMPT, data, language=language, model=model)
 
+async def process_sentence(session, sentence, language, model):
+    return await fetch_openai_response(session, SYSTEM_PROMPT_1_MULTI, UNIFIED_PROMPT_MULTI, sentence, language=language, model=model)
+
 async def handle_unified_2(session, data, section, language, model):
     return await fetch_openai_response(session, SYSTEM_PROMPT_2, UNIFIED_PROMPT_2, data, section, language=language, model=model)
 
@@ -66,12 +74,23 @@ async def handle_correction():
     if model not in ['3.5-turbo-1106', '4o']:
         return jsonify({"error": "Invalid model"}), 400
 
-    async with aiohttp.ClientSession() as session:
-        unified_result = await handle_unified(session, data, language, model)
+    if model == '4o':
+        async with aiohttp.ClientSession() as session:
+            unified_result = await handle_unified(session, data, language, model)
 
-    logging.info(f"Unified Result: {unified_result}")
+        logging.info(f"Unified Result: {unified_result}")
 
-    mistakes, corrections, explanations, categories, contexts, corrected_text = process_initial_result(unified_result)
+        mistakes, corrections, explanations, categories, contexts, corrected_text = process_initial_result(unified_result)
+    elif model == '3.5-turbo-1106':
+        sentences = split_into_sentences(data)
+        results = []
+
+        async with aiohttp.ClientSession() as session:
+            tasks = [process_sentence(session, sentence, language, model) for sentence in sentences]
+            results = await asyncio.gather(*tasks)
+
+        combined_result = ' '.join(results)
+        mistakes, corrections, explanations, categories, contexts, corrected_text = process_initial_result(combined_result)
 
     return jsonify({
         "mistakes": mistakes,

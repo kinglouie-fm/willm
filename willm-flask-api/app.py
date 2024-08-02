@@ -65,7 +65,18 @@ async def handle_correction():
     async with aiohttp.ClientSession() as session:
         unified_result = await handle_unified(session, data, language)
 
+    logging.info(f"Unified Result: {unified_result}")
+
     mistakes, corrections, explanations, categories, contexts, corrected_text = process_initial_result(unified_result)
+
+    logging.info(jsonify({
+        "mistakes": mistakes,
+        "corrections": corrections,
+        "explanations": explanations,
+        "categories": categories,
+        "contexts": contexts,
+        "correctedText": corrected_text
+    }))
 
     return jsonify({
         "mistakes": mistakes,

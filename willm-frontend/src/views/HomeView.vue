@@ -156,7 +156,7 @@ const handleCorrect = async () => {
     }
 
     // Trigger question generation if applicable
-    await axios.post('http://localhost:3000/question/generate');
+    // await axios.post('http://localhost:3000/question/generate');
   } catch (error) {
     if (error.response && error.response.status === 401) {
       message.info('Please log in again.');

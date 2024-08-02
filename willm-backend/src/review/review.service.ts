@@ -151,7 +151,8 @@ export class ReviewService {
         date_created: new Date(),
         review_data: reviewData,
         coherence_tip: coherence_tip,
-        organization_tip: organization_tip
+        organization_tip: organization_tip,
+        reviewModel: reviewModel,
       });
       await newReview.save();
 
@@ -184,6 +185,7 @@ export class ReviewService {
       user_id: userId,
       date_created: new Date(),
       review_data: reviewData,
+      reviewModel: reviewModel,
     });
     await newReview.save();
 

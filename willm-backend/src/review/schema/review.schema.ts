@@ -30,6 +30,9 @@ export class Review extends Document {
 
   @Prop({ type: String, default: '' })
   organization_tip: string;
+
+  @Prop({ type: String, default: '' })
+  reviewModel: string;
 }
 
 export const ReviewSchema = SchemaFactory.createForClass(Review);

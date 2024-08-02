@@ -49,6 +49,9 @@ export class CorrectionController {
       content: body.text,
       mode: body.mode,
       language: body.language,
+      correctionModel: body.correctionModel,
+      furtherCorrectionModel: body.furtherCorrectionModel,
+      scoreModel: body.scoreModel,
       createdAt: new Date()
     });
 

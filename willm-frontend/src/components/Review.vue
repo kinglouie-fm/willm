@@ -68,7 +68,7 @@ const filteredReviewData = computed(() => {
             <div v-if="Object.values(filteredReviewData).some(data => data.tips.length)">
                 <h5>Tips</h5>
                 <ul>
-                    <li>Your most frequent errors are:</li>
+                    <li>Regarding your last 5 submissions, your most frequent errors are:</li>
                     <ul>
                         <li v-for="(categoryData, key) in filteredReviewData" :key="key">
                             <template v-if="categoryData.tips.length">
@@ -87,15 +87,15 @@ const filteredReviewData = computed(() => {
             <div v-if="Object.values(filteredReviewData).some(data => data.improvements.length)">
                 <h5>Improvements</h5>
                 <ul>
-                    <li>You improved yourself by reducing the following types of mistakes:</li>
+                    <li>Regarding your last 10 submissions, you improved yourself by reducing the following types of
+                        mistakes:</li>
                     <ul>
                         <li v-for="(categoryData, key) in filteredReviewData" :key="key">
                             <template v-if="categoryData.improvements.length">
                                 {{ getDisplayKey(key) }}
                                 <ul>
                                     <li v-for="(improvement, index) in categoryData.improvements" :key="index">
-                                        {{ improvement }} <span v-if="categoryData.frequencies[index]"> (Frequency: {{
-            categoryData.frequencies[index] }})</span>
+                                        {{ improvement }}
                                     </li>
                                 </ul>
                             </template>

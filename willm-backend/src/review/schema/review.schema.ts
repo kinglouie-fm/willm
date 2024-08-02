@@ -32,7 +32,7 @@ export class Review extends Document {
   organization_tip: string;
 
   @Prop({ type: String, default: '' })
-  reviewModel: string;
+  review_model: string;
 }
 
 export const ReviewSchema = SchemaFactory.createForClass(Review);

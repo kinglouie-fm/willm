@@ -191,7 +191,7 @@ const handleCorrect = async () => {
 const generateReview = async () => {
   const hideLoading = message.loading("Generating review...", 0);
   try {
-    const response = await axios.post('http://localhost:3000/review/generate', { reviewModel });
+    const response = await axios.post('http://localhost:3000/review/generate', { reviewModel: reviewModel.value });
     if (response.data.reviewData === 'No text available.') {
       message.info('Not enough texts to generate the review');
     } else if (response.data.reviewData === '<2') {
@@ -215,6 +215,7 @@ const generateReview = async () => {
 const getRecentReview = async () => {
   try {
     const response = await axios.get('http://localhost:3000/review/recent');
+    console.log(response)
     reviewData.value = response.data.reviewData || 'No recent review available. Click on "Review" to generate one. Remember that you need to have at least 2 sessions to generate a review.';
     selectedComponent.value = 'Review';
   } catch (error) {

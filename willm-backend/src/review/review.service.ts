@@ -26,7 +26,7 @@ export class ReviewService {
       return { reviewData: 'No text available.' };
     }
 
-    const textIds: Types.ObjectId[] = texts.map(text => text._id) as Types.ObjectId[];
+    const textIds: Types.ObjectId[] = texts.map(text => text._id).slice(-5) as Types.ObjectId[];
 
     const issues = await this.issueService.getIssuesByTextIds(textIds);
 

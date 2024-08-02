@@ -24,7 +24,7 @@ For each mistake, you should provide the following:
 4. The category: Specify the category of the mistake.
 5. The context: Provide the two words before and after the mistake for context. It must be exactly the mistake, not the correction.
 
-Output the feedback in the following structure:
+Output the feedback in the following structure without wrapping it with quotation marks:
 
 M: [Highlight only the incorrect word or smallest possible segment]
 C: [Provide the corrected word or smallest possible segment]

@@ -29,6 +29,7 @@ export class CorrectionController {
     }
     console.log("Handling correction request");
     const initialResult = await this.correctionService.callPythonService(body.text, body.section, 'initial', body.language);
+    console.log("Initial correction result:", initialResult);
     const correctedText = initialResult.correctedText;
 
     const mistakes = initialResult.mistakes || [];

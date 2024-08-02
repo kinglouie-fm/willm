@@ -69,15 +69,6 @@ async def handle_correction():
 
     mistakes, corrections, explanations, categories, contexts, corrected_text = process_initial_result(unified_result)
 
-    logging.info(jsonify({
-        "mistakes": mistakes,
-        "corrections": corrections,
-        "explanations": explanations,
-        "categories": categories,
-        "contexts": contexts,
-        "correctedText": corrected_text
-    }))
-
     return jsonify({
         "mistakes": mistakes,
         "corrections": corrections,
@@ -147,24 +138,52 @@ def parse_scores(response_text):
 
     return scores
 
-def extract_issues(result):
-    mistakes = re.findall(r'M: (.*?)\n', result, re.DOTALL)
-    corrections = re.findall(r'C: (.*?)\n', result, re.DOTALL)
-    explanations = re.findall(r'E: (.*?)(?=\nM:|$)', result, re.DOTALL)
-    categories = re.findall(r'T: (.*?)\n', result, re.DOTALL)
-    contexts = re.findall(r'X: (.*?)\n', result, re.DOTALL)
+def normalize_text(text):
+    if text is None:
+        return text
 
-    issues = []
-    for mistake, correction, explanation, category, context in zip(mistakes, corrections, explanations, categories, contexts):
-        issues.append({
-            "mistake": mistake.strip(),
-            "correction": correction.strip(),
-            "explanation": explanation.strip(),
-            "category": category.strip(),
-            "context": context.strip()
-        })
+    # Normalize ellipses by replacing inconsistent ellipses with a standard one
+    text = re.sub(r'\.\.\.\.?', '...', text)
 
-    return issues
+    # Normalize quotes
+    text = re.sub(r'^"|"$', '', text)  # Remove leading/trailing double quotes if present
+    text = re.sub(r"^'|'$", '', text)  # Remove leading/trailing single quotes if present
+
+    # Escape necessary characters
+    text = text.replace("'", "\\'")
+    text = text.replace('"', '\\"')
+
+    return text
+
+def format_text_for_json(text):
+    if text is None:
+        return text
+
+    # Escape internal quotes
+    text = text.replace("'", "\\'").replace('"', '\\"')
+
+    # If the text starts and ends with double quotes, remove them and wrap with single quotes
+    if text.startswith('"') and text.endswith('"'):
+        text = text[1:-1]
+        text = f"'{text}'"
+    
+    # If the text starts and ends with single quotes, escape only the end if necessary
+    elif text.startswith("'") and text.endswith("'"):
+        text = text[1:-1]  # Remove the wrapping single quotes
+        text = text.replace("\\'", "'")  # Avoid double escaping already escaped single quotes
+        text = f"'{text}'"  # Re-wrap with single quotes
+
+    else:
+        # If the text ends with a quotation mark, escape it
+        if text.endswith('"'):
+            text = text[:-1] + '\\"'
+        elif text.endswith("'"):
+            text = text[:-1] + "\\'"
+
+        # Wrap the entire text with single quotation marks
+        text = f"'{text}'"
+
+    return text
 
 def process_initial_result(result):
     mistakes = []
@@ -177,7 +196,7 @@ def process_initial_result(result):
     fine_match = re.search(r'The submitted writing is fine.', result)
     mistakes_match = re.findall(r'M: (.*?)\n', result, re.DOTALL)
     corrections_match = re.findall(r'C: (.*?)\n', result, re.DOTALL)
-    explanations_match = re.findall(r'E: (.*?)(?=\nM:|Correction:|$)', result, re.DOTALL)
+    explanations_match = re.findall(r'E: (.*?)\n', result, re.DOTALL)
     categories_match = re.findall(r'T: (.*?)\n', result, re.DOTALL)
     contexts_match = re.findall(r'X: (.*?)\n', result, re.DOTALL)
     corrected_text_match = re.search(r'Correction:\s*(.*)', result, re.DOTALL)
@@ -189,17 +208,19 @@ def process_initial_result(result):
         categories.append("The submitted writing is fine.")
         contexts.append("The submitted writing is fine.")
     if mistakes_match:
-        mistakes = [m.strip() for m in mistakes_match]
+        mistakes = [normalize_text(m.strip()) for m in mistakes_match]
     if corrections_match:
-        corrections = [c.strip() for c in corrections_match]
+        corrections = [normalize_text(c.strip()) for c in corrections_match]
     if explanations_match:
-        explanations = [e.strip() for e in explanations_match]
+        explanations = [format_text_for_json(e.strip()) for e in explanations_match]
     if categories_match:
-        categories = [t.strip() for t in categories_match]
+        categories = [normalize_text(t.strip()) for t in categories_match]
     if contexts_match:
-        contexts = [x.strip() for x in contexts_match]
+        contexts = [normalize_text(x.strip()) for x in contexts_match]
     if corrected_text_match:
-        corrected_text = corrected_text_match.group(1).strip()
+        corrected_text = normalize_text(corrected_text_match.group(1).strip())
+
+    logging.info(f"Mistakes: {mistakes}, Corrections: {corrections}, Explanations: {explanations}, Categories: {categories}, Contexts: {contexts}, Corrected Text: {corrected_text}")
 
     return mistakes, corrections, explanations, categories, contexts, corrected_text
 
@@ -212,6 +233,9 @@ def process_further_result(result):
         "Coherence": {"mistakes": [], "corrections": [], "explanations": [], "categories": []},
         "WritingStyle": {"mistakes": [], "corrections": [], "explanations": [], "categories": []}
     }
+
+    def clean_text(text):
+        return text.replace('[', '').replace(']', '').strip()
 
     # Extracting each section content
     sections = ["Organization", "Coherence", "WritingStyle"]
@@ -229,10 +253,10 @@ def process_further_result(result):
                 explanations_match = re.findall(r'E: (.*?)\n', section_content, re.DOTALL)
                 categories_match = re.findall(r'T: (.*?)(?=\nM:|\nC:|$)', section_content, re.DOTALL)
 
-                feedback[section]["mistakes"] = [m.strip() for m in mistakes_match]
-                feedback[section]["corrections"] = [c.strip() for c in corrections_match]
-                feedback[section]["explanations"] = [e.strip() for e in explanations_match]
-                feedback[section]["categories"] = [t.strip() for t in categories_match]
+                feedback[section]["mistakes"] = [clean_text(m) for m in mistakes_match]
+                feedback[section]["corrections"] = [clean_text(c) for c in corrections_match]
+                feedback[section]["explanations"] = [clean_text(e) for e in explanations_match]
+                feedback[section]["categories"] = [clean_text(t) for t in categories_match]
 
     # Converting section names to camel case
     feedback = {

@@ -529,6 +529,21 @@ const fetchPreTestSections = async () => {
   }
 };
 
+const feedbackDiv = ref(null);
+
+const handleScroll = () => {
+  const element = feedbackDiv.value;
+  if (!element) return;
+
+  const isAtBottom = element.scrollHeight - element.scrollTop === element.clientHeight;
+
+  if (isAtBottom) {
+    element.classList.remove('has-shadow-bottom');
+  } else {
+    element.classList.add('has-shadow-bottom');
+  }
+};
+
 onMounted(async () => {
   await authStore.checkAuthStatus();
   if (!authStore.preTestsCompleted) {
@@ -539,6 +554,12 @@ onMounted(async () => {
   initPopover();
   await getRecentReview();
   await fetchPreTestSections();
+
+  const element = feedbackDiv.value;
+  if (element) {
+    element.addEventListener('scroll', handleScroll);
+    handleScroll(); // Check initially in case the content is already scrollable
+  }
 });
 </script>
 
@@ -604,7 +625,7 @@ onMounted(async () => {
         </div>
         <!-- Upper Right -->
         <div class="col-5 d-flex flex-column">
-          <div class="feedback flex-grow-1">
+          <div ref="feedbackDiv" class="feedback flex-grow-1">
             <component :is="selectedComponent === 'Review' ? Review : Evaluation" :reviewData="reviewData"
               :furtherCorrectionData="furtherCorrectionData" :scores="scores" />
           </div>
@@ -760,7 +781,13 @@ onMounted(async () => {
 
 .feedback {
   overflow-y: auto;
-  max-height: 70vh;
+  max-height: 75vh;
+  box-shadow: none;
+  transition: box-shadow 0.3s ease-in-out;
+}
+
+.feedback.has-shadow-bottom {
+  box-shadow: inset 0 -6px 6px -6px rgba(0, 0, 0, 0.3);
 }
 
 .scrollable {

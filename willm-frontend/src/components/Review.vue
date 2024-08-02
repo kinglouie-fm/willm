@@ -21,7 +21,7 @@ const filteredReviewData = computed(() => {
         return {};
     }
 
-    let bla = Object.fromEntries(
+    let filtered = Object.fromEntries(
         Object.entries(props.reviewData).map(([key, value]) => {
             // If tips array is empty, add "everything's fine"
             if (value.tips && value.tips.length === 0) {
@@ -66,8 +66,7 @@ const filteredReviewData = computed(() => {
         })
     );
 
-    console.log(bla);
-    return bla;
+    return filtered;
 });
 </script>
 

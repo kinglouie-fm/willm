@@ -33,8 +33,9 @@ export const useAuthStore = defineStore('auth', {
       }
     },
     async login(username, password) {
+      const hideLoading = message.info('Logging in...', 0);
+      let hideLoading2;
       try {
-        message.info('Logging in...', 2);
         const response = await axios.post('http://localhost:3000/user/login', { username, password });
         if (response.status === 200 && response.data.message === 'Login successful') {
           this.isAuthenticated = true;
@@ -45,7 +46,7 @@ export const useAuthStore = defineStore('auth', {
             this.logout();
           } else {
             // Check quiz status
-            message.info('Generating quiz if necessary...', 2);
+            hideLoading2 = message.info('Generating quiz if necessary...', 0);
             const quizResponse = await axios.get('http://localhost:3000/quiz/check-quiz');
             this.quizDueToday = quizResponse.data.quizDueToday;
             this.nextQuizDate = quizResponse.data.nextQuizDate ? quizResponse.data.nextQuizDate.split('T')[0].split('-').reverse().join('.') : null;
@@ -71,6 +72,9 @@ export const useAuthStore = defineStore('auth', {
         } else {
           message.error('An error occurred. Please try again.');
         }
+      } finally {
+        hideLoading();
+        if (hideLoading2) hideLoading2();
       }
     },
     async logout() {

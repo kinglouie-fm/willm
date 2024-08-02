@@ -33,6 +33,7 @@ const fetchQuiz = async () => {
 };
 
 const submitAnswer = async (selectedAnswer = null, option) => {
+    const hideLoading = message.loading('Submitting answer...', 0);
     try {
         let answer;
         if (option === true) {
@@ -58,6 +59,8 @@ const submitAnswer = async (selectedAnswer = null, option) => {
     } catch (error) {
         console.error('Error submitting answer:', error);
         message.error('Error submitting answer.');
+    } finally {
+        hideLoading();
     }
 };
 

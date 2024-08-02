@@ -92,6 +92,9 @@ async def handle_correction():
         combined_result = ' '.join(results)
         mistakes, corrections, explanations, categories, contexts, corrected_text = process_initial_result(combined_result)
 
+    else:
+        return jsonify({"error": "Invalid model"}), 400
+
     return jsonify({
         "mistakes": mistakes,
         "corrections": corrections,

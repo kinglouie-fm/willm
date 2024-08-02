@@ -9,7 +9,9 @@ import { isAfter } from 'date-fns';
 import { message } from 'ant-design-vue';
 
 const textareaSmall = ref('Introduction');
-const textareaBig = ref();
+const correctionModel = ref('3.5-turbo-1106');
+const furtherCorrectionModel = ref('3.5-turbo-1106');
+const scoreModel = ref('3.5-turbo-1106');
 const mistakes = ref([]);
 const corrections = ref([]);
 const explanations = ref([]);
@@ -109,13 +111,16 @@ const handleCorrect = async () => {
     writingStyle: { mistakes: [], corrections: [], explanations: [], categories: [] },
   };
 
+  const hideLoading = message.loading("Evaluating text...", 0);
   try {
-    message.loading("Evaluating text...", 7);
     const correctionResponse = await axios.post('http://localhost:3000/correct', {
       text: textToCorrect,
       section: textareaSmall.value,
       mode: mode.value,
-      language: selectedLanguage.value
+      language: selectedLanguage.value,
+      correctionModel: correctionModel.value,
+      furtherCorrectionModel: furtherCorrectionModel.value,
+      scoreModel: scoreModel.value,
     });
 
     console.log(correctionResponse.data);
@@ -177,10 +182,13 @@ const handleCorrect = async () => {
     } else {
       message.error('Error processing requests.');
     }
+  } finally {
+    hideLoading();
   }
 };
 
 const generateReview = async () => {
+  const hideLoading = message.loading("Generating review...", 0);
   try {
     const response = await axios.post('http://localhost:3000/review/generate');
     if (response.data.reviewData === 'No text available.') {
@@ -198,6 +206,8 @@ const generateReview = async () => {
     } else {
       message.error('Error generating review.');
     }
+  } finally {
+    hideLoading();
   }
 };
 

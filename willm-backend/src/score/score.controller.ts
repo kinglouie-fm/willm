@@ -12,11 +12,11 @@ export class ScoreController {
   @UseGuards(JwtAuthGuard)
   @Post('generate')
   async generateScore(
-    @Body() body: { text: string; section: string; textId: string },
+    @Body() body: { text: string; section: string; textId: string, scoreModel: string },
     @Req() req: Request
   ) {
     const userId = req.user._id;
-    const scoreData = await this.scoreService.generateScore(body.text, userId, body.section, new Types.ObjectId(body.textId));
+    const scoreData = await this.scoreService.generateScore(body.text, userId, body.section, new Types.ObjectId(body.textId), body.scoreModel);
     return scoreData;
   }
 

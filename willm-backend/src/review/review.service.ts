@@ -47,6 +47,12 @@ export class ReviewService {
     const grammarVocabFrequency = getCategoryFrequency(grammarVocabIssues);
     const orgCohWritingFrequency = getCategoryFrequency(orgCohWritingIssues);
 
+    // Convert frequencies into arrays for each category
+    const grammarVocabFrequencies = Object.values(grammarVocabFrequency);
+    const orgFrequencies = Object.values(orgCohWritingFrequency).filter((_, idx) => issues[idx].type === 'organization');
+    const cohFrequencies = Object.values(orgCohWritingFrequency).filter((_, idx) => issues[idx].type === 'coherence');
+    const writingFrequencies = Object.values(orgCohWritingFrequency).filter((_, idx) => issues[idx].type === 'writingStyle');
+
     const getTopCategories = (frequency) => {
       return Object.keys(frequency).sort((a, b) => frequency[b] - frequency[a]).slice(0, 3);
     };
@@ -63,6 +69,13 @@ export class ReviewService {
       }, {});
     };
 
+    let reviewData = {
+      grammar_vocab: { improvements: [], tips: [], frequencies: grammarVocabFrequencies },
+      organization: { improvements: [], tips: [], frequencies: orgFrequencies },
+      coherence: { improvements: [], tips: [], frequencies: cohFrequencies },
+      writingStyle: { improvements: [], tips: [], frequencies: writingFrequencies },
+    };
+
     const grammarVocabTypeMap = getCategoryTypeMap(grammarVocabIssues);
     const orgCohWritingTypeMap = getCategoryTypeMap(orgCohWritingIssues);
 
@@ -71,13 +84,6 @@ export class ReviewService {
     const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
     const previousReview = allReviews.find(review => review.date_created < startOfToday);
-
-    let reviewData = {
-      grammar_vocab: { improvements: [], tips: [] },
-      organization: { improvements: [], tips: [] },
-      coherence: { improvements: [], tips: [] },
-      writingStyle: { improvements: [], tips: [] },
-    };
 
     const coherenceSections = [];
     const organizationSections = [];

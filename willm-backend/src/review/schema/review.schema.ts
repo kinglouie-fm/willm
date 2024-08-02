@@ -11,18 +11,18 @@ export class Review extends Document {
 
   @Prop({
     type: {
-      grammar_vocab: { type: { improvements: [String], tips: [String] }, default: {} },
-      organization: { type: { improvements: [String], tips: [String] }, default: {} },
-      coherence: { type: { improvements: [String], tips: [String] }, default: {} },
-      writingStyle: { type: { improvements: [String], tips: [String] }, default: {} },
+      grammar_vocab: { type: { improvements: [String], tips: [String], frequencies: [Number] }, default: {} },
+      organization: { type: { improvements: [String], tips: [String], frequencies: [Number] }, default: {} },
+      coherence: { type: { improvements: [String], tips: [String], frequencies: [Number] }, default: {} },
+      writingStyle: { type: { improvements: [String], tips: [String], frequencies: [Number] }, default: {} },
     },
     default: {},
   })
   review_data: {
-    grammar_vocab: { improvements: string[], tips: string[] },
-    organization: { improvements: string[], tips: string[] },
-    coherence: { improvements: string[], tips: string[] },
-    writingStyle: { improvements: string[], tips: string[] },
+    grammar_vocab: { improvements: string[], tips: string[], frequencies: number[] },
+    organization: { improvements: string[], tips: string[], frequencies: number[] },
+    coherence: { improvements: string[], tips: string[], frequencies: number[] },
+    writingStyle: { improvements: string[], tips: string[], frequencies: number[] },
   };
 
   @Prop({ type: String, default: '' })

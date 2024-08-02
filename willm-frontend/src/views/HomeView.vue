@@ -215,7 +215,6 @@ const generateReview = async () => {
 const getRecentReview = async () => {
   try {
     const response = await axios.get('http://localhost:3000/review/recent');
-    console.log(response)
     reviewData.value = response.data.reviewData || 'No recent review available. Click on "Review" to generate one. Remember that you need to have at least 2 sessions to generate a review.';
     selectedComponent.value = 'Review';
   } catch (error) {
@@ -762,6 +761,11 @@ onMounted(async () => {
 .feedback {
   overflow-y: auto;
   max-height: 70vh;
+}
+
+.scrollable {
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease-in-out;
 }
 
 .info-icon {

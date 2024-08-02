@@ -20,13 +20,44 @@ const filteredReviewData = computed(() => {
     if (typeof props.reviewData === 'string' || !props.reviewData) {
         return {};
     }
-    return Object.fromEntries(
-        Object.entries(props.reviewData).filter(([key, value]) => {
+
+    let bla = Object.fromEntries(
+        Object.entries(props.reviewData).map(([key, value]) => {
+            // If tips array is empty, add "everything's fine"
+            if (value.tips && value.tips.length === 0) {
+                value.tips.push("everything's fine");
+            }
+
+            // If improvements array is empty, add "everything's fine"
+            if (value.improvements && value.improvements.length === 0) {
+                value.improvements.push("everything's fine");
+            }
+
             if (value.tips) {
-                value.tips = value.tips.filter(tip =>
+                // Check if tips contain any generated tips (i.e., real tips) aside from the "not generated" ones
+                const hasGeneratedTips = value.tips.some(tip =>
                     tip !== 'organization_tip not generated' && tip !== 'coherence_tip not generated'
                 );
+
+                // If there are valid tips, remove "organization_tip not generated" and "coherence_tip not generated"
+                if (hasGeneratedTips) {
+                    value.tips = value.tips.filter(tip =>
+                        tip !== 'organization_tip not generated' && tip !== 'coherence_tip not generated'
+                    );
+                } else {
+                    // If there are no other tips besides the "not generated" ones, replace with "everything's fine"
+                    const hasOnlyNotGeneratedTips = value.tips.every(tip =>
+                        tip === 'organization_tip not generated' || tip === 'coherence_tip not generated'
+                    );
+
+                    if (hasOnlyNotGeneratedTips && value.tips.length > 0) {
+                        value.tips = ["everything's fine"];
+                    }
+                }
             }
+
+            return [key, value];
+        }).filter(([key, value]) => {
             return (
                 (value.improvements && value.improvements.length) ||
                 (value.tips && value.tips.length) ||
@@ -34,6 +65,9 @@ const filteredReviewData = computed(() => {
             );
         })
     );
+
+    console.log(bla);
+    return bla;
 });
 </script>
 

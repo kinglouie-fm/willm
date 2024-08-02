@@ -63,8 +63,11 @@ async def handle_correction():
     if not data:
         return jsonify({"error": "No text provided"}), 400
 
+    if model not in ['3.5-turbo-1106', '4o']:
+        return jsonify({"error": "Invalid model"}), 400
+
     async with aiohttp.ClientSession() as session:
-        unified_result = await handle_unified(session, data, language)
+        unified_result = await handle_unified(session, data, language, model)
 
     logging.info(f"Unified Result: {unified_result}")
 
@@ -88,6 +91,9 @@ async def handle_further_correction():
 
     if not data:
         return jsonify({"error": "No text provided"}), 400
+    
+    if model not in ['3.5-turbo-1106', '4o']:
+        return jsonify({"error": "Invalid model"}), 400
 
     async with aiohttp.ClientSession() as session:
         unified_result = await handle_unified_2(session, data, section, language, model)
@@ -103,6 +109,9 @@ async def generate_scores():
 
     if not data:
         return jsonify({"error": "No text provided"}), 400
+    
+    if model not in ['3.5-turbo-1106', '4o']:
+        return jsonify({"error": "Invalid model"}), 400
 
     try:
         async with aiohttp.ClientSession() as session:

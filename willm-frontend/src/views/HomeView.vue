@@ -12,6 +12,7 @@ const textareaSmall = ref('Introduction');
 const correctionModel = ref('3.5-turbo-1106');
 const furtherCorrectionModel = ref('3.5-turbo-1106');
 const scoreModel = ref('3.5-turbo-1106');
+const reviewModel = ref('3.5-turbo-1106');
 const mistakes = ref([]);
 const corrections = ref([]);
 const explanations = ref([]);
@@ -190,7 +191,7 @@ const handleCorrect = async () => {
 const generateReview = async () => {
   const hideLoading = message.loading("Generating review...", 0);
   try {
-    const response = await axios.post('http://localhost:3000/review/generate');
+    const response = await axios.post('http://localhost:3000/review/generate', { reviewModel });
     if (response.data.reviewData === 'No text available.') {
       message.info('Not enough texts to generate the review');
     } else if (response.data.reviewData === '<2') {
@@ -216,7 +217,6 @@ const getRecentReview = async () => {
     const response = await axios.get('http://localhost:3000/review/recent');
     reviewData.value = response.data.reviewData || 'No recent review available. Click on "Review" to generate one. Remember that you need to have at least 2 sessions to generate a review.';
     selectedComponent.value = 'Review';
-
   } catch (error) {
     if (error.response && error.response.status === 401) {
       message.info('Please log in again.');

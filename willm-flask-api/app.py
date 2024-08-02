@@ -506,17 +506,20 @@ def explain_answer():
 
 @app.route('/review/generate', methods=['POST'])
 def generate_review():
-    data = request.json
-    coherence_text = data.get('coherence_text', '')
-    organization_text = data.get('organization_text', '')
+    model = request.json.get('model', '3.5-turbo-1106')
+    coherence_text = request.json.get('coherence_text', '')
+    organization_text = request.json.get('organization_text', '')
 
     coherence_tip = ''
     organization_tip = ''
 
+    if model not in ['3.5-turbo-1106', '4o']:
+        return jsonify({"error": "Invalid model"}), 400
+
     if coherence_text:
         coherence_prompt = COHERENCE_TIP_PROMPT.format(text=coherence_text)
         coherence_response = openai.chat.completions.create(
-            model="gpt-4o",
+            model=f"gpt-{model}",
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT_6},
                 {"role": "user", "content": coherence_prompt}
@@ -524,11 +527,10 @@ def generate_review():
             max_tokens=1000
         )
         coherence_tip = coherence_response.choices[0].message.content.strip()
-
-    if organization_text:
+    elif organization_text:
         organization_prompt = ORGANIZATION_TIP_PROMPT.format(text=organization_text)
         organization_response = openai.chat.completions.create(
-            model="gpt-4o",
+            model=f"gpt-{model}",
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT_6},
                 {"role": "user", "content": organization_prompt}
@@ -536,6 +538,8 @@ def generate_review():
             max_tokens=1000
         )
         organization_tip = organization_response.choices[0].message.content.strip()
+    else:
+        return jsonify({"error": "No coherence/organization text provided"}), 400
 
     return jsonify({
         "coherence_tip": coherence_tip,

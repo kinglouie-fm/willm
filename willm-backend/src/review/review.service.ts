@@ -18,7 +18,7 @@ export class ReviewService {
     @InjectModel(Review.name) private reviewModel: Model<Review>
   ) {}
 
-  async generateReview(userId: Types.ObjectId): Promise<any> {
+  async generateReview(userId: Types.ObjectId, reviewModel: string): Promise<any> {
     // Retrieve the last 10 texts for the user
     const texts = await this.textService.findLastSubmissions(userId, 10);
 
@@ -105,6 +105,7 @@ export class ReviewService {
 
     if (coherenceSections.length >= 2 || organizationSections.length >= 3) {
       const response = await lastValueFrom(this.httpService.post('http://flask-api:8000/review/generate', {
+        model: reviewModel,
         coherence_text: coherenceSections.length >= 2 ? coherenceSections.join('\n\n') : 'coherence_tip not generated',
         organization_text: organizationSections.length >= 3 ? organizationSections.join('\n\n') : 'organization_tip not generated',
       }));

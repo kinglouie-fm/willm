@@ -22,13 +22,16 @@ const filteredReviewData = computed(() => {
     }
     return Object.fromEntries(
         Object.entries(props.reviewData).filter(([key, value]) => {
-            // Filter out 'organization_tip not generated' and 'coherence_tip not generated' from tips
             if (value.tips) {
                 value.tips = value.tips.filter(tip =>
                     tip !== 'organization_tip not generated' && tip !== 'coherence_tip not generated'
                 );
             }
-            return (value.improvements && value.improvements.length) || (value.tips && value.tips.length);
+            return (
+                (value.improvements && value.improvements.length) ||
+                (value.tips && value.tips.length) ||
+                (value.frequencies && value.frequencies.length)
+            );
         })
     );
 });
@@ -71,7 +74,10 @@ const filteredReviewData = computed(() => {
                             <template v-if="categoryData.tips.length">
                                 {{ getDisplayKey(key) }}
                                 <ul>
-                                    <li v-for="(tip, index) in categoryData.tips" :key="index">{{ tip }}</li>
+                                    <li v-for="(tip, index) in categoryData.tips" :key="index">
+                                        {{ tip }} <span v-if="categoryData.frequencies[index]"> (Frequency: {{
+            categoryData.frequencies[index] }})</span>
+                                    </li>
                                 </ul>
                             </template>
                         </li>
@@ -87,8 +93,10 @@ const filteredReviewData = computed(() => {
                             <template v-if="categoryData.improvements.length">
                                 {{ getDisplayKey(key) }}
                                 <ul>
-                                    <li v-for="(improvement, index) in categoryData.improvements" :key="index">{{
-            improvement }}</li>
+                                    <li v-for="(improvement, index) in categoryData.improvements" :key="index">
+                                        {{ improvement }} <span v-if="categoryData.frequencies[index]"> (Frequency: {{
+            categoryData.frequencies[index] }})</span>
+                                    </li>
                                 </ul>
                             </template>
                         </li>

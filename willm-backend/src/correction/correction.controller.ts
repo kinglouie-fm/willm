@@ -3,7 +3,6 @@ import { CorrectionService } from './correction.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { IssueService } from '../issue/issue.service';
 import { SessionService } from '../session/session.service';
-import { SectionService } from '../section/section.service';
 import { Request, Response } from 'express';
 import { Types } from 'mongoose';
 import { TextService } from '../text/text.service';
@@ -16,19 +15,20 @@ export class CorrectionController {
     private readonly correctionService: CorrectionService,
     private readonly issueService: IssueService,
     private readonly sessionService: SessionService,
-    // private readonly sectionService: SectionService,
     private readonly textService: TextService,
     private readonly scoreService: ScoreService
   ) {}
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  async handleCorrection(@Body() body: { text: string, section: string, mode: string, language: string }, @Req() req: Request, @Res() res: Response) {
+  async handleCorrection(@Body() body: { text: string, section: string, mode: string, 
+    language: string, correctionModel: string, furtherCorrectionModel: string, 
+    scoreModel: string }, @Req() req: Request, @Res() res: Response) {
     if(body.text.length > this.maxLength) {
       return res.status(400).send("Text is too long");
     }
     console.log("Handling correction request");
-    const initialResult = await this.correctionService.callPythonService(body.text, body.section, 'initial', body.language);
+    const initialResult = await this.correctionService.callPythonService(body.text, body.section, 'initial', body.language, body.correctionModel);
     console.log("Initial correction result:", initialResult);
     const correctedText = initialResult.correctedText;
 
@@ -42,15 +42,6 @@ export class CorrectionController {
 
     const session = await this.sessionService.getCurrentSession(userId);
 
-    // Find or create the section
-    // let section = await this.sectionService.findSectionByPayload(userId, body.section);
-    // if (!section) {
-    //   section = await this.sectionService.addSection(userId, {
-    //     payload: body.section,
-    //     date_created: new Date(),
-    //   });
-    // }
-
     // Create a new Text document
     const text = await this.textService.addText(userId, {
       session_id: session._id,
@@ -63,7 +54,7 @@ export class CorrectionController {
 
     // Generate scores for the text and save them with the text_id
     const textId = text._id as Types.ObjectId;
-    const scoreData = await this.scoreService.generateScore(body.text, userId, body.section, textId);
+    const scoreData = await this.scoreService.generateScore(body.text, userId, body.section, textId, body.scoreModel);
 
     // Add issues for initial corrections
     for (let i = 0; i < mistakes.length; i++) {
@@ -90,7 +81,7 @@ export class CorrectionController {
     if (correctedText) {
       try {
         console.log("Performing further correction");
-        furtherCorrectionResult = await this.correctionService.callPythonService(correctedText, body.section, 'further', body.language);
+        furtherCorrectionResult = await this.correctionService.callPythonService(correctedText, body.section, 'further', body.language, body.furtherCorrectionModel);
 
         const { organization, coherence, writingStyle } = furtherCorrectionResult;
 
@@ -98,7 +89,7 @@ export class CorrectionController {
           ...(organization?.mistakes ?? []).map((mistake, i) => organization.corrections && organization.corrections[i] ? ({ mistake, correction: organization.corrections[i], type: 'organization', category: organization.categories[i] }) : null),
           ...(coherence?.mistakes ?? []).map((mistake, i) => coherence.corrections && coherence.corrections[i] ? ({ mistake, correction: coherence.corrections[i], type: 'coherence', category: coherence.categories[i] }) : null),
           ...(writingStyle?.mistakes ?? []).map((mistake, i) => writingStyle.corrections && writingStyle.corrections[i] ? ({ mistake, correction: writingStyle.corrections[i], type: 'writingStyle', category: writingStyle.categories[i] }) : null)
-        ].filter(issue => issue !== null); // Filter out any null values
+        ].filter(issue => issue !== null);
 
         // Add issues for further corrections
         for (let i = 0; i < combinedMistakes.length; i++) {

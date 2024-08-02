@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 openai.api_key = os.getenv('FLASK_API_KEY')
 
-async def fetch_openai_response(session, system_prompt_template, prompt_template, data, section=None, language='English'):
+async def fetch_openai_response(session, system_prompt_template, prompt_template, data, section=None, language='English', model='3.5-turbo-1106'):
     system_prompt = system_prompt_template.format(language=language)
     prompt = prompt_template.format(text=data, section=section, language=language)
     logging.info(f"Received language: {language}")
@@ -33,7 +33,7 @@ async def fetch_openai_response(session, system_prompt_template, prompt_template
             'Content-Type': 'application/json'
         },
         json={
-            "model": "gpt-4o",
+            "model": f"gpt-{model}",
             "messages": [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": prompt}
@@ -45,19 +45,20 @@ async def fetch_openai_response(session, system_prompt_template, prompt_template
         logging.info(f"LLM Response: {response_json['choices'][0]['message']['content']}")
         return response_json['choices'][0]['message']['content']
 
-async def handle_unified(session, data, language):
-    return await fetch_openai_response(session, SYSTEM_PROMPT_1, UNIFIED_PROMPT, data, language=language)
+async def handle_unified(session, data, language, model):
+    return await fetch_openai_response(session, SYSTEM_PROMPT_1, UNIFIED_PROMPT, data, language=language, model=model)
 
-async def handle_unified_2(session, data, section, language):
-    return await fetch_openai_response(session, SYSTEM_PROMPT_2, UNIFIED_PROMPT_2, data, section, language=language)
+async def handle_unified_2(session, data, section, language, model):
+    return await fetch_openai_response(session, SYSTEM_PROMPT_2, UNIFIED_PROMPT_2, data, section, language=language, model=model)
 
-async def handle_scores(session, data):
-    return await fetch_openai_response(session, SYSTEM_PROMPT_4, SCORES, data)
+async def handle_scores(session, data, model):
+    return await fetch_openai_response(session, SYSTEM_PROMPT_4, SCORES, data, model=model)
 
 @app.route('/handle-correction', methods=['POST'])
 async def handle_correction():
     data = request.json.get('text')
     language = request.json.get('language')
+    model = request.json.get('model')
 
     if not data:
         return jsonify({"error": "No text provided"}), 400
@@ -83,12 +84,13 @@ async def handle_further_correction():
     data = request.json.get('text')
     section = request.json.get('section')
     language = request.json.get('language')
+    model = request.json.get('model')
 
     if not data:
         return jsonify({"error": "No text provided"}), 400
 
     async with aiohttp.ClientSession() as session:
-        unified_result = await handle_unified_2(session, data, section, language)
+        unified_result = await handle_unified_2(session, data, section, language, model)
 
     feedback = process_further_result(unified_result)
 
@@ -97,16 +99,15 @@ async def handle_further_correction():
 @app.route('/generate-scores', methods=['POST'])
 async def generate_scores():
     data = request.json.get('text')
+    model = request.json.get('scoreModel')
 
     if not data:
         return jsonify({"error": "No text provided"}), 400
 
     try:
         async with aiohttp.ClientSession() as session:
-            scores_result = await handle_scores(session, data)
-        # logger.info("LLM Response: %s", scores_result)  # Log the raw response from the LLM
+            scores_result = await handle_scores(session, data, model)
         scores = parse_scores(scores_result)
-        # logger.info("Parsed Scores: %s", scores)  # Log the parsed scores
         return jsonify(scores)
     except Exception as e:
         logger.error(f"Error generating scores: {e}")

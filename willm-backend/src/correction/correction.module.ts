@@ -6,7 +6,6 @@ import { UserModule } from '../user/user.module';
 import { IssueModule } from '../issue/issue.module';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { SessionModule } from '../session/session.module';
-import { SectionModule } from '../section/section.module';
 import { TextModule } from '../text/text.module';
 import { ScoreModule } from 'src/score/score.module';
 
@@ -16,7 +15,6 @@ import { ScoreModule } from 'src/score/score.module';
     HttpModule,
     IssueModule,
     SessionModule,
-    SectionModule,
     TextModule,
     ScoreModule
   ],

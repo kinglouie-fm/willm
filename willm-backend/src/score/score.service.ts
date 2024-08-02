@@ -12,8 +12,8 @@ export class ScoreService {
     private readonly httpService: HttpService,
   ) {}
 
-  async generateScore(text: string, userId: string, section: string, textId: Types.ObjectId): Promise<any> {
-    const response = await lastValueFrom(this.httpService.post("http://flask-api:8000/generate-scores", { text }));
+  async generateScore(text: string, userId: string, section: string, textId: Types.ObjectId, scoreModel: string): Promise<any> {
+    const response = await lastValueFrom(this.httpService.post("http://flask-api:8000/generate-scores", { text, scoreModel }));
     const scoreData = response.data;
 
     const scoresToStore = {

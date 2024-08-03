@@ -47,10 +47,9 @@ router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
   if (to.matched.some(record => record.meta.requiresAuth)) {
     try {
-      const response = await axios.get('http://localhost:3000/user/profile', { credentials: 'include' });
+      const response = await axios.get('http://localhost:3000/user/profile', { withCredentials: true });
       if (response.status === 200) {
-
-        authStore.isAuthenticated = true;
+        authStore.setIsAuthenticated(true);
         authStore.setUsername(response.data.username);
         authStore.setLanguage(response.data.language);
         authStore.setLLM('correctionModel', response.data.correctionModel);
@@ -61,11 +60,11 @@ router.beforeEach(async (to, from, next) => {
 
         next();
       } else {
-        authStore.isAuthenticated = false;
+        authStore.setIsAuthenticated(false);
         next({ name: 'login' });
       }
     } catch (error) {
-      authStore.isAuthenticated = false;
+      authStore.setIsAuthenticated(false);
       next({ name: 'login' });
     }
   } else {

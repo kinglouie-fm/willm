@@ -13,12 +13,12 @@ export const useAuthStore = defineStore('auth', {
     quizDueToday: false,
     nextQuizDate: null,
     username: '',
-    language: 'English',
-    correctionModel: '3.5-turbo-1106',
-    furtherCorrectionModel: '3.5-turbo-1106',
-    scoreModel: '3.5-turbo-1106',
-    reviewModel: '3.5-turbo-1106',
-    dailyRequestsLeft: 10,
+    language: '',
+    correctionModel: '',
+    furtherCorrectionModel: '',
+    scoreModel: '',
+    reviewModel: '',
+    dailyRequestsLeft: 0
   }),
   actions: {
     async register(username, password) {
@@ -102,11 +102,17 @@ export const useAuthStore = defineStore('auth', {
         console.error('Error checking auth status');
       }
     },
+    setIsAuthenticated(value) {
+      this.isAuthenticated = value;
+    },
     setUsername(value) {
       this.username = value;
     },
     setLanguage(value) {
       this.language = value;
+    },
+    getLanguage() {
+      return this.language;
     },
     setLLM(model, value) {
       this[model] = value;

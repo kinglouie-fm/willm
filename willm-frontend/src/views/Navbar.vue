@@ -10,35 +10,50 @@ const authStore = useAuthStore();
 const route = useRoute();
 const router = useRouter();
 
+const selectedLanguage = ref();
+const correctionModel = ref();
+const furtherCorrectionModel = ref();
+const scoreModel = ref();
+const reviewModel = ref();
+
 const languages = [
     'English', 'Albanian', 'Amharic', 'Arabic', 'Armenian', 'Bengali', 'Bosnian', 'Bulgarian', 'Burmese', 'Catalan', 'Chinese', 'Croatian', 'Czech', 'Danish', 'Dutch', 'Estonian', 'Finnish', 'French', 'Georgian', 'German', 'Greek', 'Gujarati', 'Hindi', 'Hungarian', 'Icelandic', 'Indonesian', 'Italian', 'Japanese', 'Kannada', 'Kazakh', 'Korean', 'Latvian', 'Lithuanian', 'Macedonian', 'Malay', 'Malayalam', 'Marathi', 'Mongolian', 'Norwegian', 'Persian', 'Polish', 'Portuguese', 'Punjabi', 'Romanian', 'Russian', 'Serbian', 'Slovak', 'Slovenian', 'Somali', 'Spanish', 'Swahili', 'Swedish', 'Tagalog', 'Tamil', 'Telugu', 'Thai', 'Turkish', 'Ukrainian', 'Urdu', 'Vietnamese'
 ];
-const selectedLanguage = ref('English');
 
-// Update LLM in the store
+const modelKeys = {
+    Correction: 'correctionModel',
+    'Further Correction': 'furtherCorrectionModel',
+    Score: 'scoreModel',
+    Review: 'reviewModel'
+};
+
+// Update LLM in the store and backend
 const updateLLM = async (modelKey, value) => {
-    const newValue = value === 'gpt-3.5-turbo' ? '3.5-turbo-1106' : '4o';
+    const newValue = value === '3.5-turbo-1106' ? '3.5-turbo-1106' : '4o';
 
     try {
-        await axios.patch('http:localhost:3000/user/updateModel', {
-            modelKey: newValue,
+        await axios.patch('http://localhost:3000/user/updateModel', {
+            [modelKey]: newValue,
         });
-        authStore.setLLMModel(modelKey, newValue);
+        authStore.setLLM(modelKey, newValue);
+        // Update the local reactive variable
+        if (modelKey === 'correctionModel') correctionModel.value = newValue;
+        else if (modelKey === 'furtherCorrectionModel') furtherCorrectionModel.value = newValue;
+        else if (modelKey === 'scoreModel') scoreModel.value = newValue;
+        else if (modelKey === 'reviewModel') reviewModel.value = newValue;
     } catch (error) {
-        console.error(`Failed to update ${modelKey}`, error);
         message.error(`Failed to update ${modelKey}`);
     }
 };
 
+// Update Language in the store and backend
 const updateLanguage = async () => {
     try {
         await axios.patch('http://localhost:3000/user/updateLanguage', {
-            language: selectedLanguage.value,
+            language: authStore.language,
         });
-
-        authStore.setLanguage(selectedLanguage.value);
+        authStore.setLanguage(authStore.language);
     } catch (error) {
-        console.error('Failed to update language', error);
         message.error('Failed to update language');
     }
 };
@@ -65,7 +80,6 @@ const checkQuiz = async () => {
             message.info('No quiz due today.', 2);
         }
     } catch (error) {
-        console.error('Error checking quiz:', error);
         message.error('Error checking quiz.');
     }
 };
@@ -92,6 +106,14 @@ const navigationLinks = computed(() => {
         return ['Logout'];
     }
 });
+
+onMounted(() => {
+    selectedLanguage.value = authStore.getLanguage();
+    correctionModel.value = authStore.getLLM('correctionModel');
+    furtherCorrectionModel.value = authStore.getLLM('furtherCorrectionModel');
+    scoreModel.value = authStore.getLLM('scoreModel');
+    reviewModel.value = authStore.getLLM('reviewModel');
+});
 </script>
 
 <template>
@@ -101,9 +123,8 @@ const navigationLinks = computed(() => {
 
             <div class="flex-grow-1"></div>
 
-            <div class="d-flex align-items-center">
-                <button v-if="authStore.isAuthenticated && isPostTestEnabled" class="btn btn-post-test"
-                    @click="showPostTestModal">
+            <div v-if="authStore.isAuthenticated" class="d-flex align-items-center">
+                <button v-if="isPostTestEnabled" class="btn btn-post-test" @click="showPostTestModal">
                     Start Post-Test
                 </button>
 
@@ -121,10 +142,10 @@ const navigationLinks = computed(() => {
                         <li>
                             <div class="d-flex justify-content-between px-4">
                                 <span>Explanations in: </span>
-                                <select v-model="selectedLanguage" @change="updateLanguage" class="form-select-sm ms-3"
-                                    style="width: auto;">
-                                    <option v-for="language in languages" :key="language" :value="language">{{ language
-                                        }}
+                                <select v-model="authStore.language" @change="updateLanguage"
+                                    class="form-select-sm ms-3" style="width: auto;">
+                                    <option v-for="language in languages" :key="language" :value="language">
+                                        {{ language }}
                                     </option>
                                 </select>
                             </div>
@@ -132,19 +153,18 @@ const navigationLinks = computed(() => {
                         <li>
                             <h6 class="dropdown-header">Model Settings</h6>
                         </li>
-                        <li v-for="(modelKey, name) in { Correction: 'correctionModel', 'Further Correction': 'furtherCorrectionModel', Score: 'scoreModel', Review: 'reviewModel' }"
-                            :key="name" class="d-flex justify-content-between align-items-center px-4 pb-2">
+                        <li v-for="(modelKey, name) in modelKeys" :key="name"
+                            class="d-flex justify-content-between align-items-center px-4 pb-2">
                             <span>{{ name }}:</span>
-                            <select @change="updateLLM(modelKey, $event.target.value)"
-                                :value="authStore[modelKey] === '3.5-turbo-1106' ? 'gpt-3.5-turbo' : 'gpt-4o'"
+                            <select v-model="authStore[modelKey]" @change="updateLLM(modelKey, authStore[modelKey])"
                                 class="form-select-sm ms-3">
-                                <option value="gpt-3.5-turbo">gpt-3.5-turbo</option>
-                                <option value="gpt-4o">gpt-4o</option>
+                                <option value="3.5-turbo-1106">gpt-3.5-turbo</option>
+                                <option value="4o">gpt-4o</option>
                             </select>
                         </li>
                         <li>
                             <div class="d-flex justify-content-between align-items-center ps-4 pe-3">
-                                <span>Request left for gpt-4o:</span>
+                                <span>Requests left for gpt-4o:</span>
                                 <span>{{ authStore.dailyRequestsLeft }}</span>
                             </div>
                         </li>
@@ -159,7 +179,7 @@ const navigationLinks = computed(() => {
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="hamburgerDropdown">
                         <li v-for="link in navigationLinks" :key="link.name || link">
                             <a class="dropdown-item" @click="typeof link === 'string' && link.toLowerCase() === 'logout' ? logout() :
-                    link.toLowerCase() === 'quiz' ? checkQuiz() : navigateTo(link.path || `/${link.toLowerCase()}`)">
+                link.toLowerCase() === 'quiz' ? checkQuiz() : navigateTo(link.path || `/${link.toLowerCase()}`)">
                                 {{ link.name || link }}
                             </a>
                         </li>

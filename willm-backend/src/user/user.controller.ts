@@ -76,14 +76,16 @@ export class UserController {
     if (!decoded) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
+
+    const user = await this.userService.findUserByToken(token);
     return res.status(200).json({ 
       username: decoded.username, 
-      language: decoded.language,
-      correctionModel: decoded.correctionModel,
-      furtherCorrectionModel: decoded.furtherCorrectionModel,
-      scoreModel: decoded.scoreModel,
-      reviewModel: decoded.reviewModel,
-      dailyRequestsLeft: decoded.dailyRequestsLeft
+      language: user.language,
+      correctionModel: user.correctionModel,
+      furtherCorrectionModel: user.furtherCorrectionModel,
+      scoreModel: user.scoreModel,
+      reviewModel: user.reviewModel,
+      dailyRequestsLeft: user.dailyRequestsLeft
     });
   }
 

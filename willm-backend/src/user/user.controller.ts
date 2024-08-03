@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Res, UnauthorizedException, Get, Req, BadRequestException, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Res, UnauthorizedException, Get, Req, BadRequestException, UseGuards, Patch } from '@nestjs/common';
 import { Response, Request } from 'express';
 import { UserService } from './user.service';
 import { isAfter, parseISO } from 'date-fns';
@@ -192,5 +192,49 @@ export class UserController {
     const userId = req.user._id;
     await this.gamificationService.resetStreaks(userId);
     return { message: 'Streaks reset' };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('updateModel')
+  async updateModel(
+    @Body() body: any,
+    @Req() req: Request,
+    @Res() res: Response
+  ): Promise<any> {
+    const user = await this.userService.findUserByToken(req.cookies['auth_token']);
+    if (!user) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const updateData: any = {};
+
+    // Update only the provided fields
+    if (body.correctionModel) updateData.correctionModel = body.correctionModel;
+    if (body.furtherCorrectionModel) updateData.furtherCorrectionModel = body.furtherCorrectionModel;
+    if (body.scoreModel) updateData.scoreModel = body.scoreModel;
+    if (body.reviewModel) updateData.reviewModel = body.reviewModel;
+
+    if (Object.keys(updateData).length > 0) {
+      await this.userService.updateUserModels(user._id as Types.ObjectId, updateData);
+    }
+
+    return res.status(200).json({ message: 'Model updated successfully' });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('getModels')
+  async getModels(@Req() req: Request, @Res() res: Response): Promise<any> {
+    const user = await this.userService.findUserByToken(req.cookies['auth_token']);
+    if (!user) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    return res.status(200).json({
+      correctionModel: user.correctionModel,
+      furtherCorrectionModel: user.furtherCorrectionModel,
+      scoreModel: user.scoreModel,
+      reviewModel: user.reviewModel,
+      dailyRequestsLeft: user.dailyRequestsLeft
+    });
   }
 }

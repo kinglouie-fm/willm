@@ -49,6 +49,7 @@ router.beforeEach(async (to, from, next) => {
       const response = await fetch('http://localhost:3000/user/profile', { credentials: 'include' });
       if (response.status === 200) {
         authStore.isAuthenticated = true;
+        authStore.setUsername(response.data.username);
         next();
       } else {
         authStore.isAuthenticated = false;

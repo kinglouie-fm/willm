@@ -58,6 +58,21 @@ export class User extends Document {
 
   @Prop({ default: Date.now })
   last_login: Date;
+
+  @Prop({ default: '3.5-turbo' })
+  correctionModel: string;
+
+  @Prop({ default: '3.5-turbo' })
+  furtherCorrectionModel: string;
+
+  @Prop({ default: '3.5-turbo' })
+  scoreModel: string;
+
+  @Prop({ default: '3.5-turbo' })
+  reviewModel: string;
+
+  @Prop({ default: 10 })
+  dailyRequestsLeft: number;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

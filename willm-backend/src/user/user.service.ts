@@ -112,4 +112,23 @@ export class UserService {
     const user = await this.userModel.findById(userId);
     return user.preTestSubmissions.map(submission => submission.section);
   }
+
+  async updateUserModels(userId: Types.ObjectId, updateLLMData: any): Promise<void> {
+    await this.userModel.updateOne(
+      { _id: userId },
+      { $set: updateLLMData }
+    );
+  }
+
+  async setDailyRequestsLeft(userId: Types.ObjectId, dailyRequestsLeft: number): Promise<void> {
+    await this.userModel.updateOne(
+      { _id: userId },
+      { $set: { dailyRequestsLeft } }
+    );
+  }
+
+  async getDailyRequestsLeft(userId: Types.ObjectId): Promise<number> {
+    const user = await this.userModel.findById(userId);
+    return user.dailyRequestsLeft;
+  }
 }

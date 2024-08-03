@@ -16,7 +16,8 @@ import { ScoreModule } from 'src/score/score.module';
     IssueModule,
     SessionModule,
     TextModule,
-    ScoreModule
+    ScoreModule,
+    UserModule,
   ],
   controllers: [CorrectionController],
   providers: [CorrectionService, JwtAuthGuard],

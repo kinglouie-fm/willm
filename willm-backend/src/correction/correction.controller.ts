@@ -3,6 +3,7 @@ import { CorrectionService } from './correction.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { IssueService } from '../issue/issue.service';
 import { SessionService } from '../session/session.service';
+import { UserService } from '../user/user.service';
 import { Request, Response } from 'express';
 import { Types } from 'mongoose';
 import { TextService } from '../text/text.service';
@@ -16,7 +17,8 @@ export class CorrectionController {
     private readonly issueService: IssueService,
     private readonly sessionService: SessionService,
     private readonly textService: TextService,
-    private readonly scoreService: ScoreService
+    private readonly scoreService: ScoreService,
+    private readonly userService: UserService
   ) {}
 
   @UseGuards(JwtAuthGuard)
@@ -24,9 +26,17 @@ export class CorrectionController {
   async handleCorrection(@Body() body: { text: string, section: string, mode: string, 
     language: string, correctionModel: string, furtherCorrectionModel: string, 
     scoreModel: string }, @Req() req: Request, @Res() res: Response) {
+    const userId = req.user._id;
+    let dailyRequestsLeft = await this.userService.getDailyRequestsLeft(userId);
+
     if(body.text.length > this.maxLength) {
       return res.status(400).send("Text is too long");
     }
+
+    if (dailyRequestsLeft <= 0 && body.correctionModel === '4o') {
+      return res.status(403).send({ message: "No more gpt-4o requests left for today" });
+    }
+    
     console.log("Handling correction request");
     const initialResult = await this.correctionService.callPythonService(body.text, body.section, 'initial', body.language, body.correctionModel);
     console.log("Initial correction result:", initialResult);
@@ -38,7 +48,10 @@ export class CorrectionController {
     const categories = initialResult.categories || [];
     const contexts = initialResult.contexts || [];
 
-    const userId = req.user._id;
+    if(body.correctionModel === '4o') {
+      await this.userService.setDailyRequestsLeft(userId, dailyRequestsLeft - 1);
+      dailyRequestsLeft -= 1;
+    }
 
     const session = await this.sessionService.getCurrentSession(userId);
 
@@ -57,7 +70,17 @@ export class CorrectionController {
 
     // Generate scores for the text and save them with the text_id
     const textId = text._id as Types.ObjectId;
+
+    if (dailyRequestsLeft <= 0 && body.scoreModel === '4o') {
+      return res.status(403).send({ message: "No more gpt-4o requests left for today" });
+    }
+
     const scoreData = await this.scoreService.generateScore(body.text, userId, body.section, textId, body.scoreModel);
+
+    if(body.scoreModel === '4o') {
+      await this.userService.setDailyRequestsLeft(userId, dailyRequestsLeft - 1);
+      dailyRequestsLeft -= 1;
+    }
 
     // Add issues for initial corrections
     for (let i = 0; i < mistakes.length; i++) {
@@ -84,7 +107,17 @@ export class CorrectionController {
     if (correctedText) {
       try {
         console.log("Performing further correction");
+
+        if (dailyRequestsLeft <= 0 && body.furtherCorrectionModel === '4o') {
+          return res.status(403).send({ message: "No more gpt-4o requests left for today" });
+        }
+
         furtherCorrectionResult = await this.correctionService.callPythonService(correctedText, body.section, 'further', body.language, body.furtherCorrectionModel);
+
+        if(body.furtherCorrectionModel === '4o') {
+          await this.userService.setDailyRequestsLeft(userId, dailyRequestsLeft - 1);
+          dailyRequestsLeft -= 1;
+        }
 
         const { organization, coherence, writingStyle } = furtherCorrectionResult;
 

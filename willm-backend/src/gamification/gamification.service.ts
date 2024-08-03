@@ -18,9 +18,9 @@ export class GamificationService {
           "5": 300,
         },
         correct_answers: {
-          "15": 100,
-          "30": 200,
-          "60": 300,
+          "5": 100,
+          "10": 200,
+          "20": 300,
         },
         weekly_streaks: {
           "1": 100,

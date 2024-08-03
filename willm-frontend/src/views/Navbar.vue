@@ -187,13 +187,16 @@ const fetchData = () => {
                             </div>
                         </li>
                         <li>
-                            <h1 class="dropdown-header">Language Settings</h1>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li>
+                            <h1 class="dropdown-header mt-2">Language Settings</h1>
                         </li>
                         <li>
                             <div class="d-flex justify-content-between px-4">
                                 <span>Explanations in: </span>
                                 <select v-model="authStore.language" @change="updateLanguage"
-                                    class="form-select-sm ms-3" style="width: auto;">
+                                    class="form-select-sm ms-3 text-center" style="width: auto;">
                                     <option v-for="language in languages" :key="language" :value="language">
                                         {{ language }}
                                     </option>
@@ -201,13 +204,16 @@ const fetchData = () => {
                             </div>
                         </li>
                         <li>
-                            <h6 class="dropdown-header">Model Settings</h6>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li>
+                            <h6 class="dropdown-header mt-2">Model Settings</h6>
                         </li>
                         <li v-for="(modelKey, name) in modelKeys" :key="name"
                             class="d-flex justify-content-between align-items-center px-4 pb-2">
                             <span>{{ name }}:</span>
                             <select v-model="authStore[modelKey]" @change="updateLLM(modelKey, authStore[modelKey])"
-                                class="form-select-sm ms-3">
+                                class="form-select-sm ms-3 text-center">
                                 <option value="3.5-turbo-1106">gpt-3.5-turbo</option>
                                 <option value="4o">gpt-4o</option>
                             </select>
@@ -276,7 +282,8 @@ i {
     color: #4a3b31;
 }
 
-a {
+a,
+.form-select-sm {
     cursor: pointer;
 }
 

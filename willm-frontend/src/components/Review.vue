@@ -1,5 +1,7 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, ref, onMounted } from 'vue';
+
+const feedbackDiv = ref(null);
 
 const props = defineProps({
     reviewData: {
@@ -7,6 +9,30 @@ const props = defineProps({
         default: () => null
     }
 });
+
+const handleScroll = () => {
+    const element = feedbackDiv.value;
+    if (!element) return;
+
+    const isAtBottom = element.scrollHeight - element.scrollTop === element.clientHeight;
+
+    if (isAtBottom) {
+        element.classList.remove('has-shadow-bottom');
+    } else {
+        element.classList.add('has-shadow-bottom');
+    }
+};
+
+const checkInitialOverflow = () => {
+    const element = feedbackDiv.value;
+    if (!element) return;
+
+    if (element.scrollHeight > element.clientHeight - 1) {
+        element.classList.add('has-shadow-bottom');
+    } else {
+        element.classList.remove('has-shadow-bottom');
+    }
+};
 
 const getDisplayKey = (key) => {
     if (key === 'grammar_vocab') {
@@ -68,6 +94,14 @@ const filteredReviewData = computed(() => {
 
     return filtered;
 });
+
+onMounted(async () => {
+    const element = feedbackDiv.value;
+    if (element) {
+        element.addEventListener('scroll', handleScroll);
+        checkInitialOverflow();
+    }
+});
 </script>
 
 <template>
@@ -94,51 +128,53 @@ const filteredReviewData = computed(() => {
                 </ul>' />
             <h2 class="mb-0">Review</h2>
         </div>
-        <div v-if="typeof props.reviewData === 'string'">
-            <p>{{ props.reviewData }}</p>
-        </div>
-        <div v-else-if="Object.keys(filteredReviewData).length">
-            <div v-if="Object.values(filteredReviewData).some(data => data.tips.length)">
-                <h5>Tips</h5>
-                <ul>
-                    <li>Regarding your last 5 submissions, your most frequent errors are:</li>
-                    <ul>
-                        <li v-for="(categoryData, key) in filteredReviewData" :key="key">
-                            <template v-if="categoryData.tips.length">
-                                {{ getDisplayKey(key) }}
-                                <ul>
-                                    <li v-for="(tip, index) in categoryData.tips" :key="index">
-                                        {{ tip }} <span v-if="categoryData.frequencies[index]"> (Frequency: {{
-            categoryData.frequencies[index] }})</span>
-                                    </li>
-                                </ul>
-                            </template>
-                        </li>
-                    </ul>
-                </ul>
+        <div class="feedback" ref="feedbackDiv">
+            <div v-if="typeof props.reviewData === 'string'">
+                <p>{{ props.reviewData }}</p>
             </div>
-            <div v-if="Object.values(filteredReviewData).some(data => data.improvements.length)">
-                <h5>Improvements</h5>
-                <ul>
-                    <li>Regarding your last 10 submissions, you improved yourself by reducing the following types of
-                        mistakes:</li>
+            <div v-else-if="Object.keys(filteredReviewData).length">
+                <div v-if="Object.values(filteredReviewData).some(data => data.tips.length)">
+                    <h5>Tips</h5>
                     <ul>
-                        <li v-for="(categoryData, key) in filteredReviewData" :key="key">
-                            <template v-if="categoryData.improvements.length">
-                                {{ getDisplayKey(key) }}
-                                <ul>
-                                    <li v-for="(improvement, index) in categoryData.improvements" :key="index">
-                                        {{ improvement }}
-                                    </li>
-                                </ul>
-                            </template>
-                        </li>
+                        <li>Regarding your last 5 submissions, your most frequent errors are:</li>
+                        <ul>
+                            <li v-for="(categoryData, key) in filteredReviewData" :key="key">
+                                <template v-if="categoryData.tips.length">
+                                    {{ getDisplayKey(key) }}
+                                    <ul>
+                                        <li v-for="(tip, index) in categoryData.tips" :key="index">
+                                            {{ tip }} <span v-if="categoryData.frequencies[index]"> (Frequency: {{
+                categoryData.frequencies[index] }})</span>
+                                        </li>
+                                    </ul>
+                                </template>
+                            </li>
+                        </ul>
                     </ul>
-                </ul>
+                </div>
+                <div v-if="Object.values(filteredReviewData).some(data => data.improvements.length)">
+                    <h5>Improvements</h5>
+                    <ul>
+                        <li>Regarding your last 10 submissions, you improved yourself by reducing the following types of
+                            mistakes:</li>
+                        <ul>
+                            <li v-for="(categoryData, key) in filteredReviewData" :key="key">
+                                <template v-if="categoryData.improvements.length">
+                                    {{ getDisplayKey(key) }}
+                                    <ul>
+                                        <li v-for="(improvement, index) in categoryData.improvements" :key="index">
+                                            {{ improvement }}
+                                        </li>
+                                    </ul>
+                                </template>
+                            </li>
+                        </ul>
+                    </ul>
+                </div>
             </div>
-        </div>
-        <div v-else>
-            <p>No review data available.</p>
+            <div v-else>
+                <p>No review data available.</p>
+            </div>
         </div>
     </div>
 </template>
@@ -148,5 +184,21 @@ const filteredReviewData = computed(() => {
     width: 25px;
     height: 25px;
     cursor: pointer;
+}
+
+.feedback {
+    overflow-y: auto;
+    max-height: 70vh;
+    box-shadow: none;
+    transition: box-shadow 0.3s ease-in-out;
+}
+
+.feedback.has-shadow-bottom {
+    box-shadow: inset 0 -6px 6px -6px rgba(0, 0, 0, 0.3);
+}
+
+.scrollable {
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease-in-out;
 }
 </style>

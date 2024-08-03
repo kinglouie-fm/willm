@@ -21,7 +21,7 @@ const progressPercentage = computed(() => {
             </div>
             <div class="scores mt-2">
                 <span>Lvl {{ currentLevel }}</span>
-                <span>{{ currentXP }} / {{ maxXP }} XP</span>
+                <span>{{ currentXP }} XP</span>
                 <span>Lvl {{ nextLevel }}</span>
             </div>
         </div>

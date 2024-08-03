@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import { message } from 'ant-design-vue';
@@ -11,7 +11,6 @@ const authStore = useAuthStore();
 const route = useRoute();
 const router = useRouter();
 
-// Dropdown handling
 const toggleDropdown = (id) => {
     const dropdownElement = document.getElementById(id);
     const dropdown = new bootstrap.Dropdown(dropdownElement);
@@ -72,15 +71,16 @@ const showPostTestModal = () => {
     }
 };
 
-// Define available links for the hamburger menu based on the current route
-const availableLinks = ref([]);
-onMounted(() => {
-    const links = {
-        '/': ['Profile', 'Quiz', 'Logout'],
-        '/profile': ['Home', 'Quiz', 'Logout'],
-        '/quiz': ['Home', 'Profile', 'Logout'],
-    };
-    availableLinks.value = links[route.path] || [];
+const navigationLinks = computed(() => {
+    if (route.name === 'home') {
+        return ['Profile', 'Quiz', 'Logout'];
+    } else if (route.name === 'profile') {
+        return [{ name: 'Home', path: '/' }, 'Quiz', 'Logout'];
+    } else if (route.name === 'quiz') {
+        return [{ name: 'Home', path: '/' }, 'Profile', 'Logout'];
+    } else {
+        return ['Logout'];
+    }
 });
 
 onMounted(async () => {
@@ -104,7 +104,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <nav class="navbar navbar-expand">
+    <nav class="navbar navbar-expand-lg">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">WILLM</a>
 
@@ -115,12 +115,11 @@ onMounted(async () => {
                     @click="showPostTestModal">
                     Start Post-Test
                 </button>
-
                 <div class="dropdown">
                     <button id="userDropdown" class="btn btn-link ms-3" @click="toggleDropdown('userDropdown')">
                         <i class="bi bi-person-circle fs-3"></i>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                         <li>
                             <h6 class="dropdown-header">{{ authStore.username }}</h6>
                         </li>
@@ -133,8 +132,8 @@ onMounted(async () => {
                                     <span>{{ name }}</span>
                                     <span>{{ authStore[modelKey] }}</span>
                                     <input type="checkbox" class="form-check-input ms-2"
-                                        :checked="authStore[modelKey] === '3.5-turbo-1106'"
-                                        @change="updateLLM(modelKey, authStore[modelKey] === '3.5-turbo-1106' ? 'gpt-4o' : 'gpt-3.5-turbo-1106')" />
+                                        :checked="authStore[modelKey] === '3.5-turbo'"
+                                        @change="updateLLM(modelKey, authStore[modelKey] === '3.5-turbo' ? 'gpt-4o' : 'gpt-3.5-turbo')" />
                                 </li>
                                 <li class="dropdown-item">
                                     Requests for gpt-4o left: {{ authStore.dailyRequestsLeft }}
@@ -148,29 +147,18 @@ onMounted(async () => {
                     <button id="hamburgerDropdown" class="btn btn-link" @click="toggleDropdown('hamburgerDropdown')">
                         <i class="bi bi-list fs-3"></i>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li v-for="link in availableLinks" :key="link">
-                            <a class="dropdown-item" href="#" @click="navigateTo(`/${link.toLowerCase()}`)">
-                                {{ link }}
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="hamburgerDropdown">
+                        <li v-for="link in navigationLinks" :key="link.name || link">
+                            <a class="dropdown-item"
+                                @click="typeof link === 'string' && link.toLowerCase() === 'logout' ? logout() : navigateTo(link.path || `/${link.toLowerCase()}`)">
+                                {{ link.name || link }}
                             </a>
                         </li>
                     </ul>
                 </div>
-
-                <!-- Check Quiz Button -->
-                <button v-if="authStore.isAuthenticated" class="btn btn-check-quiz ms-3" @click="checkQuiz">
-                    Check Quiz
-                </button>
-
-                <!-- Logout Button -->
-                <button v-if="authStore.isAuthenticated" class="btn ms-3" @click="logout">
-                    Logout
-                </button>
             </div>
         </div>
     </nav>
-
-    <!-- Post-Test Modal (if needed) -->
     <div class="modal fade" id="postTestModal" tabindex="-1" aria-labelledby="postTestModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -191,11 +179,22 @@ onMounted(async () => {
     </div>
 </template>
 
-
 <style scoped>
 .navbar {
     box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.06) 0px 2px 4px -1px;
     background: #eabc7c;
+}
+
+.navbar-brand {
+    color: #4a3b31;
+}
+
+i {
+    color: #4a3b31;
+}
+
+a {
+    cursor: pointer;
 }
 
 .dropdown-submenu {
@@ -210,7 +209,7 @@ onMounted(async () => {
 }
 
 .btn-post-test {
-    color: #e09a9a;
+    color: #ee3636;
 }
 
 .btn-check-quiz {

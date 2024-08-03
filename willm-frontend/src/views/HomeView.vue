@@ -53,11 +53,6 @@ const postTestSection = ref('');
 const postTestSections = ref([]);
 const preTestSections = ref([]);
 
-const languages = [
-  'English', 'Albanian', 'Amharic', 'Arabic', 'Armenian', 'Bengali', 'Bosnian', 'Bulgarian', 'Burmese', 'Catalan', 'Chinese', 'Croatian', 'Czech', 'Danish', 'Dutch', 'Estonian', 'Finnish', 'French', 'Georgian', 'German', 'Greek', 'Gujarati', 'Hindi', 'Hungarian', 'Icelandic', 'Indonesian', 'Italian', 'Japanese', 'Kannada', 'Kazakh', 'Korean', 'Latvian', 'Lithuanian', 'Macedonian', 'Malay', 'Malayalam', 'Marathi', 'Mongolian', 'Norwegian', 'Persian', 'Polish', 'Portuguese', 'Punjabi', 'Romanian', 'Russian', 'Serbian', 'Slovak', 'Slovenian', 'Somali', 'Spanish', 'Swahili', 'Swedish', 'Tagalog', 'Tamil', 'Telugu', 'Thai', 'Turkish', 'Ukrainian', 'Urdu', 'Vietnamese'
-];
-const selectedLanguage = ref('English');
-
 const handleSwitchChange = (event) => {
   mode.value = event.target.checked ? 'learning' : 'productive';
 };
@@ -114,7 +109,7 @@ const handleCorrect = async () => {
       text: textToCorrect,
       section: textareaSmall.value,
       mode: mode.value,
-      language: selectedLanguage.value,
+      language: authStore.getLanguage(),
       correctionModel: authStore.getLLM('correctionModel'),
       furtherCorrectionModel: authStore.getLLM('furtherCorrectionModel'),
       scoreModel: authStore.getLLM('scoreModel'),

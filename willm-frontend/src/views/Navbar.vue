@@ -107,6 +107,20 @@ const navigationLinks = computed(() => {
     }
 });
 
+const handleNavigation = (link) => {
+    if (typeof link === 'string') {
+        if (link.toLowerCase() === 'logout') {
+            logout();
+        } else if (link.toLowerCase() === 'quiz') {
+            checkQuiz();
+        } else {
+            navigateTo(`/${link.toLowerCase()}`);
+        }
+    } else if (typeof link === 'object' && link.path) {
+        navigateTo(link.path);
+    }
+};
+
 onMounted(() => {
     selectedLanguage.value = authStore.getLanguage();
     correctionModel.value = authStore.getLLM('correctionModel');
@@ -178,8 +192,7 @@ onMounted(() => {
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="hamburgerDropdown">
                         <li v-for="link in navigationLinks" :key="link.name || link">
-                            <a class="dropdown-item" @click="typeof link === 'string' && link.toLowerCase() === 'logout' ? logout() :
-                link.toLowerCase() === 'quiz' ? checkQuiz() : navigateTo(link.path || `/${link.toLowerCase()}`)">
+                            <a class="dropdown-item" @click="handleNavigation(link)">
                                 {{ link.name || link }}
                             </a>
                         </li>

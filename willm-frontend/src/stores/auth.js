@@ -66,7 +66,6 @@ export const useAuthStore = defineStore('auth', {
                 message.info('No quiz scheduled yet.', 3);
               }, 2000);
             }
-
             router.push({ name: 'home' });
           }
         }
@@ -103,7 +102,7 @@ export const useAuthStore = defineStore('auth', {
       }
     },
     setUsername(value) {
-      this[username] = value;
+      this.username = value;
     },
     setLLM(model, value) {
       this[model] = value;
@@ -112,7 +111,7 @@ export const useAuthStore = defineStore('auth', {
       return this[model];
     },
     setDailyRequestsLeft(value) {
-      this[dailyRequestsLeft] = value;
+      this.dailyRequestsLeft = value;
     },
   },
 });

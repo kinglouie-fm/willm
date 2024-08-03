@@ -137,7 +137,7 @@ onMounted(async () => {
                                         @change="updateLLM(modelKey, authStore[modelKey] === '3.5-turbo-1106' ? 'gpt-4o' : 'gpt-3.5-turbo-1106')" />
                                 </li>
                                 <li class="dropdown-item">
-                                    Requests for gpt-4o left: {{ authStore[dailyRequestsLeft] }}
+                                    Requests for gpt-4o left: {{ authStore.dailyRequestsLeft }}
                                 </li>
                             </ul>
                         </li>

@@ -5,6 +5,7 @@ import RegisterView from '../views/RegisterView.vue';
 import ProfileView from '../views/ProfileView.vue';
 import QuizView from '../views/QuizView.vue';
 import { useAuthStore } from '../stores/auth';
+import axios from 'axios';
 
 const routes = [
   {
@@ -46,9 +47,10 @@ router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
   if (to.matched.some(record => record.meta.requiresAuth)) {
     try {
-      const response = await fetch('http://localhost:3000/user/profile', { credentials: 'include' });
+      const response = await axios.get('http://localhost:3000/user/profile', { credentials: 'include' });
       if (response.status === 200) {
         authStore.isAuthenticated = true;
+        console.log(response)
         authStore.setUsername(response.data.username);
         next();
       } else {

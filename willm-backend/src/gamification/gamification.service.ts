@@ -13,9 +13,9 @@ export class GamificationService {
       max_score_bonus: 30,
       achievements: {
         quizzes_completed: {
-          "5": 100,
-          "10": 200,
-          "15": 300,
+          "1": 100,
+          "3": 200,
+          "5": 300,
         },
         correct_answers: {
           "15": 100,
@@ -39,27 +39,27 @@ export class GamificationService {
     badges: {
       rookie: {
         criteria: {
-          quizzes_completed: 2,
+          quizzes_completed: 1,
         },
       },
       pro: {
         criteria: {
           quizzes_completed: 3,
           consecutive_days: 5,
-          correct_answers: 20,
+          correct_answers: 10,
         },
       },
       leader: {
         criteria: {
           quizzes_completed: 4,
-          correct_answers: 25,
+          correct_answers: 15,
           weekly_streaks: 1,
         },
       },
       guru: {
         criteria: {
           quizzes_completed: 5,
-          correct_answers: 30,
+          correct_answers: 20,
         },
       },
     },

@@ -30,9 +30,9 @@ const levels = {
 
 const achievementsConfig = {
     quizzes_completed: {
-        "5": 100,
-        "10": 200,
-        "15": 300,
+        "1": 100,
+        "3": 200,
+        "5": 300,
     },
     correct_answers: {
         "15": 100,

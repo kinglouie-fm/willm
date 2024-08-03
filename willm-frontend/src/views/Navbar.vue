@@ -154,7 +154,7 @@ const fetchData = () => {
 <template>
     <nav class="navbar navbar-expand-lg">
         <div class="container-fluid">
-            <a class="navbar-brand" @click="router.push('/')">WILLM</a>
+            <a class="navbar-brand ms-2" @click="router.push('/')">WILLM</a>
 
             <div class="flex-grow-1"></div>
 

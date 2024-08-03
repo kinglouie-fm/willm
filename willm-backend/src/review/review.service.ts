@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { IssueService } from '../issue/issue.service';
-import { SessionService } from '../session/session.service';
+import { UserService } from '../user/user.service';
 import { TextService } from '../text/text.service';
 import { HttpService } from '@nestjs/axios';
 import { Review } from './schema/review.schema';
@@ -12,7 +12,7 @@ import { lastValueFrom } from 'rxjs';
 export class ReviewService {
   constructor(
     private readonly issueService: IssueService,
-    private readonly sessionService: SessionService,
+    private readonly userService: UserService,
     private readonly textService: TextService,
     private readonly httpService: HttpService,
     @InjectModel(Review.name) private reviewModel: Model<Review>
@@ -118,11 +118,23 @@ export class ReviewService {
     let organization_tip = 'organization_tip not generated';
 
     if (coherenceSections.length >= 2 || organizationSections.length >= 3) {
+      let dailyRequestsLeft = await this.userService.getDailyRequestsLeft(userId);
+
+      if (dailyRequestsLeft <= 0 && review_model === '4o') {
+        return { reviewData: 'No recent review available.' };
+      }
+
       const response = await lastValueFrom(this.httpService.post('http://flask-api:8000/review/generate', {
         model: review_model,
         coherence_text: coherenceSections.length >= 2 ? coherenceSections.join('\n\n') : 'coherence_tip not generated',
         organization_text: organizationSections.length >= 3 ? organizationSections.join('\n\n') : 'organization_tip not generated',
       }));
+
+      if(review_model === '4o') {
+        await this.userService.setDailyRequestsLeft(userId, dailyRequestsLeft - 1);
+        dailyRequestsLeft -= 1;
+      }
+
       coherence_tip = response.data.coherence_tip;
       organization_tip = response.data.organization_tip;
     }

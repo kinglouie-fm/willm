@@ -13,10 +13,10 @@ export const useAuthStore = defineStore('auth', {
     quizDueToday: false,
     nextQuizDate: null,
     username: '',
-    correctionModel: '3.5-turbo',
-    furtherCorrectionModel: '3.5-turbo',
-    scoreModel: '3.5-turbo',
-    reviewModel: '3.5-turbo',
+    correctionModel: '3.5-turbo-1106',
+    furtherCorrectionModel: '3.5-turbo-1106',
+    scoreModel: '3.5-turbo-1106',
+    reviewModel: '3.5-turbo-1106',
     dailyRequestsLeft: 10,
   }),
   actions: {
@@ -107,6 +107,9 @@ export const useAuthStore = defineStore('auth', {
     },
     setLLM(model, value) {
       this[model] = value;
+    },
+    getLLM(model) {
+      return this[model];
     },
     setDailyRequestsLeft(value) {
       this[dailyRequestsLeft] = value;

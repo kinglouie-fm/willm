@@ -20,7 +20,7 @@ const toggleDropdown = (id) => {
 
 // Update LLM in the store
 const updateLLM = async (modelKey, value) => {
-    const newValue = value === 'gpt-3.5-turbo' ? '3.5-turbo' : '4o';
+    const newValue = value === 'gpt-3.5-turbo-1106' ? '3.5-turbo-1106' : '4o';
 
     try {
         await axios.patch('http:localhost:3000/user/updateModel', {
@@ -133,8 +133,8 @@ onMounted(async () => {
                                     <span>{{ name }}</span>
                                     <span>{{ authStore[modelKey] }}</span>
                                     <input type="checkbox" class="form-check-input ms-2"
-                                        :checked="authStore[modelKey] === '3.5-turbo'"
-                                        @change="updateLLM(modelKey, authStore[modelKey] === '3.5-turbo' ? 'gpt-4o' : 'gpt-3.5-turbo')" />
+                                        :checked="authStore[modelKey] === '3.5-turbo-1106'"
+                                        @change="updateLLM(modelKey, authStore[modelKey] === '3.5-turbo-1106' ? 'gpt-4o' : 'gpt-3.5-turbo-1106')" />
                                 </li>
                                 <li class="dropdown-item">
                                     Requests for gpt-4o left: {{ authStore[dailyRequestsLeft] }}

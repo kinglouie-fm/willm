@@ -9,10 +9,6 @@ import { isAfter } from 'date-fns';
 import { message } from 'ant-design-vue';
 
 const textareaSmall = ref('Introduction');
-const correctionModel = ref('3.5-turbo-1106');
-const furtherCorrectionModel = ref('3.5-turbo-1106');
-const scoreModel = ref('3.5-turbo-1106');
-const reviewModel = ref('3.5-turbo-1106');
 const mistakes = ref([]);
 const corrections = ref([]);
 const explanations = ref([]);
@@ -119,9 +115,9 @@ const handleCorrect = async () => {
       section: textareaSmall.value,
       mode: mode.value,
       language: selectedLanguage.value,
-      correctionModel: correctionModel.value,
-      furtherCorrectionModel: furtherCorrectionModel.value,
-      scoreModel: scoreModel.value,
+      correctionModel: authStore.getLLM('correctionModel'),
+      furtherCorrectionModel: authStore.getLLM('furtherCorrectionModel'),
+      scoreModel: authStore.getLLM('scoreModel'),
     });
 
     console.log(correctionResponse.data);
@@ -191,7 +187,7 @@ const handleCorrect = async () => {
 const generateReview = async () => {
   const hideLoading = message.loading("Generating review...", 0);
   try {
-    const response = await axios.post('http://localhost:3000/review/generate', { reviewModel: reviewModel.value });
+    const response = await axios.post('http://localhost:3000/review/generate', { reviewModel: authStore.getLLM('reviewModel') });
     if (response.data.reviewData === 'No text available.') {
       message.info('Not enough texts to generate the review');
     } else if (response.data.reviewData === '<2') {

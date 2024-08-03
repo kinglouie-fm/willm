@@ -4,18 +4,11 @@ import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import { message } from 'ant-design-vue';
 import axios from 'axios';
-import * as bootstrap from 'bootstrap';
 import { isAfter } from 'date-fns';
 
 const authStore = useAuthStore();
 const route = useRoute();
 const router = useRouter();
-
-const toggleDropdown = (id) => {
-    const dropdownElement = document.getElementById(id);
-    const dropdown = new bootstrap.Dropdown(dropdownElement);
-    dropdown.toggle();
-};
 
 // Update LLM in the store
 const updateLLM = async (modelKey, value) => {
@@ -26,7 +19,6 @@ const updateLLM = async (modelKey, value) => {
             [modelKey]: newValue,
         });
         authStore.setLLMModel(modelKey, newValue);
-        // message.success(`${modelKey} updated successfully`);
     } catch (error) {
         console.error(`Failed to update ${modelKey}`, error);
         message.error(`Failed to update ${modelKey}`);
@@ -115,8 +107,9 @@ onMounted(async () => {
                     @click="showPostTestModal">
                     Start Post-Test
                 </button>
+
                 <div class="dropdown">
-                    <button id="userDropdown" class="btn btn-link ms-3" @click="toggleDropdown('userDropdown')">
+                    <button id="userDropdown" class="btn btn-link ms-3" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bi bi-person-circle fs-3"></i>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
@@ -144,13 +137,14 @@ onMounted(async () => {
                 </div>
 
                 <div class="dropdown ms-3">
-                    <button id="hamburgerDropdown" class="btn btn-link" @click="toggleDropdown('hamburgerDropdown')">
+                    <button id="hamburgerDropdown" class="btn btn-link" href="#" data-bs-toggle="dropdown"
+                        aria-expanded="false">
                         <i class="bi bi-list fs-3"></i>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="hamburgerDropdown">
                         <li v-for="link in navigationLinks" :key="link.name || link">
-                            <a class="dropdown-item"
-                                @click="typeof link === 'string' && link.toLowerCase() === 'logout' ? logout() : navigateTo(link.path || `/${link.toLowerCase()}`)">
+                            <a class="dropdown-item" @click="typeof link === 'string' && link.toLowerCase() === 'logout' ? logout() :
+                    link.toLowerCase() === 'quiz' ? checkQuiz() : navigateTo(link.path || `/${link.toLowerCase()}`)">
                                 {{ link.name || link }}
                             </a>
                         </li>
@@ -159,6 +153,7 @@ onMounted(async () => {
             </div>
         </div>
     </nav>
+
     <div class="modal fade" id="postTestModal" tabindex="-1" aria-labelledby="postTestModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">

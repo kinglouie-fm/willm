@@ -114,10 +114,6 @@ const renderQuizScoreStars = (score) => {
 onMounted(fetchQuiz);
 
 const currentQuestion = computed(() => quiz.value?.questions[currentQuestionIndex.value] || null);
-
-// watch(currentQuestion, (newQuestion) => {
-//     console.log('Current Question:', newQuestion);
-// });
 </script>
 
 <template>

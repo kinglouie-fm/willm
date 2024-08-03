@@ -50,7 +50,6 @@ router.beforeEach(async (to, from, next) => {
       const response = await axios.get('http://localhost:3000/user/profile', { credentials: 'include' });
       if (response.status === 200) {
         authStore.isAuthenticated = true;
-        console.log(response)
         authStore.setUsername(response.data.username);
         next();
       } else {

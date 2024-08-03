@@ -5,6 +5,7 @@ import App from './App.vue'
 import router from './router'
 import "@popperjs/core/dist/umd/popper.min.js"
 import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.bundle.js'
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import 'ant-design-vue/dist/reset.css';
 import Antd from 'ant-design-vue';

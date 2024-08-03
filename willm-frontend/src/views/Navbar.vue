@@ -5,6 +5,8 @@ import { useAuthStore } from '../stores/auth';
 import { message } from 'ant-design-vue';
 import axios from 'axios';
 import { isAfter } from 'date-fns';
+import SmallLevelProgressBar from '../components/SmallLevelProgressBar.vue';
+import * as bootstrap from 'bootstrap';
 
 const authStore = useAuthStore();
 const route = useRoute();
@@ -15,6 +17,7 @@ const correctionModel = ref();
 const furtherCorrectionModel = ref();
 const scoreModel = ref();
 const reviewModel = ref();
+const gamificationData = ref(null);
 
 const languages = [
     'English', 'Albanian', 'Amharic', 'Arabic', 'Armenian', 'Bengali', 'Bosnian', 'Bulgarian', 'Burmese', 'Catalan', 'Chinese', 'Croatian', 'Czech', 'Danish', 'Dutch', 'Estonian', 'Finnish', 'French', 'Georgian', 'German', 'Greek', 'Gujarati', 'Hindi', 'Hungarian', 'Icelandic', 'Indonesian', 'Italian', 'Japanese', 'Kannada', 'Kazakh', 'Korean', 'Latvian', 'Lithuanian', 'Macedonian', 'Malay', 'Malayalam', 'Marathi', 'Mongolian', 'Norwegian', 'Persian', 'Polish', 'Portuguese', 'Punjabi', 'Romanian', 'Russian', 'Serbian', 'Slovak', 'Slovenian', 'Somali', 'Spanish', 'Swahili', 'Swedish', 'Tagalog', 'Tamil', 'Telugu', 'Thai', 'Turkish', 'Ukrainian', 'Urdu', 'Vietnamese'
@@ -55,6 +58,32 @@ const updateLanguage = async () => {
         authStore.setLanguage(authStore.language);
     } catch (error) {
         message.error('Failed to update language');
+    }
+};
+
+const getNextLevelXP = (level) => {
+    const levels = {
+        0: 0,
+        1: 100,
+        2: 300,
+        3: 600,
+        4: 1000,
+        5: 1500,
+        6: 2100,
+        7: 2800,
+        8: 3600,
+        9: 4500,
+        10: 5500,
+    };
+    return levels[level + 1] || levels[10];
+};
+
+const fetchGamification = async () => {
+    try {
+        const response = await axios.get('http://localhost:3000/user/gamification', { withCredentials: true });
+        gamificationData.value = response.data;
+    } catch (error) {
+        console.error("Error fetching gamification: ", error);
     }
 };
 
@@ -127,13 +156,14 @@ onMounted(() => {
     furtherCorrectionModel.value = authStore.getLLM('furtherCorrectionModel');
     scoreModel.value = authStore.getLLM('scoreModel');
     reviewModel.value = authStore.getLLM('reviewModel');
+    fetchGamification();
 });
 </script>
 
 <template>
     <nav class="navbar navbar-expand-lg">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">WILLM</a>
+            <a class="navbar-brand" @click="router.push('/')">WILLM</a>
 
             <div class="flex-grow-1"></div>
 
@@ -149,6 +179,20 @@ onMounted(() => {
                     <ul class="dropdown-menu dropdown-menu-end" id="customDropdownMenu" aria-labelledby="userDropdown">
                         <li>
                             <h1 class="dropdown-header text-center">User: {{ authStore.username }}</h1>
+                        </li>
+                        <li>
+                            <h1 class="dropdown-header">Your Progress</h1>
+                        </li>
+                        <li v-if="gamificationData">
+                            <div class="px-3 pb-2 pt-1">
+                                <SmallLevelProgressBar :currentLevel="gamificationData.level"
+                                    :currentXP="gamificationData.xp" :maxXP="getNextLevelXP(gamificationData.level)"
+                                    :nextLevel="gamificationData.level + 1" />
+                                <div class="d-flex justify-content-between mt-1">
+                                    <small>Daily Streak: {{ gamificationData.daily_streak }}</small>
+                                    <small>Weekly Streak: {{ gamificationData.weekly_streak }}</small>
+                                </div>
+                            </div>
                         </li>
                         <li>
                             <h1 class="dropdown-header">Language Settings</h1>
@@ -177,7 +221,7 @@ onMounted(() => {
                             </select>
                         </li>
                         <li>
-                            <div class="d-flex justify-content-between align-items-center ps-4 pe-3">
+                            <div class="d-flex justify-content-between align-items-center ps-4 pe-4">
                                 <span>Requests left for gpt-4o:</span>
                                 <span>{{ authStore.dailyRequestsLeft }}</span>
                             </div>
@@ -265,6 +309,10 @@ a {
 
 .btn:hover {
     color: #ffffff;
+    background-color: #eabc7c;
+}
+
+a:active {
     background-color: #eabc7c;
 }
 </style>

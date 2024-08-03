@@ -602,11 +602,6 @@ onMounted(async () => {
                   <label class="form-check-label ms-2" for="flexSwitchCheckDefault">{{ mode }}</label>
                 </div>
               </div>
-              <div class="d-flex align-items-center mb-3">
-                <select v-model="selectedLanguage" class="form-select" style="width: auto;">
-                  <option v-for="language in languages" :key="language" :value="language">{{ language }}</option>
-                </select>
-              </div>
               <textarea v-model="textareaSmall" class="form-control textarea-small" placeholder="Enter section..."
                 required></textarea>
             </div>

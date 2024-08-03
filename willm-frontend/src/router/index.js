@@ -49,8 +49,16 @@ router.beforeEach(async (to, from, next) => {
     try {
       const response = await axios.get('http://localhost:3000/user/profile', { credentials: 'include' });
       if (response.status === 200) {
+
         authStore.isAuthenticated = true;
         authStore.setUsername(response.data.username);
+        authStore.setLanguage(response.data.language);
+        authStore.setLLM('correctionModel', response.data.correctionModel);
+        authStore.setLLM('furtherCorrectionModel', response.data.furtherCorrectionModel);
+        authStore.setLLM('scoreModel', response.data.scoreModel);
+        authStore.setLLM('reviewModel', response.data.reviewModel);
+        authStore.setDailyRequestsLeft(response.data.dailyRequestsLeft);
+
         next();
       } else {
         authStore.isAuthenticated = false;

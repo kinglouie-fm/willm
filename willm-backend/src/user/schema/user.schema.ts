@@ -59,20 +59,23 @@ export class User extends Document {
   @Prop({ default: Date.now })
   last_login: Date;
 
-  @Prop({ default: '3.5-turbo' })
+  @Prop({ default: '3.5-turbo-1106' })
   correctionModel: string;
 
-  @Prop({ default: '3.5-turbo' })
+  @Prop({ default: '3.5-turbo-1106' })
   furtherCorrectionModel: string;
 
-  @Prop({ default: '3.5-turbo' })
+  @Prop({ default: '3.5-turbo-1106' })
   scoreModel: string;
 
-  @Prop({ default: '3.5-turbo' })
+  @Prop({ default: '3.5-turbo-1106' })
   reviewModel: string;
 
-  @Prop({ default: 10 })
+  @Prop({ default: 15 })
   dailyRequestsLeft: number;
+
+  @Prop({ default: 'English'})
+  language: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

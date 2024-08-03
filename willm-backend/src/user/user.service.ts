@@ -131,4 +131,11 @@ export class UserService {
     const user = await this.userModel.findById(userId);
     return user.dailyRequestsLeft;
   }
+
+  async updateUserLanguage(userId: Types.ObjectId, language: string): Promise<void> {
+    await this.userModel.updateOne(
+      { _id: userId },
+      { $set: { language } }
+    );
+  }
 }

@@ -13,6 +13,7 @@ export const useAuthStore = defineStore('auth', {
     quizDueToday: false,
     nextQuizDate: null,
     username: '',
+    language: 'English',
     correctionModel: '3.5-turbo-1106',
     furtherCorrectionModel: '3.5-turbo-1106',
     scoreModel: '3.5-turbo-1106',
@@ -103,6 +104,9 @@ export const useAuthStore = defineStore('auth', {
     },
     setUsername(value) {
       this.username = value;
+    },
+    setLanguage(value) {
+      this.language = value;
     },
     setLLM(model, value) {
       this[model] = value;

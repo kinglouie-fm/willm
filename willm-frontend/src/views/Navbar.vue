@@ -10,20 +10,38 @@ const authStore = useAuthStore();
 const route = useRoute();
 const router = useRouter();
 
+const languages = [
+    'English', 'Albanian', 'Amharic', 'Arabic', 'Armenian', 'Bengali', 'Bosnian', 'Bulgarian', 'Burmese', 'Catalan', 'Chinese', 'Croatian', 'Czech', 'Danish', 'Dutch', 'Estonian', 'Finnish', 'French', 'Georgian', 'German', 'Greek', 'Gujarati', 'Hindi', 'Hungarian', 'Icelandic', 'Indonesian', 'Italian', 'Japanese', 'Kannada', 'Kazakh', 'Korean', 'Latvian', 'Lithuanian', 'Macedonian', 'Malay', 'Malayalam', 'Marathi', 'Mongolian', 'Norwegian', 'Persian', 'Polish', 'Portuguese', 'Punjabi', 'Romanian', 'Russian', 'Serbian', 'Slovak', 'Slovenian', 'Somali', 'Spanish', 'Swahili', 'Swedish', 'Tagalog', 'Tamil', 'Telugu', 'Thai', 'Turkish', 'Ukrainian', 'Urdu', 'Vietnamese'
+];
+const selectedLanguage = ref('English');
+
 // Update LLM in the store
 const updateLLM = async (modelKey, value) => {
-    const newValue = value === 'gpt-3.5-turbo-1106' ? '3.5-turbo-1106' : '4o';
+    const newValue = value === 'gpt-3.5-turbo' ? '3.5-turbo-1106' : '4o';
 
     try {
         await axios.patch('http:localhost:3000/user/updateModel', {
-            [modelKey]: newValue,
+            modelKey: newValue,
         });
         authStore.setLLMModel(modelKey, newValue);
     } catch (error) {
         console.error(`Failed to update ${modelKey}`, error);
         message.error(`Failed to update ${modelKey}`);
     }
-}
+};
+
+const updateLanguage = async () => {
+    try {
+        await axios.patch('http://localhost:3000/user/updateLanguage', {
+            language: selectedLanguage.value,
+        });
+
+        authStore.setLanguage(selectedLanguage.value);
+    } catch (error) {
+        console.error('Failed to update language', error);
+        message.error('Failed to update language');
+    }
+};
 
 // Logout function
 const logout = async () => {
@@ -74,25 +92,6 @@ const navigationLinks = computed(() => {
         return ['Logout'];
     }
 });
-
-onMounted(async () => {
-    if (authStore.isAuthenticated) {
-        try {
-            const response = await axios.get('http://localhost:3000/user/getModels');
-            const { correctionModel, furtherCorrectionModel, scoreModel, reviewModel, dailyRequestsLeft } = response.data;
-
-            // Update the Pinia store with the values from the backend
-            authStore.setLLM('correctionModel', correctionModel);
-            authStore.setLLM('furtherCorrectionModel', furtherCorrectionModel);
-            authStore.setLLM('scoreModel', scoreModel);
-            authStore.setLLM('reviewModel', reviewModel);
-            authStore.setDailyRequestsLeft(dailyRequestsLeft);
-        } catch (error) {
-            console.error('Failed to retrieve LLM models', error);
-            message.error('Failed to retrieve LLM models');
-        }
-    }
-});
 </script>
 
 <template>
@@ -112,26 +111,42 @@ onMounted(async () => {
                     <button id="userDropdown" class="btn btn-link ms-3" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bi bi-person-circle fs-3"></i>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                    <ul class="dropdown-menu dropdown-menu-end" id="customDropdownMenu" aria-labelledby="userDropdown">
                         <li>
-                            <h6 class="dropdown-header">{{ authStore.username }}</h6>
+                            <h1 class="dropdown-header text-center">User: {{ authStore.username }}</h1>
                         </li>
                         <li>
-                            <a class="dropdown-item" href="#">Settings</a>
-                            <ul class="dropdown-menu dropdown-submenu dropdown-menu-start">
-                                <li class="dropdown-header">Choose LLM</li>
-                                <li v-for="(modelKey, name) in { Correction: 'correctionModel', 'Further Correction': 'furtherCorrectionModel', Score: 'scoreModel', Review: 'reviewModel' }"
-                                    :key="name" class="d-flex justify-content-between align-items-center">
-                                    <span>{{ name }}</span>
-                                    <span>{{ authStore[modelKey] }}</span>
-                                    <input type="checkbox" class="form-check-input ms-2"
-                                        :checked="authStore[modelKey] === '3.5-turbo'"
-                                        @change="updateLLM(modelKey, authStore[modelKey] === '3.5-turbo' ? 'gpt-4o' : 'gpt-3.5-turbo')" />
-                                </li>
-                                <li class="dropdown-item">
-                                    Requests for gpt-4o left: {{ authStore.dailyRequestsLeft }}
-                                </li>
-                            </ul>
+                            <h1 class="dropdown-header">Language Settings</h1>
+                        </li>
+                        <li>
+                            <div class="d-flex justify-content-between px-4">
+                                <span>Explanations in: </span>
+                                <select v-model="selectedLanguage" @change="updateLanguage" class="form-select-sm ms-3"
+                                    style="width: auto;">
+                                    <option v-for="language in languages" :key="language" :value="language">{{ language
+                                        }}
+                                    </option>
+                                </select>
+                            </div>
+                        </li>
+                        <li>
+                            <h6 class="dropdown-header">Model Settings</h6>
+                        </li>
+                        <li v-for="(modelKey, name) in { Correction: 'correctionModel', 'Further Correction': 'furtherCorrectionModel', Score: 'scoreModel', Review: 'reviewModel' }"
+                            :key="name" class="d-flex justify-content-between align-items-center px-4 pb-2">
+                            <span>{{ name }}:</span>
+                            <select @change="updateLLM(modelKey, $event.target.value)"
+                                :value="authStore[modelKey] === '3.5-turbo-1106' ? 'gpt-3.5-turbo' : 'gpt-4o'"
+                                class="form-select-sm ms-3">
+                                <option value="gpt-3.5-turbo">gpt-3.5-turbo</option>
+                                <option value="gpt-4o">gpt-4o</option>
+                            </select>
+                        </li>
+                        <li>
+                            <div class="d-flex justify-content-between align-items-center ps-4 pe-3">
+                                <span>Request left for gpt-4o:</span>
+                                <span>{{ authStore.dailyRequestsLeft }}</span>
+                            </div>
                         </li>
                     </ul>
                 </div>
@@ -178,6 +193,10 @@ onMounted(async () => {
 .navbar {
     box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.06) 0px 2px 4px -1px;
     background: #eabc7c;
+}
+
+#customDropdownMenu {
+    min-width: 300px;
 }
 
 .navbar-brand {

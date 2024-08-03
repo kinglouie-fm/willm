@@ -76,7 +76,15 @@ export class UserController {
     if (!decoded) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
-    return res.status(200).json({ username: decoded.username });
+    return res.status(200).json({ 
+      username: decoded.username, 
+      language: decoded.language,
+      correctionModel: decoded.correctionModel,
+      furtherCorrectionModel: decoded.furtherCorrectionModel,
+      scoreModel: decoded.scoreModel,
+      reviewModel: decoded.reviewModel,
+      dailyRequestsLeft: decoded.dailyRequestsLeft
+    });
   }
 
   @Get('pre-test-status')
@@ -222,19 +230,19 @@ export class UserController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('getModels')
-  async getModels(@Req() req: Request, @Res() res: Response): Promise<any> {
+  @Patch('updateLanguage')
+  async updateLanguage(
+    @Body('language') language: string,
+    @Req() req: Request,
+    @Res() res: Response
+  ): Promise<any> {
     const user = await this.userService.findUserByToken(req.cookies['auth_token']);
     if (!user) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    return res.status(200).json({
-      correctionModel: user.correctionModel,
-      furtherCorrectionModel: user.furtherCorrectionModel,
-      scoreModel: user.scoreModel,
-      reviewModel: user.reviewModel,
-      dailyRequestsLeft: user.dailyRequestsLeft
-    });
+    await this.userService.updateUserLanguage(user._id as Types.ObjectId, language);
+
+    return res.status(200).json({ message: 'Language updated successfully' });
   }
 }

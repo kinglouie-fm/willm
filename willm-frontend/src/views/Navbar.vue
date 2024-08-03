@@ -17,7 +17,7 @@ const correctionModel = ref();
 const furtherCorrectionModel = ref();
 const scoreModel = ref();
 const reviewModel = ref();
-const gamificationData = ref(null);
+const gamificationData = ref();
 
 const languages = [
     'English', 'Albanian', 'Amharic', 'Arabic', 'Armenian', 'Bengali', 'Bosnian', 'Bulgarian', 'Burmese', 'Catalan', 'Chinese', 'Croatian', 'Czech', 'Danish', 'Dutch', 'Estonian', 'Finnish', 'French', 'Georgian', 'German', 'Greek', 'Gujarati', 'Hindi', 'Hungarian', 'Icelandic', 'Indonesian', 'Italian', 'Japanese', 'Kannada', 'Kazakh', 'Korean', 'Latvian', 'Lithuanian', 'Macedonian', 'Malay', 'Malayalam', 'Marathi', 'Mongolian', 'Norwegian', 'Persian', 'Polish', 'Portuguese', 'Punjabi', 'Romanian', 'Russian', 'Serbian', 'Slovak', 'Slovenian', 'Somali', 'Spanish', 'Swahili', 'Swedish', 'Tagalog', 'Tamil', 'Telugu', 'Thai', 'Turkish', 'Ukrainian', 'Urdu', 'Vietnamese'
@@ -76,15 +76,6 @@ const getNextLevelXP = (level) => {
         10: 5500,
     };
     return levels[level + 1] || levels[10];
-};
-
-const fetchGamification = async () => {
-    try {
-        const response = await axios.get('http://localhost:3000/user/gamification', { withCredentials: true });
-        gamificationData.value = response.data;
-    } catch (error) {
-        console.error("Error fetching gamification: ", error);
-    }
 };
 
 // Logout function
@@ -150,14 +141,14 @@ const handleNavigation = (link) => {
     }
 };
 
-onMounted(() => {
+const fetchData = () => {
+    gamificationData.value = authStore.getGamificationData();
     selectedLanguage.value = authStore.getLanguage();
     correctionModel.value = authStore.getLLM('correctionModel');
     furtherCorrectionModel.value = authStore.getLLM('furtherCorrectionModel');
     scoreModel.value = authStore.getLLM('scoreModel');
     reviewModel.value = authStore.getLLM('reviewModel');
-    fetchGamification();
-});
+}
 </script>
 
 <template>
@@ -173,7 +164,8 @@ onMounted(() => {
                 </button>
 
                 <div class="dropdown">
-                    <button id="userDropdown" class="btn btn-link ms-3" data-bs-toggle="dropdown" aria-expanded="false">
+                    <button id="userDropdown" class="btn btn-link ms-3" data-bs-toggle="dropdown" aria-expanded="false"
+                        @click="fetchData">
                         <i class="bi bi-person-circle fs-3"></i>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end" id="customDropdownMenu" aria-labelledby="userDropdown">

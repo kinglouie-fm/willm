@@ -47,17 +47,18 @@ router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
   if (to.matched.some(record => record.meta.requiresAuth)) {
     try {
-      const response = await axios.get('http://localhost:3000/user/profile', { withCredentials: true });
-      if (response.status === 200) {
+      const profileResponse = await axios.get('http://localhost:3000/user/profile', { withCredentials: true });
+      const gamificationResponse = await axios.get('http://localhost:3000/user/gamification', { withCredentials: true });
+      if (profileResponse.status === 200 && gamificationResponse.status === 200) {
         authStore.setIsAuthenticated(true);
-        authStore.setUsername(response.data.username);
-        authStore.setLanguage(response.data.language);
-        authStore.setLLM('correctionModel', response.data.correctionModel);
-        authStore.setLLM('furtherCorrectionModel', response.data.furtherCorrectionModel);
-        authStore.setLLM('scoreModel', response.data.scoreModel);
-        authStore.setLLM('reviewModel', response.data.reviewModel);
-        authStore.setDailyRequestsLeft(response.data.dailyRequestsLeft);
-
+        authStore.setUsername(profileResponse.data.username);
+        authStore.setLanguage(profileResponse.data.language);
+        authStore.setLLM('correctionModel', profileResponse.data.correctionModel);
+        authStore.setLLM('furtherCorrectionModel', profileResponse.data.furtherCorrectionModel);
+        authStore.setLLM('scoreModel', profileResponse.data.scoreModel);
+        authStore.setLLM('reviewModel', profileResponse.data.reviewModel);
+        authStore.setDailyRequestsLeft(profileResponse.data.dailyRequestsLeft);
+        authStore.setGamificationData(gamificationResponse.data);
         next();
       } else {
         authStore.setIsAuthenticated(false);

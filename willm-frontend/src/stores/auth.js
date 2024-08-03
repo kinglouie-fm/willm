@@ -18,7 +18,8 @@ export const useAuthStore = defineStore('auth', {
     furtherCorrectionModel: '',
     scoreModel: '',
     reviewModel: '',
-    dailyRequestsLeft: 0
+    dailyRequestsLeft: 0,
+    gamificationData: null,
   }),
   actions: {
     async register(username, password) {
@@ -77,6 +78,7 @@ export const useAuthStore = defineStore('auth', {
           message.error('Invalid credentials.')
         } else {
           message.error('An error occurred. Please try again.');
+          console.error(error);
         }
       } finally {
         hideLoading();
@@ -122,6 +124,12 @@ export const useAuthStore = defineStore('auth', {
     },
     setDailyRequestsLeft(value) {
       this.dailyRequestsLeft = value;
+    },
+    getGamificationData() {
+      return this.gamificationData;
+    },
+    setGamificationData(value) {
+      this.gamificationData = value;
     },
   },
 });

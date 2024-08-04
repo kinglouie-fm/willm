@@ -78,8 +78,6 @@ async def handle_correction():
         async with aiohttp.ClientSession() as session:
             unified_result = await handle_unified(session, data, language, model)
 
-        logging.info(f"Unified Result: {unified_result}")
-
         mistakes, corrections, explanations, categories, contexts, corrected_text = process_initial_result(unified_result)
     elif model == '3.5-turbo-1106':
         sentences = split_into_sentences(data)
@@ -395,13 +393,13 @@ def generate_question():
             if argument_match:
                 metadata['argument'] = argument_match.group(1).strip()
         elif question_type == 'organization':
-            excerpts_match = re.search(r'Excerpts:\s*(.*?)\nOptions:', output, re.DOTALL)
-            if excerpts_match:
-                metadata['excerpts'] = excerpts_match.group(1).strip()
+            scenario_match = re.search(r'Scenario:\s*(.*?)\nOptions:', output, re.DOTALL)
+            if scenario_match:
+                metadata['scenario'] = scenario_match.group(1).strip()
         elif question_type == 'coherence':
-            sentences_match = re.search(r'Sentences:\s*(.*?)\nOptions:', output, re.DOTALL)
-            if sentences_match:
-                metadata['sentences'] = sentences_match.group(1).strip()
+            scenario_match = re.search(r'Scenario:\s*(.*?)\nOptions:', output, re.DOTALL)
+            if scenario_match:
+                metadata['scenario'] = scenario_match.group(1).strip()
     else:
         if question_type == 'revision':
             text_match = re.search(r'Text:\s*(.*?)\n', output, re.DOTALL)

@@ -121,6 +121,10 @@ const handleCorrect = async () => {
       return explanation.replace(/(\n[T|X]:.*)/g, '').trim();
     });
 
+    categories.value = correctionResponse.data.categories.map(category => {
+      return category.replace(/(\n[X]:.*)/g, '').trim();
+    });
+
     // Process initial correction response
     mistakes.value = correctionResponse.data.mistakes.map(replaceDoubleBackslash);
     corrections.value = correctionResponse.data.corrections.map(replaceDoubleBackslash);
@@ -167,7 +171,7 @@ const handleCorrect = async () => {
     }
 
     // Trigger question generation if applicable
-    // await axios.post('http://localhost:3000/question/generate');
+    await axios.post('http://localhost:3000/question/generate');
   } catch (error) {
     if (error.response && error.response.status === 401) {
       message.info('Please log in again.');

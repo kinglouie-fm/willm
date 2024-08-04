@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 
 const props = defineProps({
     furtherCorrectionData: Object
@@ -8,6 +8,7 @@ const props = defineProps({
 const organizationOpen = ref(true);
 const coherenceOpen = ref(true);
 const writingStyleOpen = ref(true);
+const feedbackDiv = ref(null);
 
 const toggleSection = (section) => {
     if (section === 'organization') {
@@ -33,10 +34,42 @@ const isSectionOpen = (section) => {
 const sectionIcon = (section) => {
     return isSectionOpen(section) ? 'arrow-icon open' : 'arrow-icon closed';
 };
+
+const handleScroll = () => {
+    const element = feedbackDiv.value;
+    if (!element) return;
+
+    const isAtBottom = element.scrollHeight - element.scrollTop === element.clientHeight;
+
+    if (isAtBottom) {
+        element.classList.remove('has-shadow-bottom');
+    } else {
+        element.classList.add('has-shadow-bottom');
+    }
+};
+
+const checkInitialOverflow = () => {
+    const element = feedbackDiv.value;
+    if (!element) return;
+
+    if (element.scrollHeight > element.clientHeight - 1) {
+        element.classList.add('has-shadow-bottom');
+    } else {
+        element.classList.remove('has-shadow-bottom');
+    }
+};
+
+onMounted(async () => {
+    const element = feedbackDiv.value;
+    if (element) {
+        element.addEventListener('scroll', handleScroll);
+        checkInitialOverflow();
+    }
+});
 </script>
 
 <template>
-    <div>
+    <div class="feedback" ref="feedbackDiv">
         <h3 class="text-center">Further Correction</h3>
         <div>
             <h5 @click="toggleSection('organization')" class="expandable-header">
@@ -163,5 +196,21 @@ a {
 
 a:hover {
     text-decoration: underline;
+}
+
+.feedback {
+    overflow-y: auto;
+    max-height: 70vh;
+    box-shadow: none;
+    transition: box-shadow 0.3s ease-in-out;
+}
+
+.feedback.has-shadow-bottom {
+    box-shadow: inset 0 -6px 6px -6px rgba(0, 0, 0, 0.3);
+}
+
+.scrollable {
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease-in-out;
 }
 </style>

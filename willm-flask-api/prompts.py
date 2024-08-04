@@ -65,7 +65,7 @@ For each mistake, you should provide the following:
 
 1. The mistake
 2. The correction
-3. The explanation
+3. The explanation in {language}
 4. The category
 5. The context
 

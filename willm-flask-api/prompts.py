@@ -418,7 +418,7 @@ You are an expert in academic writing. Your task is to generate various types of
 """
 
 REVISION_PROMPT = """
-I will provide you with a text that includes a submission from a user. Identify the grammatical errors in the submission and generate a revision type question based on these errors. If there are none, simply generate a text with grammar mistakes. The text should have grammatical errors with no two possible answers to correct them. The text should be max 100 words. Provide the question and the corresponding correct text.
+I will provide you with a text that includes a submission from a user. Identify the grammatical errors in the submission and generate a revision type question based on these errors. If there are none, simply generate a text with grammar mistakes. The text should have grammatical errors with no two possible answers to correct them. The text should be max 30 words. Provide the question and the corresponding correct text.
 
 Text:
 {lastSubmission}
@@ -498,39 +498,40 @@ Answer: [The correct option]
 # """
 
 ORGANIZATION_PROMPT = """
-Given the provided text which includes two excerpts from sections (Introduction, Literature Review etc.) of academic papers, create one multiple-choice question that includes different excerpts and options but cover the same topic and test the organization of these sections. 
-Your two generated excerpts should not be a copy of the provided text, they should only cover the topic of what each section is about. The question should ask the user to identify which section logically follows the generated excerpts to ensure a coherent and well-organized paper. 
+Given the provided text which includes two excerpts from sections (Introduction, Literature Review etc.) of a user his academic paper, create one multiple-choice sentence completion question to test the user's understanding of logical progression in academic writing. 
 
 Text:
 {text}
 
-Your generated excerpts should not be a copy of the provided text, they should only cover the topic of the provided text.
-The options should include sentences from potential sections that could logically follow the provided excerpts. However, don't reveal to what sections the options belong to.
-The output should help users learn the logical flow of academic papers.
+Scenario: Review the last three user submissions and extract a key point or section transition from one of the texts (e.g., "The introduction discussed the impact of climate change"). The scenario should reflect a common theme or recurring topic from these submissions.
+Question: Complete the sentence to ensure a logical progression.
+Options: Provide four options for how the next section might logically continue the discussion based on the context of the user's submissions.
+Answer: Indicate the correct option that best follows the scenario in a logically coherent manner.
 
 Output format:
 Type: organization
-Question: Given the provided excerpts, which section logically follows to ensure a coherent and well-organized paper?
-Excerpts: [The two generated excerpts that only cover the topic of the provided text, enumarated with 1 and 2]
-Options: [The options enumerated with A, B, C, D]
+Question: Complete the sentence to ensure a logical progression.
+Scenario: [Generated scenario description based on one of the last three user submissions]
+Options: [Four options enumerated with A, B, C, D]
 Answer: [The correct option]
 """
 
 COHERENCE_PROMPT = """
-Given the provided text which includes sentences from sections (Introduction, Literature Review etc.) of academic papers, create one multiple-choice question that includes different sentences and options but cover the same topic and asks the user to improve the coherence and logical flow between these two sections. 
-The generated sentences should be different then the ones in the provided text, thus they should not be a copy however they should cover the same topic of what they are about. Generate one to maximum two sentences per section.
-The question should ask the user to identify which section is the best choice for improving coherence and logical flow.
+Given the provided text which includes excerpts from sections (Introduction, Literature Review etc.) of a user his academic paper, create one multiple-choice sentence completion question to test the user's understanding of coherence and logical flow in academic writing.
 
 Text:
 {text}
 
-Your generated sentences should not be a copy of the provided text, they should only cover the topic of the provided text.
+Scenario: Review the last three user submissions and extract a finding or statement from one of the texts that requires a follow-up sentence for improved coherence (e.g., "The experiment showed a significant decrease in reaction time"). The scenario should reflect a common theme or recurring topic from these submissions.
+Question: Which sentence best follows for coherence?
+Options: Provide four options for sentences that could logically follow the given scenario based on the context of the user's submissions.
+Answer: Indicate the correct option that best maintains coherence and logical flow in the context of the user's submissions.
 
 Output format:
 Type: coherence
-Question: Analyze the following sentences from two different sections of an academic paper. Select the best revision for the second sentence to improve coherence and maintain logical flow.
-Sentences: [The generated sentences that only cover the topic of the provided text]
-Options: [The options enumerated with A, B, C, D]
+Question: Which sentence best follows for coherence?
+Scenario: [Generated scenario description based on one of the last three user submissions]
+Options: [Four options enumerated with A, B, C, D]
 Answer: [The correct option]
 """
 

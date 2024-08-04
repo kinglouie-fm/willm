@@ -80,7 +80,6 @@ export class CorrectionController {
       await this.userService.setDailyRequestsLeft(userId, dailyRequestsLeft - 1);
       dailyRequestsLeft -= 1;
     }
-    console.log("before issue storage");
 
     // Add issues for initial corrections
     for (let i = 0; i < mistakes.length; i++) {
@@ -101,8 +100,6 @@ export class CorrectionController {
     }
 
     await session.save();
-
-    console.log("after issue storage");
 
     // Perform further correction if correctedText is available
     let furtherCorrectionResult = null;

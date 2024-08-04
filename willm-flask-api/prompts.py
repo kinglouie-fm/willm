@@ -28,8 +28,8 @@ Output the feedback in the following structure without wrapping it with quotatio
 
 M: [Highlight only the incorrect word or smallest possible segment]
 C: [Provide the corrected word or smallest possible segment]
-E: [Explain why the grammar or vocabulary is problematic and how to improve it in {language}]
-T: [Category in english]
+E: [Explain why the grammar or vocabulary is problematic and how to improve it. Give the explanation in {language}]
+T: [Category]
 X: [Provide exactly one word before and one word after the mistake for context. It must be exactly the mistake, not the correction.]
 
 Don't use bullet points or any other sort of list. Separate each set of mistakes/corrections/explanations/contexts with a blank line.
@@ -63,18 +63,18 @@ Categorize each mistake into one of the following categories. If the mistake doe
 
 For each mistake, you should provide the following:
 
-1. The mistake in english
-2. The correction in english
-3. The explanation in {language}
-4. The category in english
-5. The context in english
+1. The mistake
+2. The correction
+3. The explanation
+4. The category
+5. The context
 
 Output the feedback in the following structure without wrapping it with quotation marks nor brackets:
 
-M: [Highlight only the incorrect word or smallest possible segment in english]
-C: [Provide the corrected word or smallest possible segment in english]
-E: [Explain why it is a mistake and provide the relevant rules or reasoning and how to improve it in {language}]
-T: [Specify the category of the mistake in english]
+M: [Highlight only the incorrect word or smallest possible segment]
+C: [Provide the corrected word or smallest possible segment]
+E: [Explain why it is a mistake and provide the relevant rules or reasoning and how to improve it. Give the explanation in {language}]
+T: [Specify the category of the mistake]
 X: [Provide exactly one word before and one word after the mistake for context. It must be exactly the mistake, not the correction or a synonym.]
 
 Don't use bullet points or any other sort of list. Separate each set of mistakes/corrections/explanations/categories/contexts with a blank line.
@@ -159,17 +159,17 @@ Output the feedback in the following structure:
 Organization:
 M: [Highlight only the incorrect phrase/segment in english]
 C: [Provide the corrected phrase/segment in english]
-E: [Explain why the organization is problematic and how to improve it in {language}]
+E: [Explain why the organization is problematic and how to improve it. Give the explanation in {language}]
 T: [Category in english]
 Coherence:
 M: [Highlight only the incorrect phrase/segment in english]
 C: [Provide the corrected phrase/segment in english]
-E: [Explain why the organization is problematic and how to improve it in {language}]
+E: [Explain why the organization is problematic and how to improve it. Give the explanation in {language}]
 T: [Category in english]
 WritingStyle:
 M: [Highlight only the incorrect phrase/segment in english]
 C: [Provide the corrected phrase/segment in english]
-E: [Explain why the organization is problematic and how to improve it in {language}]
+E: [Explain why the organization is problematic and how to improve it. Give the explanation in {language}]
 T: [Category in english]
 
 If the submitted writing is good as it is for either organization, coherence or writing style, then the output should look like this:

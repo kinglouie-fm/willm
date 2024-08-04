@@ -115,8 +115,6 @@ const handleCorrect = async () => {
       scoreModel: authStore.getLLM('scoreModel'),
     });
 
-    console.log(correctionResponse.data);
-
     explanations.value = correctionResponse.data.explanations.map(explanation => {
       return explanation.replace(/(\n[T|X]:.*)/g, '').trim();
     });
@@ -175,8 +173,7 @@ const handleCorrect = async () => {
     if (error.response && error.response.status === 401) {
       message.info('Please log in again.');
     } else {
-      message.error('Error processing requests.');
-      console.log(error)
+      message.error('Error processing requests. Please try again.');
     }
   } finally {
     hideLoading();
@@ -316,7 +313,6 @@ const activatePopovers = () => {
           el.replaceWith(el.cloneNode(true));
         }
       } else if (mode.value === 'learning') {
-        console.log(explanations.value)
         currentMistake.value = el.innerText;
         currentCategory.value = categories.value[index];
         currentCorrection.value = correction;

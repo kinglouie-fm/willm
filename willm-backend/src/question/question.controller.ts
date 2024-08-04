@@ -60,7 +60,6 @@ export class QuestionController {
   @Get('get')
   async getQuestions(@Req() req: Request) {
     const userId = req.user._id;
-    console.log(userId);
     return this.questionService.getQuestionsForUser(userId);
   }
 }

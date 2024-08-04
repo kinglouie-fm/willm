@@ -39,7 +39,6 @@ export class ScoreController {
   @UseGuards(JwtAuthGuard)
   @Get('user/:user_id')
   async getScores(@Param('user_id') user_id: string) {
-    console.log('Fetching scores for user:', user_id);
     return this.scoreService.findScoresByUserId(user_id);
   }
 }

@@ -18,7 +18,7 @@ export class IssueService {
     });
     const savedIssue = await issue.save();
 
-    await this.userModel.findByIdAndUpdate(userId, { $push: { issues: savedIssue._id } });
+    // await this.userModel.findByIdAndUpdate(userId, { $push: { issues: savedIssue._id } });
 
     return savedIssue;
   }

@@ -19,7 +19,7 @@ export class QuestionController {
     // Check submission count
     const submissionCount = await this.textService.getSubmissionCount(userId);
 
-    if (submissionCount % 1 !== 0) {
+    if (submissionCount % 3 !== 0) {
       return {
         message: "Not generating questions for this submission",
       };

@@ -193,8 +193,7 @@ export class QuizService {
       options: q.options || [],
       sentence: q.sentence || '',
       argument: q.argument || '',
-      excerpts: q.excerpts || [],
-      sentences: q.sentences || [],
+      scenario: q.scenario || [],
       result: false,
     }));
 
@@ -337,7 +336,7 @@ export class QuizService {
     const response = await lastValueFrom(this.httpService.post('http://flask-api:8000/question/explain-answer',{
         question: question,
         options: question.options || [],
-        excerpts: question.excerpts || [],
+        scenario: question.scenario || [],
         text: question.text || '',
         word: question.word || '',
         sentence: question.sentence || '',

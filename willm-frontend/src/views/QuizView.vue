@@ -140,16 +140,10 @@ const currentQuestion = computed(() => quiz.value?.questions[currentQuestionInde
                 <h5>Sentence:</h5>
                 <p>{{ currentQuestion.sentence }}</p>
             </div>
-            <div v-if="currentQuestion.excerpts && currentQuestion.excerpts.length">
-                <h5>Excerpts:</h5>
+            <div v-if="currentQuestion.scenario && currentQuestion.scenario.length">
+                <h5>Scenario:</h5>
                 <ul>
-                    <li v-for="(excerpt, index) in currentQuestion.excerpts" :key="index">{{ excerpt }}</li>
-                </ul>
-            </div>
-            <div v-if="currentQuestion.sentences && currentQuestion.sentences.length">
-                <h5>Sentences:</h5>
-                <ul>
-                    <li v-for="(sentence, index) in currentQuestion.sentences" :key="index">{{ sentence }}</li>
+                    <li v-for="(excerpt, index) in currentQuestion.scenario" :key="index">{{ excerpt }}</li>
                 </ul>
             </div>
             <div v-if="currentQuestion.options && currentQuestion.options.length">

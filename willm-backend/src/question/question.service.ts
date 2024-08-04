@@ -191,8 +191,7 @@ export class QuestionService {
       options: data.options,
       sentence: data.sentence,
       argument: data.argument,
-      excerpts: data.excerpts,
-      sentences: data.sentences,
+      scenario: data.scenario,
     }));
 
     return response.data;

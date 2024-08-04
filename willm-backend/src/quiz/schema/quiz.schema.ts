@@ -34,10 +34,7 @@ class Question extends Document {
   argument: string;
 
   @Prop([String])
-  excerpts: string[];
-
-  @Prop([String])
-  sentences: string[];
+  scenario: string[];
 
   @Prop({ default: false })
   result: boolean;

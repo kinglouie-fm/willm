@@ -658,7 +658,7 @@ onMounted(async () => {
               <p>Write the samples on your own without the help of writing improvement tools. This is crucial for an
                 effective evaluation.</p>
               <h5>Suggested Writing Types:</h5>
-              <p><strong>Research Paper Excerpts:</strong> Sections from a research paper, such as the introduction,
+              <p><strong>Research Paper Scenario:</strong> Sections from a research paper, such as the introduction,
                 literature review, or methodology.<br>
                 <strong>Essays:</strong> Academic essays on a chosen topic, with a clear thesis and supporting
                 arguments.<br>
@@ -702,7 +702,7 @@ onMounted(async () => {
         <p>Write the samples on your own without the help of writing improvement tools. This is crucial for an
           effective evaluation.</p>
         <h5>Suggested Writing Types:</h5>
-        <p><strong>Research Paper Excerpts:</strong> Sections from a research paper, such as the introduction,
+        <p><strong>Research Paper Scenario:</strong> Sections from a research paper, such as the introduction,
           literature review, or methodology.<br>
           <strong>Essays:</strong> Academic essays on a chosen topic, with a clear thesis and supporting
           arguments.<br>

@@ -151,7 +151,7 @@ For each mistake, you should provide the following:
 
 1. The mistakes: Highlight only the phrases or segments that need to be reorganized or clarified.
 2. The corrections: Provide the corrected organization.
-3. The explanations: Explain why the organization is problematic and how to improve it. Provide the explanations in {language}.
+3. The explanations: In less than 50 words, explain why the organization is problematic and how to improve it. Provide the explanations in {language}.
 4. The category: Specify the category of the mistake.
 
 Output the feedback in the following structure:

@@ -221,7 +221,7 @@ def process_initial_result(result):
     explanations = []
     categories = []
     contexts = []
-    corrected_text = None
+    corrected_text = ""
 
     fine_match = re.search(r'The submitted writing is fine.', result)
     mistakes_match = re.findall(r'M: (.*?)\n', result, re.DOTALL)
@@ -229,7 +229,7 @@ def process_initial_result(result):
     explanations_match = re.findall(r'E: (.*?)\n', result, re.DOTALL)
     categories_match = re.findall(r'T: (.*?)\n', result, re.DOTALL)
     contexts_match = re.findall(r'X: (.*?)\n', result, re.DOTALL)
-    corrected_text_match = re.search(r'Correction:\s*(.*)', result, re.DOTALL)
+    corrected_text_match = re.findall(r'Correction:\s*(.*?)\n', result, re.DOTALL)
 
     if fine_match:
         mistakes.append("The submitted writing is fine.")
@@ -248,9 +248,7 @@ def process_initial_result(result):
     if contexts_match:
         contexts = [normalize_text(x.strip()) for x in contexts_match]
     if corrected_text_match:
-        corrected_text = normalize_text(corrected_text_match.group(1).strip())
-
-    logging.info(f"Mistakes: {mistakes}, Corrections: {corrections}, Explanations: {explanations}, Categories: {categories}, Contexts: {contexts}, Corrected Text: {corrected_text}")
+        corrected_text = ' '.join(normalize_text(ct.strip()) for ct in corrected_text_match)
 
     return mistakes, corrections, explanations, categories, contexts, corrected_text
 
@@ -460,12 +458,12 @@ def explain_answer():
     word = data.get('word', '')
     sentence = data.get('sentence', '')
     options = data.get('options', [])
-    excerpts = data.get('excerpts', [])
+    scenario = data.get('scenario', [])
     correct_answer = data['correct_answer']
     user_answer = data['user_answer']
 
     options_str = '\n'.join(options)
-    excerpts_str = '\n'.join(excerpts)
+    scenario_str = '\n'.join(scenario)
 
     prompt = EXPLAIN_ANSWER.format(
         question=question,
@@ -473,7 +471,7 @@ def explain_answer():
         word=word,
         sentence=sentence,
         options=options_str,
-        excerpts=excerpts_str,
+        scenario=scenario_str,
         correct_answer=correct_answer,
         user_answer=user_answer
     )
@@ -564,8 +562,7 @@ def add_question():
         'options': data.get('options', ''),
         'sentence': data.get('sentence', ''),
         'argument': data.get('argument', ''),
-        'excerpts': data.get('excerpts', ''),
-        'sentences': data.get('sentences', '')
+        'scenario': data.get('scenario', ''),
     }
 
     document_id = chroma_langchain_handler.add_document(user_id, metadata['question'], metadata)
@@ -579,8 +576,7 @@ def add_question():
         "options": metadata['options'],
         "sentence": metadata['sentence'],
         "argument": metadata['argument'],
-        "excerpts": metadata['excerpts'],
-        "sentences": metadata['sentences'],
+        "scenario": metadata['scenario'],
         "document_id": document_id
     })
 
@@ -632,8 +628,7 @@ async def similarity_search():
             "word": metadata.get("word", ""),
             "sentence": metadata.get("sentence", ""),
             "argument": metadata.get("argument", ""),
-            "excerpts": metadata.get("excerpts", "").split("\n") if metadata.get("excerpts") else [],
-            "sentences": metadata.get("sentences", "").split("\n") if metadata.get("sentences") else []
+            "scenario": metadata.get("scenario", "").split("\n") if metadata.get("scenario") else [],
         }
         questions.append(question_data)
 
@@ -659,8 +654,7 @@ async def similarity_search():
                     "word": metadata.get("word", ""),
                     "sentence": metadata.get("sentence", ""),
                     "argument": metadata.get("argument", ""),
-                    "excerpts": metadata.get("excerpts", "").split("\n") if metadata.get("excerpts") else [],
-                    "sentences": metadata.get("sentences", "").split("\n") if metadata.get("sentences") else []
+                    "scenario": metadata.get("scenario", "").split("\n") if metadata.get("scenario") else [],
                 }
                 questions.append(question_data)
 

@@ -49,6 +49,14 @@ export class User extends Document {
     max_consecutive_days: number;
     max_weekly_streaks: number;
   };
+
+  @Prop({ type: Object, default: { quizzes_completed: [], correct_answers: [], max_weekly_streaks: [], max_consecutive_days: [] } })
+  rewarded_achievements: {
+    quizzes_completed: number[];
+    correct_answers: number[];
+    max_weekly_streaks: number[];
+    max_consecutive_days: number[];
+  };
   
   @Prop({ default: 1 })
   daily_streak: number;

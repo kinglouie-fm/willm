@@ -163,9 +163,20 @@ export class GamificationService {
     // Check achievements
     for (const [key, stages] of Object.entries(this.config.xp_allocation.achievements)) {
       const userProgress = user.achievements[key] || 0;
+      const rewardedStages = user.rewarded_achievements[key] || [];
+
       for (const [stage, xp] of Object.entries(stages)) {
-        if (userProgress >= Number(stage)) {
+        const stageNumber = Number(stage);
+        console.log("Checking achievement", key, "stage", stage, "userProgress", userProgress, "rewardedStages", rewardedStages);
+
+        // Grant XP only if the stage has been reached and XP hasn't been rewarded yet
+        if (userProgress >= stageNumber && !rewardedStages.includes(stageNumber)) {
+          console.log("Granting XP for achievement", key, "stage", stage);
           user.xp += xp;
+
+          // Add the stage to the rewarded achievements list
+          rewardedStages.push(stageNumber);
+          user.rewarded_achievements[key] = rewardedStages;
         }
       }
     }
@@ -204,6 +215,9 @@ export class GamificationService {
     if (badgesModified) {
       user.markModified('badges');
     }
+    
+    // Mark rewarded_achievements as modified if it has been updated
+    user.markModified('rewarded_achievements');
   }
 
   async resetStreaks(userId: Types.ObjectId): Promise<void> {

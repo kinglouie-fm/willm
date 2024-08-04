@@ -229,7 +229,7 @@ def process_initial_result(result):
     explanations_match = re.findall(r'E: (.*?)\n', result, re.DOTALL)
     categories_match = re.findall(r'T: (.*?)\n', result, re.DOTALL)
     contexts_match = re.findall(r'X: (.*?)\n', result, re.DOTALL)
-    corrected_text_match = re.findall(r'Correction:\s*(.*?)\n', result, re.DOTALL)
+    corrected_text_match = re.findall(r'Correction:\s*(.*?[\.\!\?])(?:\s|$)', result, re.DOTALL)
 
     if fine_match:
         mistakes.append("The submitted writing is fine.")

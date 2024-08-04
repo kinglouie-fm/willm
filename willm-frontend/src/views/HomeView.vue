@@ -129,7 +129,6 @@ const handleCorrect = async () => {
     mistakes.value = correctionResponse.data.mistakes.map(replaceDoubleBackslash);
     corrections.value = correctionResponse.data.corrections.map(replaceDoubleBackslash);
     explanations.value = correctionResponse.data.explanations.map(replaceDoubleBackslash);
-    console.log(explanations.value)
     categories.value = correctionResponse.data.categories.map(replaceDoubleBackslash);
     contexts.value = correctionResponse.data.contexts.map(replaceDoubleBackslash);
 
@@ -177,6 +176,7 @@ const handleCorrect = async () => {
       message.info('Please log in again.');
     } else {
       message.error('Error processing requests.');
+      console.log(error)
     }
   } finally {
     hideLoading();
@@ -228,11 +228,8 @@ const stripHtmlTags = (html) => {
 };
 
 const normalizeText = (text) => {
-  // Convert to lower case
   text = text.toLowerCase();
-  // Remove punctuation (optional, depending on how strict you want the match)
   text = text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "");
-  // Trim any extra spaces
   text = text.trim();
   return text;
 };
@@ -249,7 +246,9 @@ const highlightMistakes = () => {
       const normalizedMatch = normalizeText(match);
       const mistakeRegex = new RegExp(`\\b${escapeRegExp(mistake)}\\b`, 'gi');
       if (mistakeRegex.test(normalizedMatch)) {
-        return match.replace(mistakeRegex, `<span class="mistake" data-bs-toggle="popover" data-bs-html="true" data-bs-content="${escapeHTML(`<b>Mistake</b>: ${mistake}<br><b>Type</b>: ${categories.value[index]}<br><b>Correction</b>: ${corrections.value[index]}<br><b>Explanation</b>: ${explanations.value[index]}`)}">${mistake}</span>`);
+        // Pair mistake and element index explicitly
+        const mistakeElement = `<span class="mistake" data-index="${index}" data-bs-toggle="popover" data-bs-html="true" data-bs-content="${escapeHTML(`<b>Mistake</b>: ${mistake}<br><b>Type</b>: ${categories.value[index]}<br><b>Correction</b>: ${corrections.value[index]}<br><b>Explanation</b>: ${explanations.value[index]}`)}">${mistake}</span>`;
+        return match.replace(mistakeRegex, mistakeElement);
       }
       return match;
     });
@@ -302,6 +301,7 @@ const activatePopovers = () => {
 
     el.addEventListener('click', (e) => {
       e.stopPropagation();
+      const index = el.getAttribute('data-index');
       const content = el.getAttribute('data-bs-content');
       const correction = content.split('<br>')[2].replace('<b>Correction</b>: ', '');
 
@@ -316,6 +316,7 @@ const activatePopovers = () => {
           el.replaceWith(el.cloneNode(true));
         }
       } else if (mode.value === 'learning') {
+        console.log(explanations.value)
         currentMistake.value = el.innerText;
         currentCategory.value = categories.value[index];
         currentCorrection.value = correction;

@@ -34,6 +34,7 @@ export class SessionService {
       const savedSession = await session.save();
       console.log('New Session Created:', savedSession);
       await this.userModel.findByIdAndUpdate(userId, { $push: { sessions: savedSession._id } });
+      await this.userService.setDailyRequestsLeft(new Types.ObjectId(userId), 15);
     }
 
     return session;

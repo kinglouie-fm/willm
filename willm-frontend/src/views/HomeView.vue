@@ -166,9 +166,6 @@ const handleCorrect = async () => {
         furtherCorrectionData.value.writingStyle.categories = furtherCorrection.writingStyle.categories
       }
     }
-
-    // Trigger question generation if applicable
-    await axios.post('http://localhost:3000/question/generate');
   } catch (error) {
     if (error.response && error.response.status === 401) {
       message.info('Please log in again.');
@@ -177,6 +174,13 @@ const handleCorrect = async () => {
     }
   } finally {
     hideLoading();
+  }
+
+  try {
+    // Trigger question generation
+    await axios.post('http://localhost:3000/question/generate');
+  } catch (error) {
+    message.error('Error generating questions. Please contact the administrator.', 3);
   }
 };
 

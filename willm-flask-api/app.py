@@ -31,6 +31,7 @@ async def fetch_openai_response(session, system_prompt_template, prompt_template
     system_prompt = system_prompt_template.format(language=language)
     prompt = prompt_template.format(text=data, section=section, language=language)
     logging.info(f"Received language: {language}")
+    logging.info(f"Received model: {model}")
     async with session.post(
         'https://api.openai.com/v1/chat/completions',
         headers={
@@ -47,7 +48,6 @@ async def fetch_openai_response(session, system_prompt_template, prompt_template
         }
     ) as response:
         response_json = await response.json()
-        logging.info(f"LLM Response: {response_json['choices'][0]['message']['content']}")
         return response_json['choices'][0]['message']['content']
 
 async def handle_unified(session, data, language, model):
@@ -413,8 +413,6 @@ def generate_question():
     # Add document_id to the metadata
     metadata['document_id'] = document_id
 
-    logging.info(f"Generated question metadata: {metadata}")
-
     return jsonify(metadata)
 
 @app.route('/question/academic_sentence_correction', methods=['POST'])
@@ -505,6 +503,8 @@ def generate_review():
     model = request.json.get('model', '3.5-turbo-1106')
     coherence_text = request.json.get('coherence_text', '')
     organization_text = request.json.get('organization_text', '')
+
+    logging.info(f"Received model: {model}")
 
     coherence_tip = ''
     organization_tip = ''

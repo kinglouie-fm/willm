@@ -101,40 +101,39 @@ export class QuestionService {
 
   private async selectQuestionType(suggestedType: string, userId: Types.ObjectId): Promise<string> {
     if (suggestedType && await this.isBalanced(suggestedType)) {
-      console.log(`Suggested question type ${suggestedType} is balanced`);
-      return suggestedType;
+        console.log(`Suggested question type ${suggestedType} is balanced`);
+        return suggestedType;
     }
     
-    let questionType = this.questionTypes[this.currentQuestionIndex];
-    this.currentQuestionIndex = (this.currentQuestionIndex + 1) % this.questionTypes.length;
+    while (true) {
+      let questionType = this.questionTypes[this.currentQuestionIndex];
+      this.currentQuestionIndex = (this.currentQuestionIndex + 1) % this.questionTypes.length;
 
-    // Check for coherence and organization specific conditions
-    if (questionType === 'coherence' || questionType === 'organization') {
-      const submissions = await this.textService.findLastSubmissions(userId, 5);
-      const sectionTexts = submissions.reduce((acc, sub) => {
-        if (!acc[sub.section]) {
-          acc[sub.section] = [];
+      // Check for coherence and organization specific conditions
+      if (questionType === 'coherence' || questionType === 'organization') {
+        const submissions = await this.textService.findLastSubmissions(userId, 5);
+        const sectionTexts = submissions.reduce((acc, sub) => {
+          if (!acc[sub.section]) {
+              acc[sub.section] = [];
+          }
+          acc[sub.section].push(sub.content);
+          return acc;
+        }, {});
+        const sections = Object.keys(sectionTexts);
+
+        if (sections.length < 2) {
+          console.log(`Skipping ${questionType} due to insufficient sections`);
+
+          // Continue to the next question type without re-adding the current one
+          continue;
         }
-        acc[sub.section].push(sub.content);
-        return acc;
-      }, {});
-      const sections = Object.keys(sectionTexts);
-
-      if (sections.length < 2) {
-        console.log(`Skipping ${questionType} due to insufficient sections`);
-        this.updateQuestionCount(questionType);
-
-        // Add skipped question type to the front of the queue
-        this.currentQuestionIndex = (this.currentQuestionIndex - 1 + this.questionTypes.length) % this.questionTypes.length;
-        this.questionTypes.splice(this.currentQuestionIndex, 0, this.questionTypes.splice(this.questionTypes.indexOf(questionType), 1)[0]);
-
-        return this.selectQuestionType(null, userId);
       }
-    }
 
-    console.log(`Selected question type ${questionType} with round robin`);
-    return questionType;
+      console.log(`Selected question type ${questionType} with round robin`);
+      return questionType;
+    }
   }
+
   // checks if question type's generation count is within a balanced range by comparing it to the average count 
   // of all question types plus a threshold.
   private async isBalanced(questionType: string): Promise<boolean> {

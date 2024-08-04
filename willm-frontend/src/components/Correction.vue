@@ -200,7 +200,7 @@ a:hover {
 
 .feedback {
     overflow-y: auto;
-    max-height: 70vh;
+    max-height: 50vh;
     box-shadow: none;
     transition: box-shadow 0.3s ease-in-out;
 }

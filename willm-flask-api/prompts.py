@@ -75,7 +75,7 @@ M: [Highlight only the incorrect word or smallest possible segment in english]
 C: [Provide the corrected word or smallest possible segment in english]
 E: [Explain why it is a mistake and provide the relevant rules or reasoning and how to improve it in {language}]
 T: [Specify the category of the mistake in english]
-X: [Provide exactly one word before and one word after the exact mistake for context. It must be exactly the mistake, not the correction or a synonym.]
+X: [Provide exactly one word before and one word after the mistake for context. It must be exactly the mistake, not the correction or a synonym.]
 
 Don't use bullet points or any other sort of list. Separate each set of mistakes/corrections/explanations/categories/contexts with a blank line.
 

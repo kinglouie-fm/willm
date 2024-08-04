@@ -30,54 +30,61 @@ export class QuestionService {
 
   async generateQuestions(userId: Types.ObjectId) {
     const submissions = await this.textService.findLastSubmissions(userId, 5);
-    
+
     const sectionTexts = submissions.reduce((acc, sub) => {
-      if (!acc[sub.section]) {
-        acc[sub.section] = [];
-      }
-      acc[sub.section].push(sub.content);
-      return acc;
+        if (!acc[sub.section]) {
+            acc[sub.section] = [];
+        }
+        acc[sub.section].push(sub.content);
+        return acc;
     }, {});
 
     const sections = Object.keys(sectionTexts);
     let combinedText = '';
 
-    if (sections.length >= 2) {
-      // Use only the first text in each section
-      combinedText = sections.map(section => {
-      const sectionContent = sectionTexts[section][0]; 
-      return `Section ${section}\n${sectionContent}`;
-    }).join('\n\n');
-    } else {
-      // Collect the first two texts, regardless of their sections
-      const firstTwoTexts = submissions.slice(0, 2);
-      combinedText = firstTwoTexts.map((sub, index) => {
-        return `Section ${sub.section}\n${sub.content}`;
-      }).join('\n\n');
-    }
-
+    // Determine question type
     const lastThreeSubmissions = submissions.slice(0, 3).map(sub => sub.content).join(' ');
     const suggestedQuestionType = await this.suggestQuestionType(lastThreeSubmissions);
-
     const questionType = await this.selectQuestionType(suggestedQuestionType, userId);
 
-    let textForQuestion = combinedText;
+    let textForQuestion = '';
+
+    // Logic for different question types
     if (questionType === 'revision') {
-      const revisionText = await this.findTextWithIssues(userId);
-      if (revisionText) {
-        textForQuestion = revisionText;
+        const revisionText = await this.findTextWithIssues(userId);
+        if (revisionText) {
+          textForQuestion = revisionText;
+        } else {
+          const firstSubmission = await this.textService.findLastSubmissions(userId, 1);
+          textForQuestion = firstSubmission[0].content
+        }
+    } else if (['academic_sentence', 'synonyms', 'argument_strengthening'].includes(questionType)) {
+        // Use only the last submission's text
+        const lastSubmission = submissions[0];
+        textForQuestion = `Section ${lastSubmission.section}\n${lastSubmission.content}`;
+    } else if (['coherence', 'organization'].includes(questionType)) {
+      if (sections.length >= 2) {
+        // Use only the first text in each of two sections
+        combinedText = sections.slice(0, 2).map(section => {
+            const sectionContent = sectionTexts[section][0];
+            return `Section ${section}\n${sectionContent}`;
+        }).join('\n\n');
       } else {
-        const firstSubmission = await this.textService.findLastSubmissions(userId, 1);
-        textForQuestion = firstSubmission.length > 0 ? firstSubmission[0].content : combinedText;
+        // Fallback: Collect the first two texts, regardless of their sections
+        const firstTwoTexts = submissions.slice(0, 2);
+        combinedText = firstTwoTexts.map((sub, index) => {
+            return `Section ${sub.section}\n${sub.content}`;
+        }).join('\n\n');
       }
+      textForQuestion = combinedText;
     }
 
     console.log("Making request to flask-api for question generation");
 
     const response = await lastValueFrom(this.httpService.post('http://flask-api:8000/question/generate', {
-      user_id: userId,
-      type: questionType,
-      text: textForQuestion,
+        user_id: userId,
+        type: questionType,
+        text: textForQuestion,
     }));
 
     await this.updateQuestionCount(questionType);

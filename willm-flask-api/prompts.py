@@ -418,7 +418,7 @@ You are an expert in academic writing. Your task is to generate various types of
 """
 
 REVISION_PROMPT = """
-I will provide you with a text that includes a submission from a user. Identify the grammatical errors in the submission and generate a revision type question based on these errors. If there are none, simply generate a text with grammar mistakes. The text should have grammatical errors with no two possible answers to correct them. The text should be max 30 words. Provide the question and the corresponding correct text.
+I will provide you with a text that includes a submission from a user. Identify the grammatical errors in the submission and generate a revision type question based on these errors. If there are none, simply generate a text with grammar mistakes. The text should have grammatical errors with no two possible answers to correct them. The text should be max 25 words. Provide the question and the corresponding correct text.
 
 Text:
 {lastSubmission}
@@ -447,6 +447,8 @@ Answer: [The correct synonym]
 ACADEMIC_SENTENCE_PROMPT = """
 I will provide you with a text that includes a submission from a user. Identify a sentence in the submission that needs to be paraphrased into academic style and generate a question based on this sentence. Provide only the original sentence of it.
 
+If the original sentence is longer than 30 words, please cut it down to 30 words by keeping the meaning.
+
 Text:
 {lastSubmission}
 
@@ -472,6 +474,8 @@ Answer: [Good/Not Good]
 
 ARGUMENT_STRENGTHENING_PROMPT = """
 I will provide you with a text that includes a submission from a user. Identify an argument in the submission that could be strengthened and generate a multiple choice question to strengthen the academic argument. Provide the argument and five options, with only one correct option to strengthen the argument.
+
+The argument and options should be maximum 25 words each.
 
 Text:
 {lastSubmission}
@@ -503,9 +507,9 @@ Given the provided text which includes two excerpts from sections (Introduction,
 Text:
 {text}
 
-Scenario: Review the last three user submissions and extract a key point or section transition from one of the texts (e.g., "The introduction discussed the impact of climate change"). The scenario should reflect a common theme or recurring topic from these submissions.
+Scenario: Review the first excerpt and extract a key point or section transition from the first excerpt (e.g., "The introduction discussed the impact of climate change."). The scenario should reflect a common theme or recurring topic from these submissions.
 Question: Complete the sentence to ensure a logical progression.
-Options: Provide four options for how the next section might logically continue the discussion based on the context of the user's submissions.
+Options: Provide four options based on the second excerpt for how the next section might logically continue the discussion based on the first excerpt. The options should be generated so the correct answer is not too hard to find.
 Answer: Indicate the correct option that best follows the scenario in a logically coherent manner.
 
 Output format:
@@ -522,9 +526,9 @@ Given the provided text which includes excerpts from sections (Introduction, Lit
 Text:
 {text}
 
-Scenario: Review the last three user submissions and extract a finding or statement from one of the texts that requires a follow-up sentence for improved coherence (e.g., "The experiment showed a significant decrease in reaction time"). The scenario should reflect a common theme or recurring topic from these submissions.
+Scenario: Review the excerpts and extract a finding or statement from one of the texts that requires a follow-up sentence for improved coherence (e.g., "The experiment showed a significant decrease in reaction time"). The scenario should reflect a common theme or recurring topic from these submissions.
 Question: Which sentence best follows for coherence?
-Options: Provide four options for sentences that could logically follow the given scenario based on the context of the user's submissions.
+Options: Provide four options for sentences that could logically follow the given scenario based on the context of the user's submissions. The options should be generated so the correct answer is not too hard to find.
 Answer: Indicate the correct option that best maintains coherence and logical flow in the context of the user's submissions.
 
 Output format:

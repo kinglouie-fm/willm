@@ -1,5 +1,4 @@
 from flask import Flask, request, jsonify
-import openai
 import asyncio
 from dotenv import load_dotenv
 import re
@@ -7,6 +6,8 @@ import os
 import aiohttp
 import logging
 from chroma_langchain import chroma_langchain_handler
+from openai import AzureOpenAI, AsyncAzureOpenAI
+from azure.identity import DefaultAzureCredential, get_bearer_token_provider
 from prompts import (
     SYSTEM_PROMPT_1, SYSTEM_PROMPT_1_MULTI, SYSTEM_PROMPT_2, SYSTEM_PROMPT_4, SYSTEM_PROMPT_5,
     SYSTEM_PROMPT_6, UNIFIED_PROMPT, UNIFIED_PROMPT_MULTI, UNIFIED_PROMPT_2, SCORES, 
@@ -21,46 +22,64 @@ app = Flask(__name__)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-openai.api_key = os.getenv('FLASK_API_KEY')
+# Azure OpenAI Configuration
+endpoint = os.getenv("ENDPOINT_URL", "https://gpt-dbis.openai.azure.com/")
+deployment_gpt35 = os.getenv("DEPLOYMENT_NAME_GPT35", "gpt-35")
+deployment_gpt4o = os.getenv("DEPLOYMENT_NAME_GPT4O", "gpt4o-dbis")
+
+token_provider = get_bearer_token_provider(
+    DefaultAzureCredential(),
+    "https://cognitiveservices.azure.com/.default")
+
+# Create both synchronous and asynchronous clients
+client = AzureOpenAI(
+    azure_endpoint=endpoint,
+    azure_ad_token_provider=token_provider,
+    api_version="2024-05-01-preview",
+)
+
+async_client = AsyncAzureOpenAI(
+    azure_endpoint=endpoint,
+    azure_ad_token_provider=token_provider,
+    api_version="2024-05-01-preview",
+)
+
+# openai.api_key = os.getenv('FLASK_API_KEY')
 
 def split_into_sentences(text):
     sentences = re.split(r'(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?)\s', text)
     return sentences
 
-async def fetch_openai_response(session, system_prompt_template, prompt_template, data, section=None, language='English', model='3.5-turbo-1106'):
+async def fetch_openai_response(system_prompt_template, prompt_template, data, section=None, language='English', model='3.5-turbo-1106'):
     system_prompt = system_prompt_template.format(language=language)
     prompt = prompt_template.format(text=data, section=section, language=language)
     logging.info(f"Received language: {language}")
     logging.info(f"Received model: {model}")
-    async with session.post(
-        'https://api.openai.com/v1/chat/completions',
-        headers={
-            'Authorization': f'Bearer {openai.api_key}',
-            'Content-Type': 'application/json'
-        },
-        json={
-            "model": f"gpt-{model}",
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt}
-            ],
-            "max_tokens": 1000
-        }
-    ) as response:
-        response_json = await response.json()
-        return response_json['choices'][0]['message']['content']
 
-async def handle_unified(session, data, language, model):
-    return await fetch_openai_response(session, SYSTEM_PROMPT_1, UNIFIED_PROMPT, data, language=language, model=model)
+    deployment = deployment_gpt35 if model == '3.5-turbo-1106' else deployment_gpt4o
 
-async def process_sentence(session, sentence, language, model):
-    return await fetch_openai_response(session, SYSTEM_PROMPT_1_MULTI, UNIFIED_PROMPT_MULTI, sentence, language=language, model=model)
+    response = await async_client.chat.completions.create(
+        model=deployment,
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": prompt}
+        ],
+        max_tokens=1000
+    )
 
-async def handle_unified_2(session, data, section, language, model):
-    return await fetch_openai_response(session, SYSTEM_PROMPT_2, UNIFIED_PROMPT_2, data, section, language=language, model=model)
+    return response.choices[0].message.content
 
-async def handle_scores(session, data, model):
-    return await fetch_openai_response(session, SYSTEM_PROMPT_4, SCORES, data, model=model)
+async def handle_unified(data, language, model):
+    return await fetch_openai_response(SYSTEM_PROMPT_1, UNIFIED_PROMPT, data, language=language, model=model)
+
+async def process_sentence(sentence, language, model):
+    return await fetch_openai_response(SYSTEM_PROMPT_1_MULTI, UNIFIED_PROMPT_MULTI, sentence, language=language, model=model)
+
+async def handle_unified_2(data, section, language, model):
+    return await fetch_openai_response(SYSTEM_PROMPT_2, UNIFIED_PROMPT_2, data, section, language=language, model=model)
+
+async def handle_scores(data, model):
+    return await fetch_openai_response(SYSTEM_PROMPT_4, SCORES, data, model=model)
 
 @app.route('/handle-correction', methods=['POST'])
 async def handle_correction():
@@ -75,23 +94,15 @@ async def handle_correction():
         return jsonify({"error": "Invalid model"}), 400
 
     if model == '4o':
-        async with aiohttp.ClientSession() as session:
-            unified_result = await handle_unified(session, data, language, model)
-
+        unified_result = await handle_unified(data, language, model)
         mistakes, corrections, explanations, categories, contexts, corrected_text = process_initial_result(unified_result)
     elif model == '3.5-turbo-1106':
         sentences = split_into_sentences(data)
-        results = []
-
-        async with aiohttp.ClientSession() as session:
-            tasks = [process_sentence(session, sentence, language, model) for sentence in sentences]
-            results = await asyncio.gather(*tasks)
+        tasks = [process_sentence(sentence, language, model) for sentence in sentences]
+        results = await asyncio.gather(*tasks)
 
         combined_result = ' '.join(results)
         mistakes, corrections, explanations, categories, contexts, corrected_text = process_initial_result(combined_result)
-
-    else:
-        return jsonify({"error": "Invalid model"}), 400
 
     return jsonify({
         "mistakes": mistakes,
@@ -115,8 +126,7 @@ async def handle_further_correction():
     if model not in ['3.5-turbo-1106', '4o']:
         return jsonify({"error": "Invalid model"}), 400
 
-    async with aiohttp.ClientSession() as session:
-        unified_result = await handle_unified_2(session, data, section, language, model)
+    unified_result = await handle_unified_2(data, section, language, model)
 
     feedback = process_further_result(unified_result)
 
@@ -134,8 +144,7 @@ async def generate_scores():
         return jsonify({"error": "Invalid model"}), 400
 
     try:
-        async with aiohttp.ClientSession() as session:
-            scores_result = await handle_scores(session, data, model)
+        scores_result = await handle_scores(data, model)
         scores = parse_scores(scores_result)
         return jsonify(scores)
     except Exception as e:
@@ -308,9 +317,12 @@ question_prompts = {
 def suggest_question_type():
     data = request.json
     text = data['lastThreeSubmissions']
+    model = '3.5-turbo-1106'
 
-    response = openai.chat.completions.create(
-        model="gpt-4o",
+    deployment = deployment_gpt35 if model == '3.5-turbo-1106' else deployment_gpt4o
+
+    response = client.chat.completions.create(
+        model=deployment,
         messages=[
             {"role": "system", "content": 'Suggest a question type based on the following text. Question types are revision, synonyms, academic sentence, argument strengthening, coherence, or organization. Only provide the question type, don\'t add anything else like an explanation or reasoning.'},
             {"role": "user", "content": text}
@@ -338,7 +350,10 @@ def generate_question():
     user_id = data['user_id']
     question_type = data['type']
     text = data['text']
+    model = '3.5-turbo-1106'
     
+    deployment = deployment_gpt35 if model == '3.5-turbo-1106' else deployment_gpt4o
+
     if question_type not in question_prompts:
         return jsonify({"error": "Invalid question type"}), 400
 
@@ -348,8 +363,8 @@ def generate_question():
     else:
         prompt = prompt_template.format(text=text)
 
-    response = openai.chat.completions.create(
-        model="gpt-4o",
+    response = client.chat.completions.create(
+        model=deployment,
         messages=[
             {"role": "system", "content": SYSTEM_PROMPT_5},
             {"role": "user", "content": prompt}
@@ -361,12 +376,10 @@ def generate_question():
 
     output = response.choices[0].message.content
 
-    # Initialize metadata with the type key
     metadata = {
         'type': question_type
     }
 
-    # Extract and add relevant keys to the metadata
     question_match = re.search(r'Question:\s*(.*?)\n', output, re.DOTALL)
     if question_match:
         metadata['question'] = question_match.group(1).strip()
@@ -390,11 +403,7 @@ def generate_question():
             argument_match = re.search(r'Argument:\s*(.*?)\n', output, re.DOTALL)
             if argument_match:
                 metadata['argument'] = argument_match.group(1).strip()
-        elif question_type == 'organization':
-            scenario_match = re.search(r'Scenario:\s*(.*?)\nOptions:', output, re.DOTALL)
-            if scenario_match:
-                metadata['scenario'] = scenario_match.group(1).strip()
-        elif question_type == 'coherence':
+        elif question_type in ['organization', 'coherence']:
             scenario_match = re.search(r'Scenario:\s*(.*?)\nOptions:', output, re.DOTALL)
             if scenario_match:
                 metadata['scenario'] = scenario_match.group(1).strip()
@@ -410,7 +419,6 @@ def generate_question():
 
     document_id = chroma_langchain_handler.add_document(user_id, metadata['question'], metadata)
 
-    # Add document_id to the metadata
     metadata['document_id'] = document_id
 
     return jsonify(metadata)
@@ -420,14 +428,17 @@ def academic_sentence_correction():
     data = request.json
     original_sentence = data['original_sentence']
     corrected_sentence = data['corrected_sentence']
+    model = '3.5-turbo-1106'
+    
+    deployment = deployment_gpt35 if model == '3.5-turbo-1106' else deployment_gpt4o
 
     prompt = ACADEMIC_SENTENCE_CORRECTING_PROMPT.format(
         original_sentence=original_sentence,
         corrected_sentence=corrected_sentence
     )
 
-    response = openai.chat.completions.create(
-        model="gpt-4o",
+    response = client.chat.completions.create(
+        model=deployment,
         messages=[
             {"role": "system", "content": 'You are an expert in academic writing. I will provide you with an original sentence and a corrected sentence. Your task is to evaluate whether the corrected sentence is good or not good based on academic writing standards.'},
             {"role": "user", "content": prompt}
@@ -459,6 +470,9 @@ def explain_answer():
     scenario = data.get('scenario', [])
     correct_answer = data['correct_answer']
     user_answer = data['user_answer']
+    model = '4o'
+    
+    deployment = deployment_gpt4o if model == '4o' else deployment_gpt35
 
     options_str = '\n'.join(options)
     scenario_str = '\n'.join(scenario)
@@ -474,16 +488,14 @@ def explain_answer():
         user_answer=user_answer
     )
 
-    response = openai.chat.completions.create(
-        model="gpt-4o",
+    response = client.chat.completions.create(
+        model=deployment,
         messages=[
             {"role": "system", "content": "You are an expert in the subject matter. I will provide you with a question, the correct answer, and the user's answer."},
             {"role": "user", "content": prompt}
         ],
         max_tokens=1000
     )
-
-    logger.info(f"Explain answer response: {response}")
 
     output = response.choices[0].message.content
 
@@ -512,10 +524,12 @@ def generate_review():
     if model not in ['3.5-turbo-1106', '4o']:
         return jsonify({"error": "Invalid model"}), 400
 
+    deployment = deployment_gpt4o if model == '4o' else deployment_gpt35
+
     if coherence_text:
         coherence_prompt = COHERENCE_TIP_PROMPT.format(text=coherence_text)
-        coherence_response = openai.chat.completions.create(
-            model=f"gpt-{model}",
+        coherence_response = client.chat.completions.create(
+            model=deployment,
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT_6},
                 {"role": "user", "content": coherence_prompt}
@@ -525,8 +539,8 @@ def generate_review():
         coherence_tip = coherence_response.choices[0].message.content.strip()
     elif organization_text:
         organization_prompt = ORGANIZATION_TIP_PROMPT.format(text=organization_text)
-        organization_response = openai.chat.completions.create(
-            model=f"gpt-{model}",
+        organization_response = client.chat.completions.create(
+            model=deployment,
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT_6},
                 {"role": "user", "content": organization_prompt}
@@ -664,41 +678,34 @@ async def similarity_search():
 
 async def llm_decide_questions(new_questions, quiz_history):
     prompt = DECIDE_QUESTIONS.format(new_questions=new_questions, quiz_history=quiz_history)
+    model = '4o'
 
-    async with aiohttp.ClientSession() as session:
-        async with session.post(
-            'https://api.openai.com/v1/chat/completions',
-            headers={
-                'Authorization': f'Bearer {openai.api_key}',
-                'Content-Type': 'application/json'
-            },
-            json={
-                "model": "gpt-4o",
-                "messages": [
-                    {"role": "system", "content": "You are an expert in spaced repetition and educational testing."},
-                    {"role": "user", "content": prompt}
-                ],
-                "max_tokens": 500
-            }
-        ) as response:
-            response_json = await response.json()
-            question_ids_str = response_json['choices'][0]['message']['content']
-            matches = re.findall(r'\[(.*?)\]', question_ids_str)
-            matches = re.findall(r'\[(.*?)\]', question_ids_str)
-            if matches:
-                question_ids = matches[0].split(', ')
-                question_ids = [q_id.strip() for q_id in question_ids]
-                return question_ids
+    deployment = deployment_gpt4o if model == '4o' else deployment_gpt35
 
-            # Check for comma-separated string id, id, id, id
-            elif re.findall(r'(\w+(?:, \w+)*)', question_ids_str):
-                matches = re.findall(r'(\w+(?:, \w+)*)', question_ids_str)
-                question_ids = matches[0].split(', ')
-                question_ids = [q_id.strip() for q_id in question_ids]
-                return question_ids
-            
-            logging.error("Failed to extract question IDs from the LLM response.")
-            return []
+    response = await async_client.chat.completions.create(
+        model=deployment,
+        messages=[
+            {"role": "system", "content": "You are an expert in spaced repetition and educational testing."},
+            {"role": "user", "content": prompt}
+        ],
+        max_tokens=500
+    )
+
+    question_ids_str = response.choices[0].message.content
+    matches = re.findall(r'\[(.*?)\]', question_ids_str)
+    if matches:
+        question_ids = matches[0].split(', ')
+        question_ids = [q_id.strip() for q_id in question_ids]
+        return question_ids
+
+    matches = re.findall(r'(\w+(?:, \w+)*)', question_ids_str)
+    if matches:
+        question_ids = matches[0].split(', ')
+        question_ids = [q_id.strip() for q_id in question_ids]
+        return question_ids
+
+    logging.error("Failed to extract question IDs from the LLM response.")
+    return []
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000)

@@ -9,3 +9,5 @@ chromadb==0.5.4
 langchain-community==0.2.5
 tiktoken==0.7.0
 langchain-chroma==0.1.2
+azure-ai-ml==1.18.0
+azure-identity==1.17.1

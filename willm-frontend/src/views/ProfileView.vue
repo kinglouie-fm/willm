@@ -26,6 +26,8 @@ const levels = {
     8: 3600,
     9: 4500,
     10: 5500,
+    11: 6600,
+    12: 7800,
 };
 
 const achievementsConfig = {
@@ -39,13 +41,13 @@ const achievementsConfig = {
         "10": 200,
         "20": 300,
     },
-    weekly_streaks: {
+    max_weekly_streaks: {
         "1": 100,
         "2": 200,
         "3": 300,
         "4": 400,
     },
-    consecutive_days: {
+    max_consecutive_days: {
         "3": 50,
         "7": 150,
         "14": 300,
@@ -115,9 +117,9 @@ const getAchievementProgress = (key, achievements) => {
         nextText = `Complete ${targetCount} quizzes`;
     } else if (key === 'correct_answers') {
         nextText = `Give ${targetCount} correct answers`;
-    } else if (key === 'weekly_streaks') {
+    } else if (key === 'max_weekly_streaks') {
         nextText = `Reach ${targetCount} weekly streak${targetCount > 1 ? 's' : ''}`;
-    } else if (key === 'consecutive_days') {
+    } else if (key === 'max_consecutive_days') {
         nextText = `Maintain a ${targetCount}-day streak`;
     }
 

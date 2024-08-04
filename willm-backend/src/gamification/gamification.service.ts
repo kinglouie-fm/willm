@@ -22,13 +22,13 @@ export class GamificationService {
           "10": 200,
           "20": 300,
         },
-        weekly_streaks: {
+        max_weekly_streaks: {
           "1": 100,
           "2": 200,
           "3": 300,
           "4": 400,
         },
-        consecutive_days: {
+        max_consecutive_days: {
           "3": 50,
           "7": 150,
           "14": 300,
@@ -45,7 +45,7 @@ export class GamificationService {
       pro: {
         criteria: {
           quizzes_completed: 3,
-          consecutive_days: 5,
+          max_consecutive_days: 5,
           correct_answers: 10,
         },
       },
@@ -53,7 +53,7 @@ export class GamificationService {
         criteria: {
           quizzes_completed: 4,
           correct_answers: 15,
-          weekly_streaks: 1,
+          max_weekly_streaks: 1,
         },
       },
       guru: {
@@ -75,6 +75,8 @@ export class GamificationService {
       "8": 3600,
       "9": 4500,
       "10": 5500,
+      "11": 6600,
+      "12": 7800
     }
   };
 
@@ -85,35 +87,35 @@ export class GamificationService {
     const now = new Date();
     const lastLoginDate = new Date(user.last_login);
 
-    // Check if the last login date is a different day than today
     const isSameDay = lastLoginDate.toDateString() === now.toDateString();
 
     if (!isSameDay) {
-      // Extract the date parts (year, month, day) to ignore the time part
       const nowDate = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
       const lastLoginDateOnly = new Date(lastLoginDate.getFullYear(), lastLoginDate.getMonth(), lastLoginDate.getDate()).getTime();
       const diffInDays = (nowDate - lastLoginDateOnly) / (1000 * 60 * 60 * 24);
 
-      // Update daily streak
       if (diffInDays === 1) {
           user.daily_streak += 1;
-          user.achievements.consecutive_days = user.achievements.consecutive_days + 1;
+
+          // Update max consecutive days
+          if (user.daily_streak > user.achievements.max_consecutive_days) {
+              user.achievements.max_consecutive_days = user.daily_streak;
+          }
       } else {
           user.daily_streak = 1;
-          user.achievements.consecutive_days = 1;
           user.weekly_streak = 0;
-          user.achievements.weekly_streaks = 0;
       }
 
-      // Update weekly streak based on daily streak using modulo
       if (user.daily_streak % 7 === 0) {
           user.weekly_streak += 1;
-          user.achievements.weekly_streaks = user.achievements.weekly_streaks + 1;
+          // Update max weekly streaks
+          if (user.weekly_streak > user.achievements.max_weekly_streaks) {
+              user.achievements.max_weekly_streaks = user.weekly_streak;
+          }
       }
 
-      // Mark nested fields as modified
-      user.markModified('achievements.consecutive_days');
-      user.markModified('achievements.weekly_streaks');
+      user.markModified('achievements.max_consecutive_days');
+      user.markModified('achievements.max_weekly_streaks');
 
       user.last_login = now;
       user.xp += this.getXPForAction('daily_login');
@@ -209,9 +211,7 @@ export class GamificationService {
 
     if (user) {
       user.daily_streak = 0;
-      user.achievements.consecutive_days = 0;
       user.weekly_streak = 0;
-      user.achievements.weekly_streaks = 0;
       await user.save();
     }
   }

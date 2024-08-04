@@ -36,18 +36,18 @@ export class User extends Document {
   @Prop({ default: 0 })
   xp: number;
 
-  @Prop({ default: 1 })
+  @Prop({ default: 0 })
   level: number;
 
   @Prop({ type: [{ name: String, date: Date }], default: [] })
   badges: { name: string, date: Date }[];
 
-  @Prop({ type: Object, default: { quizzes_completed: 0, correct_answers: 0, weekly_streaks: 0, consecutive_days: 1 } })
+  @Prop({ type: Object, default: { quizzes_completed: 0, correct_answers: 0, max_consecutive_days: 1, max_weekly_streaks: 0 } })
   achievements: {
     quizzes_completed: number;
     correct_answers: number;
-    weekly_streaks: number;
-    consecutive_days: number;
+    max_consecutive_days: number;
+    max_weekly_streaks: number;
   };
   
   @Prop({ default: 1 })

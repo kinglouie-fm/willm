@@ -1,9 +1,10 @@
 services:
-  nestjs:
+  frontend-backend:
     build:
-      context: ./willm-backend
+      context: .
+      dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "3101:3101"
     depends_on:
       - flask-api
       - mongodb
@@ -18,8 +19,9 @@ services:
   flask-api:
     build:
       context: ./willm-flask-api
+      dockerfile: Dockerfile
     ports:
-      - "8000:8000"
+      - "8031:8031"
     environment:
       - FLASK_API_KEY=${FLASK_API_KEY}
     depends_on:
@@ -35,7 +37,7 @@ services:
       - ALLOW_RESET=TRUE
       - PERSIST_DIRECTORY=/chroma/chroma
     ports:
-      - "8001:8000"
+      - "8032:8031"
     healthcheck:
       test:
         [

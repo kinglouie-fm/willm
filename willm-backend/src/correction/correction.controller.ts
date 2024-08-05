@@ -11,7 +11,7 @@ import { ScoreService } from '../score/score.service';
 
 @Controller('correct')
 export class CorrectionController {
-  private readonly maxLength = 1000;
+  private readonly maxLength = 1500;
   constructor(
     private readonly correctionService: CorrectionService,
     private readonly issueService: IssueService,

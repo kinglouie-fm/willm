@@ -14,7 +14,7 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      - mongodb-data:/data/db
+      - /home/thillen/Data/mongo:/data/db
 
   flask-api:
     build:
@@ -31,7 +31,7 @@ services:
   chromadb:
     image: chromadb/chroma:latest
     volumes:
-      - chroma-data:/chroma/chroma
+      - /home/thillen/Data/chroma:/chroma/chroma
     environment:
       - IS_PERSISTENT=TRUE
       - ALLOW_RESET=TRUE
@@ -42,13 +42,9 @@ services:
       test:
         [
           "CMD-SHELL",
-          "curl -f http://localhost:8000/api/v1/heartbeat || exit 1"
+          "curl -f http://localhost:8031/api/v1/heartbeat || exit 1"
         ]
       interval: 30s
       retries: 5
       start_period: 20s
       timeout: 10s
-
-volumes:
-  mongodb-data:
-  chroma-data:

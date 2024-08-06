@@ -47,8 +47,8 @@ router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
   if (to.matched.some(record => record.meta.requiresAuth)) {
     try {
-      const profileResponse = await axios.get('http://localhost:3000/user/profile', { withCredentials: true });
-      const gamificationResponse = await axios.get('http://localhost:3000/user/gamification', { withCredentials: true });
+      const profileResponse = await axios.get('http://localhost:3101/user/profile', { withCredentials: true });
+      const gamificationResponse = await axios.get('http://localhost:3101/user/gamification', { withCredentials: true });
       if (profileResponse.status === 200 && gamificationResponse.status === 200) {
         authStore.setIsAuthenticated(true);
         authStore.setUsername(profileResponse.data.username);

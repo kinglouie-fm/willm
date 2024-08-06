@@ -15,4 +15,4 @@ COPY . .
 EXPOSE 8031
 
 # Run the application with waitress
-CMD ["waitress-serve", "--port=8000", "app:app"]
+CMD ["waitress-serve", "--port=8031", "app:app"]

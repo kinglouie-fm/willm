@@ -81,7 +81,7 @@ export class QuestionService {
 
     console.log("Making request to flask-api for question generation");
 
-    const response = await lastValueFrom(this.httpService.post('http://flask-api:8000/question/generate', {
+    const response = await lastValueFrom(this.httpService.post('http://flask-api:8031/question/generate', {
         user_id: userId,
         type: questionType,
         text: textForQuestion,
@@ -94,7 +94,7 @@ export class QuestionService {
 
   private async suggestQuestionType(lastThreeSubmissions: string): Promise<string> {
     console.log("Making request to flask-api for question type suggestion");
-    const response = await lastValueFrom(this.httpService.post('http://flask-api:8000/question/suggest-type', { lastThreeSubmissions }));
+    const response = await lastValueFrom(this.httpService.post('http://flask-api:8031/question/suggest-type', { lastThreeSubmissions }));
     const questionType = response.data.type;
     return this.questionTypes.includes(questionType) ? questionType : null;
   }
@@ -154,7 +154,7 @@ export class QuestionService {
   }
 
   async evaluateAcademicSentence(originalSentence: string, correctedSentence: string) {
-    const response = await lastValueFrom(this.httpService.post('http://flask-api:8000/question/academic_sentence_correction', {
+    const response = await lastValueFrom(this.httpService.post('http://flask-api:8031/question/academic_sentence_correction', {
       original_sentence: originalSentence,
       corrected_sentence: correctedSentence,
     }));
@@ -181,7 +181,7 @@ export class QuestionService {
 
   // For testing purposes only
   async addQuestionManually(data: any, userId: string) {
-    const response = await lastValueFrom(this.httpService.post('http://flask-api:8000/question/add', {
+    const response = await lastValueFrom(this.httpService.post('http://flask-api:8031/question/add', {
       user_id: userId,
       type: data.type,
       question: data.question,
@@ -199,7 +199,7 @@ export class QuestionService {
 
   // For testing purposes only
   async getQuestionsForUser(userId: string) {
-    const response = await lastValueFrom(this.httpService.get(`http://flask-api:8000/question/get/${userId}`));
+    const response = await lastValueFrom(this.httpService.get(`http://flask-api:8031/question/get/${userId}`));
     return response.data;
   }
 }

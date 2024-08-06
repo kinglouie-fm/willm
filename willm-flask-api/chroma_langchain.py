@@ -14,7 +14,7 @@ load_dotenv()
 
 class ChromaLangChainHandler:
     def __init__(self):
-        self.chromadb_client = chromadb.HttpClient(host="chromaDB", port=8000, settings=Settings(allow_reset=True, anonymized_telemetry=False))
+        self.chromadb_client = chromadb.HttpClient(host="chromaDB", port=8031, settings=Settings(allow_reset=True, anonymized_telemetry=False))
         self.embedding_function = OpenAIEmbeddings(api_key=os.getenv('FLASK_API_KEY'))
 
     def get_user_collection(self, user_id):

@@ -35,7 +35,7 @@ const updateLLM = async (modelKey, value) => {
     const newValue = value === '3.5-turbo-1106' ? '3.5-turbo-1106' : '4o';
 
     try {
-        await axios.patch('http://localhost:3000/user/updateModel', {
+        await axios.patch('http://localhost:3101/user/updateModel', {
             [modelKey]: newValue,
         });
         authStore.setLLM(modelKey, newValue);
@@ -52,7 +52,7 @@ const updateLLM = async (modelKey, value) => {
 // Update Language in the store and backend
 const updateLanguage = async () => {
     try {
-        await axios.patch('http://localhost:3000/user/updateLanguage', {
+        await axios.patch('http://localhost:3101/user/updateLanguage', {
             language: authStore.language,
         });
         authStore.setLanguage(authStore.language);
@@ -92,7 +92,7 @@ const navigateTo = (path) => {
 // Check quiz availability
 const checkQuiz = async () => {
     try {
-        const response = await axios.get('http://localhost:3000/quiz/check-quiz');
+        const response = await axios.get('http://localhost:3101/quiz/check-quiz');
         if (response.data.quizDueToday) {
             message.info('Quiz is due today. Redirecting...');
             router.push('/quiz');

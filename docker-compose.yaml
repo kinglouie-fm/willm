@@ -1,8 +1,8 @@
 services:
   frontend-backend:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: /home/thillen/Data/willm
+      dockerfile: dockerfile
     ports:
       - "3101:3101"
     depends_on:
@@ -10,15 +10,15 @@ services:
       - mongodb
 
   mongodb:
-    image: mongo:7.0
+    image: willm-mongo:7.0
     ports:
       - "27017:27017"
     volumes:
-      - /home/thillen/Data/mongo:/data/db
+      - /home/thillen/Data/data/mongo:/data/db
 
   flask-api:
     build:
-      context: ./willm-flask-api
+      context: /home/thillen/Data/willm/willm-flask-api
       dockerfile: Dockerfile
     ports:
       - "8031:8031"
@@ -29,15 +29,29 @@ services:
         condition: service_healthy
 
   chromadb:
-    image: chromadb/chroma:latest
+    image: willm-chromadb/chroma:latest
     volumes:
-      - /home/thillen/Data/chroma:/chroma/chroma
+      - /home/thillen/Data/data/chroma:/chroma/chroma
     environment:
       - IS_PERSISTENT=TRUE
       - ALLOW_RESET=TRUE
       - PERSIST_DIRECTORY=/chroma/chroma
     ports:
       - "8032:8031"
+    command:
+      [
+        "uvicorn",
+        "chromadb.app:app",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8031",
+        "--proxy-headers",
+        "--log-config",
+        "chromadb/log_config.yml",
+        "--timeout-keep-alive",
+        "30"
+      ]
     healthcheck:
       test:
         [

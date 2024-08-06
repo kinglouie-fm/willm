@@ -124,7 +124,7 @@ export class ReviewService {
         return { reviewData: 'No recent review available.' };
       }
 
-      const response = await lastValueFrom(this.httpService.post('http://flask-api:8000/review/generate', {
+      const response = await lastValueFrom(this.httpService.post('http://flask-api:8031/review/generate', {
         model: review_model,
         coherence_text: coherenceSections.length >= 2 ? coherenceSections.join('\n\n') : 'coherence_tip not generated',
         organization_text: organizationSections.length >= 3 ? organizationSections.join('\n\n') : 'organization_tip not generated',

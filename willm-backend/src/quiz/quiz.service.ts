@@ -158,7 +158,7 @@ export class QuizService {
     let questions;
     if (quizHistory.length === 0 || quizHistory.length < 2) {
       // If no history or less than 2 quizzes, use top-k of similarity search with k=5
-      const response = await lastValueFrom(this.httpService.post('http://flask-api:8000/quiz/similarity-search', { 
+      const response = await lastValueFrom(this.httpService.post('http://flask-api:8031/quiz/similarity-search', { 
         user_id: userId.toString(), 
         query, 
         k: 5 
@@ -166,7 +166,7 @@ export class QuizService {
       questions = response.data;
     } else {
       // If at least 2 quizzes, give history to LLM along with top-k of similarity search with k=10
-      const response = await lastValueFrom(this.httpService.post('http://flask-api:8000/quiz/similarity-search', {
+      const response = await lastValueFrom(this.httpService.post('http://flask-api:8031/quiz/similarity-search', {
         user_id: userId.toString(),
         query,
         k: 10,
@@ -285,7 +285,7 @@ export class QuizService {
     question.user_answer = userAnswer;
     question.answered = true;
     if (question.question_type === 'academic_sentence') {
-      const response = await lastValueFrom(this.httpService.post('http://flask-api:8000/question/academic_sentence_correction', { 
+      const response = await lastValueFrom(this.httpService.post('http://flask-api:8031/question/academic_sentence_correction', { 
         original_sentence: question.sentence,
         corrected_sentence: userAnswer
       }));
@@ -333,7 +333,7 @@ export class QuizService {
       throw new Error('Question not found');
     }
 
-    const response = await lastValueFrom(this.httpService.post('http://flask-api:8000/question/explain-answer',{
+    const response = await lastValueFrom(this.httpService.post('http://flask-api:8031/question/explain-answer',{
         question: question,
         options: question.options || [],
         scenario: question.scenario || [],

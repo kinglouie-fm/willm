@@ -72,13 +72,6 @@ const replaceDoubleBackslash = (text) => {
   return text;
 };
 
-const cleanContext = (text) => {
-  return text
-    .replace(/[\[\]\*\.\.\.]/g, '')
-    .replace(/\s{2,}/g, ' ')
-    .trim();
-};
-
 const handleCorrect = async () => {
   let textToCorrect = editableDiv.value.innerText.replace(/\u00A0/g, ' ');
   if (!textToCorrect) {
@@ -136,7 +129,6 @@ const handleCorrect = async () => {
     explanations.value = correctionResponse.data.explanations.map(replaceDoubleBackslash);
     categories.value = correctionResponse.data.categories.map(replaceDoubleBackslash);
     contexts.value = correctionResponse.data.contexts.map(replaceDoubleBackslash);
-    contexts.value = contexts.value.map(cleanContext);
 
     scores.value = correctionResponse.data.scores;
 
@@ -236,34 +228,77 @@ const stripHtmlTags = (html) => {
   return div.textContent || div.innerText || '';
 };
 
-const normalizeText = (text) => {
-  return text.toLowerCase()
-    .replace(/[\.,\/#!$%\^&\*;:{}=\-_`~()]/g, '')
-    .replace(/\s{2,}/g, ' ')
-    .trim();
+const findContextInRange = (htmlContent, context, mistake, searchRange = 30) => {
+  const cleanedContext = replaceDoubleBackslash(context);
+  const normalizedContext = normalizeText(cleanContext(cleanedContext));
+  const normalizedHtmlContent = normalizeText(htmlContent);
+
+  let contextPosition = normalizedHtmlContent.indexOf(normalizedContext);
+
+  if (contextPosition === -1) {
+    return null; // Context not found
+  }
+
+  const startPos = Math.max(contextPosition - searchRange, 0);
+  const endPos = Math.min(contextPosition + normalizedContext.length + searchRange, normalizedHtmlContent.length);
+  const surroundingText = normalizedHtmlContent.substring(startPos, endPos);
+
+  const mistakeRegex = new RegExp(`\\b${escapeRegExp(normalizeText(mistake))}\\b`, 'gi');
+  const mistakeMatch = mistakeRegex.exec(surroundingText);
+
+  if (mistakeMatch) {
+    // Calculate the original position of the mistake in the unnormalized HTML content
+    const originalStartPos = startPos + surroundingText.indexOf(mistakeMatch[0]);
+    const originalEndPos = originalStartPos + mistake.length;
+
+    // Extract the original mistake text from the HTML content
+    const originalMistake = htmlContent.substring(originalStartPos, originalEndPos);
+
+    return {
+      contextPosition,
+      originalMistake,
+      originalStartPos,
+      originalEndPos
+    };
+  } else {
+    return null; // Mistake not found within the context range
+  }
 };
 
 const highlightMistakes = () => {
   let htmlContent = editableDiv.value.innerHTML;
+  const unmatchedMistakes = [];
 
   contexts.value.forEach((context, index) => {
     const mistake = mistakes.value[index];
-    const normalizedContext = normalizeText(context);
-    const regex = new RegExp(`(${escapeRegExp(normalizedContext)})`, 'gi');
+    const match = findContextInRange(htmlContent, context, mistake);
 
-    htmlContent = htmlContent.replace(regex, (match) => {
-      const normalizedMatch = normalizeText(match);
-      const mistakeRegex = new RegExp(`\\b${escapeRegExp(mistake)}\\b`, 'gi');
-      if (mistakeRegex.test(normalizedMatch)) {
-        const mistakeElement = `<span class="mistake" data-index="${index}" data-bs-toggle="popover" data-bs-html="true" data-bs-content="${escapeHTML(`<b>Mistake</b>: ${mistake}<br><b>Type</b>: ${categories.value[index]}<br><b>Correction</b>: ${corrections.value[index]}<br><b>Explanation</b>: ${explanations.value[index]}`)}">${mistake}</span>`;
-        return match.replace(mistakeRegex, mistakeElement);
-      }
-      return match;
-    });
+    if (match) {
+      const { originalMistake, originalStartPos, originalEndPos } = match;
+
+      // Highlight the mistake in the original content
+      htmlContent = htmlContent.slice(0, originalStartPos) +
+        `<span class="mistake" data-index="${index}" data-bs-toggle="popover" data-bs-html="true" data-bs-content="${escapeHTML(`<b>Mistake</b>: ${mistake}<br><b>Type</b>: ${categories.value[index]}<br><b>Correction</b>: ${corrections.value[index]}<br><b>Explanation</b>: ${explanations.value[index]}`)}">${originalMistake}</span>` +
+        htmlContent.slice(originalEndPos);
+    } else {
+      unmatchedMistakes.push(mistake); // Add to unmatched list if not found
+    }
   });
 
   editableDiv.value.innerHTML = htmlContent;
+
+  // if (unmatchedMistakes.length > 0) {
+  //   showUnmatchedMistakes(unmatchedMistakes); // Show unmatched mistakes
+  // }
+
   activatePopovers();
+};
+
+const normalizeText = (text) => {
+  return text.toLowerCase()
+    .replace(/[\.,\/#!$%\^&\*;:{}=\-_`~()]/g, '') // Remove punctuation
+    .replace(/\s{2,}/g, ' ') // Replace multiple spaces with a single space
+    .trim();
 };
 
 const escapeRegExp = (string) => {

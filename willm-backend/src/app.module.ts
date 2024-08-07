@@ -11,9 +11,14 @@ import { ReviewModule } from './review/review.module';
 import { QuestionModule } from './question/question.module';
 import { TextModule } from './text/text.module';
 import { QuizModule } from './quiz/quiz.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'),
+    }),
     ConfigModule.forRoot(),
     MongooseModule.forRoot(process.env.MONGO_CONNECTION_STRING),
     UserModule,

@@ -9,7 +9,7 @@ async function bootstrap() {
   });
   app.use(cookieParser())
   app.enableCors({
-    origin: 'https://willm.corinth.informatik.rwth-aachen.de',
+    origin: 'http://willm.corinth.informatik.rwth-aachen.de',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });

@@ -162,10 +162,7 @@ def generate_scores():
     try:
         logging.info("Generating scores")
         scores_result = handle_scores(data, model)
-        logging.info("handle_scores done")
-        logging.info(f"Scores result: {scores_result}")
         scores = parse_scores(scores_result)
-        logging.info("Scores done")
         return jsonify(scores)
     except Exception as e:
         logger.error(f"Error generating scores: {e}")

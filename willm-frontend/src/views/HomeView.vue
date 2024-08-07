@@ -23,6 +23,9 @@ const coherenceExplanations = ref([]);
 const writingStyleMistakes = ref([]);
 const writingStyleCorrections = ref([]);
 const writingStyleExplanations = ref([]);
+const unhighlightedMistakes = ref([]);
+const unhighlightedCorrections = ref([]);
+const unhighlightedExplanations = ref([]);
 const editableDiv = ref(null);
 const reviewData = ref(null);
 const scores = ref({});
@@ -104,6 +107,9 @@ const handleCorrect = async () => {
   writingStyleMistakes.value = [];
   writingStyleCorrections.value = [];
   writingStyleExplanations.value = [];
+  unhighlightedMistakes.value = [];
+  unhighlightedCorrections.value = [];
+  unhighlightedExplanations.value = [];
   furtherCorrectionData.value = {
     organization: { mistakes: [], corrections: [], explanations: [], categories: [] },
     coherence: { mistakes: [], corrections: [], explanations: [], categories: [] },
@@ -245,11 +251,17 @@ const normalizeText = (text) => {
 
 const highlightMistakes = () => {
   let htmlContent = editableDiv.value.innerHTML;
+  const mistakesNotFound = []; // To store indices of mistakes not found
 
   contexts.value.forEach((context, index) => {
     const mistake = mistakes.value[index];
     const normalizedContext = normalizeText(context);
     const regex = new RegExp(`(${escapeRegExp(normalizedContext)})`, 'gi');
+
+    if (!regex.test(htmlContent)) {
+      // Track mistakes that are not found
+      mistakesNotFound.push(index);
+    }
 
     htmlContent = htmlContent.replace(regex, (match) => {
       const normalizedMatch = normalizeText(match);
@@ -264,6 +276,11 @@ const highlightMistakes = () => {
 
   editableDiv.value.innerHTML = htmlContent;
   activatePopovers();
+
+  // Handle unhighlighted mistakes
+  unhighlightedMistakes.value = mistakesNotFound.map(index => mistakes.value[index]);
+  unhighlightedCorrections.value = mistakesNotFound.map(index => corrections.value[index]);
+  unhighlightedExplanations.value = mistakesNotFound.map(index => explanations.value[index]);
 };
 
 const escapeRegExp = (string) => {
@@ -615,6 +632,16 @@ onMounted(async () => {
             <button type="button" class="btn btn-md me-2" @click="handleCorrect">AI Evaluation</button>
             <button type="button" class="btn btn-md" @click="generateReview">Review</button>
           </div>
+          <span v-if="unhighlightedMistakes.length > 0">
+            <h5>Unhighlighted Mistakes:</h5>
+            <ul>
+              <li v-for="(mistake, index) in unhighlightedMistakes" :key="index">
+                <strong>Mistake:</strong> {{ mistake }}<br>
+                <strong>Correction:</strong> {{ unhighlightedCorrections[index] }}<br>
+                <strong>Explanation:</strong> {{ unhighlightedExplanations[index] }}
+              </li>
+            </ul>
+          </span>
         </div>
       </div>
     </div>

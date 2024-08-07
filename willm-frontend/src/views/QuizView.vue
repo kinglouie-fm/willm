@@ -16,7 +16,7 @@ const router = useRouter();
 
 const fetchQuiz = async () => {
     try {
-        const response = await axios.get('https://willm.corinth.informatik.rwth-aachen.de:3101/quiz/get-todays-quiz');
+        const response = await axios.get('https://willm.corinth.informatik.rwth-aachen.de/quiz/get-todays-quiz');
         quiz.value = response.data.quiz;
         if (!quiz.value) {
             message.info(response.data.message);
@@ -41,7 +41,7 @@ const submitAnswer = async (selectedAnswer = null, option) => {
         } else {
             answer = userAnswer.value;
         }
-        const response = await axios.post('https://willm.corinth.informatik.rwth-aachen.de:3101/quiz/submit-answer', {
+        const response = await axios.post('https://willm.corinth.informatik.rwth-aachen.de/quiz/submit-answer', {
             quizId: quiz.value.quiz_id,
             questionId: currentQuestion.value.question_id,
             userAnswer: answer,
@@ -66,7 +66,7 @@ const submitAnswer = async (selectedAnswer = null, option) => {
 
 const requestExplanation = async () => {
     try {
-        const response = await axios.post('https://willm.corinth.informatik.rwth-aachen.de:3101/quiz/explain-answer', {
+        const response = await axios.post('https://willm.corinth.informatik.rwth-aachen.de/quiz/explain-answer', {
             quizId: quiz.value.quiz_id,
             questionId: currentQuestion.value.question_id,
             userAnswer: userAnswer.value,
@@ -87,7 +87,7 @@ const nextQuestion = () => {
 
 const completeQuiz = async () => {
     try {
-        const response = await axios.post('https://willm.corinth.informatik.rwth-aachen.de:3101/quiz/complete', {
+        const response = await axios.post('https://willm.corinth.informatik.rwth-aachen.de/quiz/complete', {
             quizId: quiz.value.quiz_id,
         });
         quizScore.value = response.data.score;

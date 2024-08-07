@@ -631,17 +631,17 @@ onMounted(async () => {
           <div class="mx-5">
             <button type="button" class="btn btn-md me-2" @click="handleCorrect">AI Evaluation</button>
             <button type="button" class="btn btn-md" @click="generateReview">Review</button>
+            <span v-if="unhighlightedMistakes.length > 0" class="mt-2">
+              <h5>Unhighlighted Mistakes:</h5>
+              <ul>
+                <li v-for="(mistake, index) in unhighlightedMistakes" :key="index">
+                  <strong>Mistake:</strong> {{ mistake }}<br>
+                  <strong>Correction:</strong> {{ unhighlightedCorrections[index] }}<br>
+                  <strong>Explanation:</strong> {{ unhighlightedExplanations[index] }}
+                </li>
+              </ul>
+            </span>
           </div>
-          <span v-if="unhighlightedMistakes.length > 0">
-            <h5>Unhighlighted Mistakes:</h5>
-            <ul>
-              <li v-for="(mistake, index) in unhighlightedMistakes" :key="index">
-                <strong>Mistake:</strong> {{ mistake }}<br>
-                <strong>Correction:</strong> {{ unhighlightedCorrections[index] }}<br>
-                <strong>Explanation:</strong> {{ unhighlightedExplanations[index] }}
-              </li>
-            </ul>
-          </span>
         </div>
       </div>
     </div>

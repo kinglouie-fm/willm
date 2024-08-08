@@ -29,7 +29,7 @@ services:
         condition: service_healthy
 
   chromadb:
-    image: willm-chromadb/chroma:latest
+    image: chromadb/chroma:latest
     volumes:
       - /data/chroma:/chroma/chroma
     environment:

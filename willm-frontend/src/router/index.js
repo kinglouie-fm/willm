@@ -47,8 +47,8 @@ router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
   if (to.matched.some(record => record.meta.requiresAuth)) {
     try {
-      const profileResponse = await axios.get('http://academic-willm.de/user/profile', { withCredentials: true });
-      const gamificationResponse = await axios.get('http://academic-willm.de/user/gamification', { withCredentials: true });
+      const profileResponse = await axios.get('https://academic-willm.de/user/profile', { withCredentials: true });
+      const gamificationResponse = await axios.get('https://academic-willm.de/user/gamification', { withCredentials: true });
       if (profileResponse.status === 200 && gamificationResponse.status === 200) {
         authStore.setIsAuthenticated(true);
         authStore.setUsername(profileResponse.data.username);

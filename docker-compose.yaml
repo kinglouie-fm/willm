@@ -1,7 +1,7 @@
 services:
   frontend-backend:
     build:
-      context: /home/thillen/Data/willm
+      context: /willm
       dockerfile: dockerfile
     ports:
       - "3101:3101"
@@ -14,11 +14,11 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      - /home/thillen/Data/data/mongo:/data/db
+      - /data/mongo:/data/db
 
   flask-api:
     build:
-      context: /home/thillen/Data/willm/willm-flask-api
+      context: /willm/willm-flask-api
       dockerfile: Dockerfile
     ports:
       - "8031:8031"
@@ -31,7 +31,7 @@ services:
   chromadb:
     image: willm-chromadb/chroma:latest
     volumes:
-      - /home/thillen/Data/data/chroma:/chroma/chroma
+      - /data/chroma:/chroma/chroma
     environment:
       - IS_PERSISTENT=TRUE
       - ALLOW_RESET=TRUE

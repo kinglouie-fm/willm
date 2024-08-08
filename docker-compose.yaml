@@ -1,4 +1,17 @@
 services:
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./certs:/etc/nginx/certs:ro
+    depends_on:
+      - frontend-backend
+      - flask-api
+    restart: always
+
   frontend-backend:
     build:
       context: ./

@@ -1,7 +1,7 @@
 services:
   frontend-backend:
     build:
-      context: /willm
+      context: ./
       dockerfile: dockerfile
     ports:
       - "3101:3101"
@@ -18,7 +18,7 @@ services:
 
   flask-api:
     build:
-      context: /willm/willm-flask-api
+      context: ./willm-flask-api
       dockerfile: Dockerfile
     ports:
       - "8031:8031"

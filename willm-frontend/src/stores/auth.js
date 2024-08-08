@@ -24,7 +24,7 @@ export const useAuthStore = defineStore('auth', {
   actions: {
     async register(username, password) {
       try {
-        const response = await axios.post('http://34.46.136.120:3101/user/register', { username, password, dataPrivacyConsent });
+        const response = await axios.post('http://academic-willm.de/user/register', { username, password, dataPrivacyConsent });
         if (response.status === 201) {
           message.info('Registration successful. Please login.');
           router.push({ name: 'login' });
@@ -44,7 +44,7 @@ export const useAuthStore = defineStore('auth', {
       const hideLoading = message.info('Logging in...', 0);
       let hideLoading2;
       try {
-        const response = await axios.post('http://34.46.136.120:3101/user/login', { username, password });
+        const response = await axios.post('http://academic-willm.de/user/login', { username, password });
         if (response.status === 200 && response.data.message === 'Login successful') {
           this.isAuthenticated = true;
           this.preTestsCompleted = response.data.preTestsCompleted;
@@ -55,7 +55,7 @@ export const useAuthStore = defineStore('auth', {
           } else {
             // Check quiz status
             hideLoading2 = message.info('Generating quiz if necessary...', 0);
-            const quizResponse = await axios.get('http://34.46.136.120:3101/quiz/check-quiz');
+            const quizResponse = await axios.get('http://academic-willm.de/quiz/check-quiz');
             this.quizDueToday = quizResponse.data.quizDueToday;
             this.nextQuizDate = quizResponse.data.nextQuizDate ? quizResponse.data.nextQuizDate.split('T')[0].split('-').reverse().join('.') : null;
 
@@ -87,7 +87,7 @@ export const useAuthStore = defineStore('auth', {
     },
     async logout() {
       try {
-        await axios.post('http://34.46.136.120:3101/user/logout');
+        await axios.post('http://academic-willm.de/user/logout');
         this.isAuthenticated = false;
         this.preTestsCompleted = false;
         this.postTestsCompleted = false;
@@ -98,7 +98,7 @@ export const useAuthStore = defineStore('auth', {
     },
     async checkAuthStatus() {
       try {
-        const response = await axios.get('http://34.46.136.120:3101/user/pre-test-status');
+        const response = await axios.get('http://academic-willm.de/user/pre-test-status');
         this.preTestsCompleted = response.data.preTestsCompleted;
       } catch (error) {
         console.error('Error checking auth status');

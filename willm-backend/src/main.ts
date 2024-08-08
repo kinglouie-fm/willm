@@ -9,7 +9,7 @@ async function bootstrap() {
   });
   app.use(cookieParser())
   app.enableCors({
-    origin: 'http://34.46.136.120:3101',
+    origin: 'http://academic-willm.de',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });

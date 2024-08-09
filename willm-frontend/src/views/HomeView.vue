@@ -311,8 +311,8 @@ const highlightMistakes = () => {
         console.log(`Mistake Regex: ${mistakeRegex}`);
 
         // Prepare the replacement for this match
-        const replacement = match[0].replace(mistakeRegex, (match) => {
-          const mistakeElement = `<span class="mistake" data-index="${index}" data-bs-toggle="popover" data-bs-html="true" data-bs-content="${escapeHTML(`<b>Mistake</b>: ${mistake}<br><b>Type</b>: ${category}<br><b>Correction</b>: ${correction}<br><b>Explanation</b>: ${explanation}`)}">${match}</span>`;
+        const replacement = match[0].replace(mistakeRegex, (matchedMistake) => {
+          const mistakeElement = `<span class="mistake" data-index="${index}" data-bs-toggle="popover" data-bs-html="true" data-bs-content="${escapeHTML(`<b>Mistake</b>: ${mistake}<br><b>Type</b>: ${category}<br><b>Correction</b>: ${correction}<br><b>Explanation</b>: ${explanation}`)}">${matchedMistake}</span>`;
           console.log(`Replacement Element: ${mistakeElement}`);
           return mistakeElement;
         });
@@ -329,7 +329,8 @@ const highlightMistakes = () => {
   // Step 2: Apply all replacements to the original HTML content in one go
   replacements.forEach(({ original, replacement }) => {
     console.log(`Replacing: ${original} with ${replacement}`);
-    htmlContent = htmlContent.replace(original, replacement);
+    // Here, replace only the first occurrence to ensure we don't accidentally replace unintended text.
+    htmlContent = htmlContent.replace(new RegExp(escapeForRegex(original), 'i'), replacement);
   });
 
   // Set the updated HTML content back to the editable div

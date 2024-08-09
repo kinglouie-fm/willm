@@ -246,25 +246,18 @@ const stripHtmlTags = (html) => {
   return div.textContent || div.innerText || '';
 };
 
-const normalizeText = (text) => {
-  return text.toLowerCase()
-    .replace(/[\.,\/#!$%\^&\*;:{}=\-_`~()]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-};
-
 const highlightMistakes = () => {
-  let htmlContent = editableDiv.value.innerHTML;
+  let htmlContent = normalizeText(editableDiv.value.innerHTML);
   const mistakesNotFound = [];
 
   contexts.value.forEach((context, index) => {
-    const mistake = mistakes.value[index];
+    const mistake = normalizeText(mistakes.value[index]);
     const correction = corrections.value[index];
     const category = categories.value[index];
     const explanation = explanations.value[index];
 
     // Break down the context into smaller chunks (words/phrases)
-    const contextChunks = breakIntoChunks(context);
+    const contextChunks = breakIntoChunks(normalizeText(context));
 
     let mistakeFound = false; // Track if the mistake was found in any of the chunks
 
@@ -307,23 +300,27 @@ const highlightMistakes = () => {
   console.log("Unhighlighted Mistakes:", unhighlightedMistakes.value);
 };
 
+// Helper function to normalize text
+const normalizeText = (text) => {
+  return text
+    .toLowerCase() // Convert to lowercase
+    .replace(/\\/g, '') // Remove backslashes
+    .replace(/,/g, '') // Remove commas
+    .replace(/\s+/g, ' ') // Normalize spaces
+    .trim(); // Trim leading and trailing spaces
+};
+
 // Helper function to break context into smaller chunks
 const breakIntoChunks = (context) => {
   return context.split(/\s+/).filter(chunk => chunk.length > 0); // Split by spaces and remove empty strings
 };
 
+// Helper function to escape special characters for regex
 const escapeForRegex = (string) => {
-  // Remove backslashes, commas, and escape other special characters
-  return string
-    .replace(/\\/g, '') // Remove backslashes
-    .replace(/,/g, '') // Remove commas
-    .replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // Escape other special characters for regex
-};
-
-const escapeRegExp = (string) => {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 };
 
+// Helper function to escape HTML special characters
 const escapeHTML = (string) => {
   return string
     .replace(/&/g, '&amp;')

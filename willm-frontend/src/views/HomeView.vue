@@ -143,6 +143,7 @@ const handleCorrect = async () => {
     categories.value = correctionResponse.data.categories.map(replaceDoubleBackslash);
     contexts.value = correctionResponse.data.contexts.map(replaceDoubleBackslash);
     contexts.value = contexts.value.map(cleanContext);
+    console.log(contexts.value)
 
     scores.value = correctionResponse.data.scores;
 

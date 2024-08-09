@@ -260,10 +260,9 @@ const highlightMistakes = () => {
 
     // Normalize context and mistake
     let normalizedContext = normalizeText(context);
-    let normalizedMistake = normalizeText(mistake);
 
     console.log(`Normalized Context: ${normalizedContext}`);
-    console.log(`Normalized Mistake: ${normalizedMistake}`);
+    console.log(`Normalized Mistake: ${mistake}`);
     console.log(`Original HTML Content: ${htmlContent}`);
 
     // Create a flexible regex to find the context in the text
@@ -274,7 +273,7 @@ const highlightMistakes = () => {
     if (contextRegex.test(normalizeText(htmlContent))) {
       console.log(`Context Found: ${context}`);
       // If context is found, create a regex for the exact mistake
-      let mistakeRegex = new RegExp(`\\b${escapeForRegex(normalizedMistake)}\\b`, 'gi');
+      let mistakeRegex = new RegExp(`\\b${escapeForRegex(mistake)}\\b`, 'gi');
       console.log(`Mistake Regex: ${mistakeRegex}`);
 
       // Replace the context in the HTML content with highlighted mistake

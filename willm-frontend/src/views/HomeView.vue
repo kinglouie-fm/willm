@@ -304,6 +304,8 @@ const highlightMistakes = () => {
     htmlContent = htmlContent.replace(original, replacement);
   });
 
+  console.log("test")
+
   // Set the updated HTML content back to the editable div
   editableDiv.value.innerHTML = htmlContent;
   activatePopovers();

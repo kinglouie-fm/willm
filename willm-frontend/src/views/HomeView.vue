@@ -249,48 +249,42 @@ const stripHtmlTags = (html) => {
 };
 
 const highlightMistakes = () => {
-  // Normalize the HTML content in the editable div
   let htmlContent = editableDiv.value.innerHTML;
   const mistakesNotFound = [];
 
   contexts.value.forEach((context, index) => {
-    const mistake = normalizeText(mistakes.value[index]);
+    const mistake = mistakes.value[index];
     const correction = corrections.value[index];
     const category = categories.value[index];
     const explanation = explanations.value[index];
 
-    // Break down the context into smaller chunks (words/phrases)
-    const contextChunks = breakIntoChunks(normalizeText(context));
+    // Normalize context and mistake
+    let normalizedContext = normalizeText(context);
+    let normalizedMistake = normalizeText(mistake);
 
-    let mistakeFound = false; // Track if the mistake was found in any of the chunks
+    // Create a flexible regex to find the context in the text
+    let contextRegex = new RegExp(escapeForRegex(normalizedContext), 'gi');
 
-    // Create a flexible regex pattern for each chunk
-    const chunkRegexes = contextChunks.map(chunk => {
-      return new RegExp(escapeForRegex(chunk), 'gi'); // 'gi' makes it case-insensitive
-    });
+    // Check if the context exists in the text
+    if (contextRegex.test(normalizeText(htmlContent))) {
+      // If context is found, create a regex for the exact mistake
+      let mistakeRegex = new RegExp(`\\b${escapeForRegex(normalizedMistake)}\\b`, 'gi');
 
-    // Find and replace each chunk in the text with highlighted mistake
-    chunkRegexes.forEach((chunkRegex) => {
-      htmlContent = htmlContent.replace(chunkRegex, (matchedChunk) => {
-        const mistakeRegex = new RegExp(`\\b${escapeForRegex(mistake)}\\b`, 'gi');
-
-        if (mistakeRegex.test(matchedChunk)) {
-          mistakeFound = true; // Mark as found
-          return matchedChunk.replace(mistakeRegex, (match) => {
-            return `<span class="mistake" data-index="${index}" data-bs-toggle="popover" data-bs-html="true" data-bs-content="${escapeHTML(`<b>Mistake</b>: ${mistake}<br><b>Type</b>: ${category}<br><b>Correction</b>: ${correction}<br><b>Explanation</b>: ${explanation}`)}">${match}</span>`;
-          });
-        }
-        return matchedChunk;
+      // Replace the context in the HTML content with highlighted mistake
+      htmlContent = htmlContent.replace(contextRegex, (matchedContext) => {
+        return matchedContext.replace(mistakeRegex, (match) => {
+          const mistakeElement = `<span class="mistake" data-index="${index}" data-bs-toggle="popover" data-bs-html="true" data-bs-content="${escapeHTML(`<b>Mistake</b>: ${mistake}<br><b>Type</b>: ${category}<br><b>Correction</b>: ${correction}<br><b>Explanation</b>: ${explanation}`)}">${match}</span>`;
+          return mistakeElement;
+        });
       });
-    });
-
-    // If mistake was not found, add it to the not found list
-    if (!mistakeFound) {
+    } else {
+      console.log(`Context not found:`, context);
+      // Fallback to fuzzy matching or add to the not found list
       mistakesNotFound.push(index);
     }
   });
 
-  // Set the modified HTML content back
+  // Set the updated HTML content back to the editable div
   editableDiv.value.innerHTML = htmlContent;
   activatePopovers();
 
@@ -303,6 +297,11 @@ const highlightMistakes = () => {
   console.log("Unhighlighted Mistakes:", unhighlightedMistakes.value);
 };
 
+// Helper function to escape special characters for regex
+const escapeForRegex = (string) => {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+};
+
 // Helper function to normalize text
 const normalizeText = (text) => {
   return text
@@ -312,16 +311,6 @@ const normalizeText = (text) => {
     .replace(/'/g, '') // Remove apostrophes
     .replace(/\s+/g, ' ') // Normalize spaces
     .trim(); // Trim leading and trailing spaces
-};
-
-// Helper function to break context into smaller chunks
-const breakIntoChunks = (context) => {
-  return context.split(/\s+/).filter(chunk => chunk.length > 0); // Split by spaces and remove empty strings
-};
-
-// Helper function to escape special characters for regex
-const escapeForRegex = (string) => {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 };
 
 // Helper function to escape HTML special characters

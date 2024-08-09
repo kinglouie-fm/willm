@@ -62,24 +62,26 @@ const handleSwitchChange = (event) => {
 
 const selectedComponent = ref('Review');
 
-const replaceDoubleBackslash = (text) => {
+const replaceBackslash = (text) => {
   // Replace double backslashes with a single backslash
   text = text.replace(/\\\\/g, '\\');
-  // Replace escaped double quotes with actual double quotes
+
+  // Handle escaped single quotes and double quotes
+  text = text.replace(/\\'/g, "'");
   text = text.replace(/\\"/g, '"');
-  // Optionally: Remove the outer single quotes if they're not needed
-  if (text.startsWith("'") && text.endsWith("'")) {
-    text = text.slice(1, -1);
-  }
+
+  // Optionally: Remove any remaining single backslashes before non-alphanumeric characters
+  text = text.replace(/\\(?=\W)/g, '');
 
   return text;
 };
 
 const cleanContext = (text) => {
   return text
-    .replace(/[\[\]\*\.\.\.]/g, '')
-    .replace(/\s{2,}/g, ' ')
-    .trim();
+    .replace(/[\[\]\*\.\.\.]/g, '') // Remove specific characters
+    .replace(/\s{2,}/g, ' ') // Replace multiple spaces with a single space
+    .replace(/\u200B/g, '')  // Remove zero-width spaces if present
+    .trim(); // Trim leading and trailing spaces
 };
 
 const handleCorrect = async () => {
@@ -143,8 +145,7 @@ const handleCorrect = async () => {
     corrections.value = correctionResponse.data.corrections.map(replaceDoubleBackslash);
     explanations.value = correctionResponse.data.explanations.map(replaceDoubleBackslash);
     categories.value = correctionResponse.data.categories.map(replaceDoubleBackslash);
-    contexts.value = correctionResponse.data.contexts.map(replaceDoubleBackslash);
-    contexts.value = contexts.value.map(cleanContext);
+    contexts.value = correctionResponse.data.contexts.map(replaceBackslash).map(cleanContext);
     console.log(contexts.value)
 
     scores.value = correctionResponse.data.scores;
@@ -258,39 +259,36 @@ const highlightMistakes = () => {
 
   contexts.value.forEach((context, index) => {
     const mistake = mistakes.value[index];
-    const normalizedContext = normalizeText(context);
-    const normalizedMistake = normalizeText(mistake);
+    const correction = corrections.value[index];
+    const category = categories.value[index];
+    const explanation = explanations.value[index];
 
-    // Create a regex to find the context in the text
-    const contextRegex = new RegExp(`${escapeRegExp(normalizedContext)}`, 'gi');
+    let normalizedContext = normalizeText(context);
+    let normalizedMistake = normalizeText(mistake);
+
+    // Create a flexible regex to find the context in the text
+    let contextRegex = new RegExp(escapeRegExp(normalizedContext), 'gi');
 
     // Check if the context exists in the text
-    if (contextRegex.test(htmlContent)) {
+    if (contextRegex.test(normalizeText(htmlContent))) {
       // If context is found, create a regex for the exact mistake
-      const mistakeRegex = new RegExp(`\\b${escapeRegExp(normalizedMistake)}\\b`, 'gi');
+      let mistakeRegex = new RegExp(`\\b${escapeRegExp(normalizedMistake)}\\b`, 'gi');
 
+      // Replace the context in the HTML content with highlighted mistake
       htmlContent = htmlContent.replace(contextRegex, (matchedContext) => {
-        // Within the matched context, look for the exact mistake
-        if (mistakeRegex.test(matchedContext)) {
-          return matchedContext.replace(mistakeRegex, (match) => {
-            const mistakeElement = `<span class="mistake" data-index="${index}" data-bs-toggle="popover" data-bs-html="true" data-bs-content="${escapeHTML(`<b>Mistake</b>: ${mistake}<br><b>Type</b>: ${categories.value[index]}<br><b>Correction</b>: ${corrections.value[index]}<br><b>Explanation</b>: ${explanations.value[index]}`)}">${match}</span>`;
-            return mistakeElement;
-          });
-        } else {
-          console.log("mistakeRegex", mistakeRegex);
-          // If the mistake isn't found in the context, log it
-          mistakesNotFound.push(index);
-        }
-        return matchedContext; // Return the context, modified or not
+        return matchedContext.replace(mistakeRegex, (match) => {
+          const mistakeElement = `<span class="mistake" data-index="${index}" data-bs-toggle="popover" data-bs-html="true" data-bs-content="${escapeHTML(`<b>Mistake</b>: ${mistake}<br><b>Type</b>: ${category}<br><b>Correction</b>: ${correction}<br><b>Explanation</b>: ${explanation}`)}">${match}</span>`;
+          return mistakeElement;
+        });
       });
-
     } else {
-      console.log("contextRegex", contextRegex);
-      // If the context itself isn't found, log it
+      console.log(`Context not found:`, context);
+      // Fallback to fuzzy matching or add to the not found list
       mistakesNotFound.push(index);
     }
   });
 
+  // Set the updated HTML content back to the editable div
   editableDiv.value.innerHTML = htmlContent;
   activatePopovers();
 
@@ -298,6 +296,9 @@ const highlightMistakes = () => {
   unhighlightedMistakes.value = mistakesNotFound.map(index => mistakes.value[index]);
   unhighlightedCorrections.value = mistakesNotFound.map(index => corrections.value[index]);
   unhighlightedExplanations.value = mistakesNotFound.map(index => explanations.value[index]);
+
+  // Log the unhighlighted mistakes for debugging
+  console.log("Unhighlighted Mistakes:", unhighlightedMistakes.value);
 };
 
 const escapeRegExp = (string) => {

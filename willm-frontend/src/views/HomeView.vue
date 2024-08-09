@@ -274,6 +274,7 @@ const highlightMistakes = () => {
             return mistakeElement;
           });
         } else {
+          console.log("mistakeRegex", mistakeRegex);
           // If the mistake isn't found in the context, log it
           mistakesNotFound.push(index);
         }

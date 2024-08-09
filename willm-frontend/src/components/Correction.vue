@@ -8,10 +8,10 @@ const props = defineProps({
     unhighlightedExplanations: Array
 });
 
-const unhighlightedMistakesOpen = ref(true);
-const organizationOpen = ref(true);
-const coherenceOpen = ref(true);
-const writingStyleOpen = ref(true);
+const unhighlightedMistakesOpen = ref(false);
+const organizationOpen = ref(false);
+const coherenceOpen = ref(false);
+const writingStyleOpen = ref(false);
 const feedbackDiv = ref(null);
 
 const toggleSection = (section) => {

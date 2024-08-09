@@ -312,6 +312,14 @@ const breakIntoChunks = (context) => {
   return context.split(/\s+/).filter(chunk => chunk.length > 0); // Split by spaces and remove empty strings
 };
 
+const escapeForRegex = (string) => {
+  // Remove backslashes, commas, and escape other special characters
+  return string
+    .replace(/\\/g, '') // Remove backslashes
+    .replace(/,/g, '') // Remove commas
+    .replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // Escape other special characters for regex
+};
+
 const escapeRegExp = (string) => {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 };

@@ -252,23 +252,25 @@ const highlightMistakes = () => {
   let htmlContent = editableDiv.value.innerHTML;
   const mistakesNotFound = [];
 
-  // Iterate through each context
+  // Step 1: Store matches and their replacement info
+  const replacements = [];
+
   contexts.value.forEach((context, index) => {
     const mistake = mistakes.value[index];
     const correction = corrections.value[index];
     const category = categories.value[index];
     const explanation = explanations.value[index];
 
-    // Normalize the context and mistake
+    // Normalize context and mistake
     let normalizedContext = normalizeText(context);
     let normalizedMistake = normalizeText(mistake);
 
-    // Log the context, mistake, and content for debugging
+    // Log for debugging
     console.log(`Normalized Context: ${normalizedContext}`);
     console.log(`Normalized Mistake: ${normalizedMistake}`);
     console.log(`Original HTML Content: ${htmlContent}`);
 
-    // Create the regex patterns
+    // Create the regex for context and mistake
     let contextRegex = new RegExp(escapeForRegex(normalizedContext), 'gi');
     console.log(`Context Regex: ${contextRegex}`);
 
@@ -278,31 +280,40 @@ const highlightMistakes = () => {
       let mistakeRegex = new RegExp(`\\b${escapeForRegex(normalizedMistake)}\\b`, 'gi');
       console.log(`Mistake Regex: ${mistakeRegex}`);
 
-      // Replace the context in the HTML content with highlighted mistake
-      htmlContent = htmlContent.replace(contextRegex, (matchedContext) => {
-        // Handle the replacement carefully to avoid breaking other matches
-        return matchedContext.replace(mistakeRegex, (match) => {
-          const mistakeElement = `<span class="mistake" data-index="${index}" data-bs-toggle="popover" data-bs-html="true" data-bs-content="${escapeHTML(`<b>Mistake</b>: ${mistake}<br><b>Type</b>: ${category}<br><b>Correction</b>: ${correction}<br><b>Explanation</b>: ${explanation}`)}">${match}</span>`;
-          return mistakeElement;
+      // Find the matched context and prepare the replacement
+      let matches = htmlContent.match(contextRegex);
+      if (matches) {
+        matches.forEach(matchedContext => {
+          // Prepare the replacement for this match
+          const replacement = matchedContext.replace(mistakeRegex, (match) => {
+            const mistakeElement = `<span class="mistake" data-index="${index}" data-bs-toggle="popover" data-bs-html="true" data-bs-content="${escapeHTML(`<b>Mistake</b>: ${mistake}<br><b>Type</b>: ${category}<br><b>Correction</b>: ${correction}<br><b>Explanation</b>: ${explanation}`)}">${match}</span>`;
+            return mistakeElement;
+          });
+          replacements.push({ original: matchedContext, replacement });
         });
-      });
+      }
     } else {
       console.log(`Context not found: ${context}`);
-      // If the context wasn't found, add to not found list
+      // Add to not found list
       mistakesNotFound.push(index);
     }
   });
 
-  // Update the editable div content
+  // Step 2: Apply all replacements in one go to avoid interference
+  replacements.forEach(({ original, replacement }) => {
+    htmlContent = htmlContent.replace(original, replacement);
+  });
+
+  // Set the updated HTML content back to the editable div
   editableDiv.value.innerHTML = htmlContent;
   activatePopovers();
 
-  // Process unhighlighted mistakes
+  // Handle unhighlighted mistakes
   unhighlightedMistakes.value = mistakesNotFound.map(index => mistakes.value[index]);
   unhighlightedCorrections.value = mistakesNotFound.map(index => corrections.value[index]);
   unhighlightedExplanations.value = mistakesNotFound.map(index => explanations.value[index]);
 
-  // Log unhighlighted mistakes
+  // Log the unhighlighted mistakes for debugging
   console.log("Unhighlighted Mistakes:", unhighlightedMistakes.value);
 };
 

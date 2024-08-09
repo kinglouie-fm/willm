@@ -141,10 +141,10 @@ const handleCorrect = async () => {
     });
 
     // Process initial correction response
-    mistakes.value = correctionResponse.data.mistakes.map(replaceDoubleBackslash);
-    corrections.value = correctionResponse.data.corrections.map(replaceDoubleBackslash);
-    explanations.value = correctionResponse.data.explanations.map(replaceDoubleBackslash);
-    categories.value = correctionResponse.data.categories.map(replaceDoubleBackslash);
+    mistakes.value = correctionResponse.data.mistakes.map(replaceBackslash);
+    corrections.value = correctionResponse.data.corrections.map(replaceBackslash);
+    explanations.value = correctionResponse.data.explanations.map(replaceBackslash);
+    categories.value = correctionResponse.data.categories.map(replaceBackslash);
     contexts.value = correctionResponse.data.contexts.map(replaceBackslash).map(cleanContext);
     console.log(contexts.value)
 

@@ -198,6 +198,7 @@ const handleCorrect = async () => {
     // Trigger question generation
     await axios.post('https://academic-willm.de/question/generate');
   } catch (error) {
+    console.log(error)
     message.error('Error generating questions. Please contact the administrator.', 3);
   }
 };

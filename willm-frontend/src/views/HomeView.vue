@@ -187,8 +187,6 @@ const handleCorrect = async () => {
   } catch (error) {
     if (error.response && error.response.status === 401) {
       message.info('Please log in again.');
-    } else if (error.response && error.response.status === 403) {
-      message.info("No requests left for GPT 4o. Please try again tomorrow.", 4);
     } else {
       console.log(error)
       message.error('Error processing requests. Please try again.');
@@ -222,8 +220,11 @@ const generateReview = async () => {
   } catch (error) {
     if (error.response && error.response.status === 401) {
       message.info('Please log in again.');
+    } else if (error.response && error.response.status === 403) {
+      message.info("No requests left for GPT 4o. Please try again tomorrow.", 4);
     } else {
-      message.error('Error generating review.');
+      console.log(error)
+      message.error('Error processing requests. Please try again.');
     }
   } finally {
     hideLoading();
@@ -254,95 +255,57 @@ const highlightMistakes = () => {
   let htmlContent = editableDiv.value.innerHTML;
   const mistakesNotFound = [];
 
-  // To track already processed parts of the text
-  let processedRanges = [];
-
-  const addProcessedRange = (start, end) => {
-    processedRanges.push({ start, end });
-  };
-
-  const isOverlapping = (start, end) => {
-    return processedRanges.some(range => {
-      return (start >= range.start && start <= range.end) || (end >= range.start && end <= range.end);
-    });
-  };
-
-  // Step 1: Store matches and their replacement info
-  const replacements = [];
-
+  // Iterate through each context
   contexts.value.forEach((context, index) => {
     const mistake = mistakes.value[index];
     const correction = corrections.value[index];
     const category = categories.value[index];
     const explanation = explanations.value[index];
 
-    // Normalize context and mistake
+    // Normalize the context and mistake
     let normalizedContext = normalizeText(context);
     let normalizedMistake = normalizeText(mistake);
 
-    // Log for debugging
+    // Log the context, mistake, and content for debugging
     console.log(`Normalized Context: ${normalizedContext}`);
     console.log(`Normalized Mistake: ${normalizedMistake}`);
+    console.log(`Original HTML Content: ${htmlContent}`);
 
-    // Create the regex for context and mistake
+    // Create the regex patterns
     let contextRegex = new RegExp(escapeForRegex(normalizedContext), 'gi');
     console.log(`Context Regex: ${contextRegex}`);
 
     // Check if the context exists in the text
-    const normalizedHtmlContent = normalizeText(htmlContent);
-    if (contextRegex.test(normalizedHtmlContent)) {
-      let match;
-      while ((match = contextRegex.exec(normalizedHtmlContent)) !== null) {
-        const matchStart = match.index;
-        const matchEnd = contextRegex.lastIndex;
+    if (contextRegex.test(normalizeText(htmlContent))) {
+      console.log(`Context Found: ${context}`);
+      let mistakeRegex = new RegExp(`\\b${escapeForRegex(normalizedMistake)}\\b`, 'gi');
+      console.log(`Mistake Regex: ${mistakeRegex}`);
 
-        if (isOverlapping(matchStart, matchEnd)) {
-          // If the match overlaps with previously processed text, add it to unhighlighted
-          console.log(`Overlapping context found: ${context}`);
-          mistakesNotFound.push(index);
-          continue;
-        }
-
-        // Mark this range as processed
-        addProcessedRange(matchStart, matchEnd);
-
-        console.log(`Context Found: ${context}`);
-        let mistakeRegex = new RegExp(`\\b${escapeForRegex(normalizedMistake)}\\b`, 'gi');
-        console.log(`Mistake Regex: ${mistakeRegex}`);
-
-        // Prepare the replacement for this match
-        const replacement = match[0].replace(mistakeRegex, (matchedMistake) => {
-          const mistakeElement = `<span class="mistake" data-index="${index}" data-bs-toggle="popover" data-bs-html="true" data-bs-content="${escapeHTML(`<b>Mistake</b>: ${mistake}<br><b>Type</b>: ${category}<br><b>Correction</b>: ${correction}<br><b>Explanation</b>: ${explanation}`)}">${matchedMistake}</span>`;
-          console.log(`Replacement Element: ${mistakeElement}`);
+      // Replace the context in the HTML content with highlighted mistake
+      htmlContent = htmlContent.replace(contextRegex, (matchedContext) => {
+        // Handle the replacement carefully to avoid breaking other matches
+        return matchedContext.replace(mistakeRegex, (match) => {
+          const mistakeElement = `<span class="mistake" data-index="${index}" data-bs-toggle="popover" data-bs-html="true" data-bs-content="${escapeHTML(`<b>Mistake</b>: ${mistake}<br><b>Type</b>: ${category}<br><b>Correction</b>: ${correction}<br><b>Explanation</b>: ${explanation}`)}">${match}</span>`;
           return mistakeElement;
         });
-
-        // Add the original matched text and its replacement to the replacements array
-        replacements.push({ original: match[0], replacement });
-      }
+      });
     } else {
       console.log(`Context not found: ${context}`);
+      // If the context wasn't found, add to not found list
       mistakesNotFound.push(index);
     }
   });
 
-  // Step 2: Apply all replacements to the original HTML content in one go
-  replacements.forEach(({ original, replacement }) => {
-    console.log(`Replacing: ${original} with ${replacement}`);
-    // Here, replace only the first occurrence to ensure we don't accidentally replace unintended text.
-    htmlContent = htmlContent.replace(new RegExp(escapeForRegex(original), 'i'), replacement);
-  });
-
-  // Set the updated HTML content back to the editable div
+  // Update the editable div content
   editableDiv.value.innerHTML = htmlContent;
   activatePopovers();
 
-  // Handle unhighlighted mistakes
+  // Process unhighlighted mistakes
   unhighlightedMistakes.value = mistakesNotFound.map(index => mistakes.value[index]);
   unhighlightedCorrections.value = mistakesNotFound.map(index => corrections.value[index]);
   unhighlightedExplanations.value = mistakesNotFound.map(index => explanations.value[index]);
 
-  // Log the unhighlighted mistakes for debugging
+  // Log unhighlighted mistakes
   console.log("Unhighlighted Mistakes:", unhighlightedMistakes.value);
 };
 

@@ -254,6 +254,19 @@ const highlightMistakes = () => {
   let htmlContent = editableDiv.value.innerHTML;
   const mistakesNotFound = [];
 
+  // To track already processed parts of the text
+  let processedRanges = [];
+
+  const addProcessedRange = (start, end) => {
+    processedRanges.push({ start, end });
+  };
+
+  const isOverlapping = (start, end) => {
+    return processedRanges.some(range => {
+      return (start >= range.start && start <= range.end) || (end >= range.start && end <= range.end);
+    });
+  };
+
   // Step 1: Store matches and their replacement info
   const replacements = [];
 
@@ -277,37 +290,48 @@ const highlightMistakes = () => {
     console.log(`Context Regex: ${contextRegex}`);
 
     // Check if the context exists in the text
-    if (contextRegex.test(normalizeText(htmlContent))) {
-      console.log(`Context Found: ${context}`);
-      let mistakeRegex = new RegExp(`\\b${escapeForRegex(normalizedMistake)}\\b`, 'gi');
-      console.log(`Mistake Regex: ${mistakeRegex}`);
+    const normalizedHtmlContent = normalizeText(htmlContent);
+    if (contextRegex.test(normalizedHtmlContent)) {
+      let match;
+      while ((match = contextRegex.exec(normalizedHtmlContent)) !== null) {
+        const matchStart = match.index;
+        const matchEnd = contextRegex.lastIndex;
 
-      // Find the matched context and prepare the replacement
-      let matches = htmlContent.match(contextRegex);
-      if (matches) {
-        matches.forEach(matchedContext => {
-          // Prepare the replacement for this match
-          const replacement = matchedContext.replace(mistakeRegex, (match) => {
-            const mistakeElement = `<span class="mistake" data-index="${index}" data-bs-toggle="popover" data-bs-html="true" data-bs-content="${escapeHTML(`<b>Mistake</b>: ${mistake}<br><b>Type</b>: ${category}<br><b>Correction</b>: ${correction}<br><b>Explanation</b>: ${explanation}`)}">${match}</span>`;
-            return mistakeElement;
-          });
-          replacements.push({ original: matchedContext, replacement });
+        if (isOverlapping(matchStart, matchEnd)) {
+          // If the match overlaps with previously processed text, add it to unhighlighted
+          console.log(`Overlapping context found: ${context}`);
+          mistakesNotFound.push(index);
+          continue;
+        }
+
+        // Mark this range as processed
+        addProcessedRange(matchStart, matchEnd);
+
+        console.log(`Context Found: ${context}`);
+        let mistakeRegex = new RegExp(`\\b${escapeForRegex(normalizedMistake)}\\b`, 'gi');
+        console.log(`Mistake Regex: ${mistakeRegex}`);
+
+        // Prepare the replacement for this match
+        const replacement = match[0].replace(mistakeRegex, (match) => {
+          const mistakeElement = `<span class="mistake" data-index="${index}" data-bs-toggle="popover" data-bs-html="true" data-bs-content="${escapeHTML(`<b>Mistake</b>: ${mistake}<br><b>Type</b>: ${category}<br><b>Correction</b>: ${correction}<br><b>Explanation</b>: ${explanation}`)}">${match}</span>`;
+          console.log(`Replacement Element: ${mistakeElement}`);
+          return mistakeElement;
         });
+
+        // Add the original matched text and its replacement to the replacements array
+        replacements.push({ original: match[0], replacement });
       }
     } else {
       console.log(`Context not found: ${context}`);
-      // Add to not found list
       mistakesNotFound.push(index);
     }
   });
 
-  // Step 2: Apply all replacements in one go to avoid interference
+  // Step 2: Apply all replacements to the original HTML content in one go
   replacements.forEach(({ original, replacement }) => {
     console.log(`Replacing: ${original} with ${replacement}`);
     htmlContent = htmlContent.replace(original, replacement);
   });
-
-  console.log("test")
 
   // Set the updated HTML content back to the editable div
   editableDiv.value.innerHTML = htmlContent;

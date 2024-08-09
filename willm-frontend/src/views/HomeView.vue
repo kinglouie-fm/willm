@@ -621,7 +621,9 @@ onMounted(async () => {
         <div class="col-5 d-flex flex-column">
           <div class="flex-grow-1">
             <component :is="selectedComponent === 'Review' ? Review : Evaluation" :reviewData="reviewData"
-              :furtherCorrectionData="furtherCorrectionData" :scores="scores" />
+              :furtherCorrectionData="furtherCorrectionData" :scores="scores"
+              :unhighlightedMistakes="unhighlightedMistakes" :unhighlightedCorrections="unhighlightedCorrections"
+              :unhighlightedExplanations="unhighlightedExplanations" />
           </div>
         </div>
       </div>
@@ -631,16 +633,6 @@ onMounted(async () => {
           <div class="mx-5">
             <button type="button" class="btn btn-md me-2" @click="handleCorrect">AI Evaluation</button>
             <button type="button" class="btn btn-md" @click="generateReview">Review</button>
-            <span v-if="unhighlightedMistakes.length > 0">
-              <h6 class="mt-2">Mistakes that were not highlighted:</h6>
-              <ul>
-                <li v-for="(mistake, index) in unhighlightedMistakes" :key="index">
-                  <strong>Mistake:</strong> {{ mistake }}<br>
-                  <strong>Correction:</strong> {{ unhighlightedCorrections[index] }}<br>
-                  <strong>Explanation:</strong> {{ unhighlightedExplanations[index] }}
-                </li>
-              </ul>
-            </span>
           </div>
         </div>
       </div>

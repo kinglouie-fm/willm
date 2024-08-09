@@ -2,12 +2,16 @@
 import { ref, onMounted } from 'vue';
 
 const props = defineProps({
-    furtherCorrectionData: Object
+    furtherCorrectionData: Object,
+    unhighlightedMistakes: Array,
+    unhighlightedCorrections: Array,
+    unhighlightedExplanations: Array
 });
 
-const organizationOpen = ref(true);
-const coherenceOpen = ref(true);
-const writingStyleOpen = ref(true);
+const unhighlightedMistakesOpen = ref(false);
+const organizationOpen = ref(false);
+const coherenceOpen = ref(false);
+const writingStyleOpen = ref(false);
 const feedbackDiv = ref(null);
 
 const toggleSection = (section) => {
@@ -17,6 +21,8 @@ const toggleSection = (section) => {
         coherenceOpen.value = !coherenceOpen.value;
     } else if (section === 'writingStyle') {
         writingStyleOpen.value = !writingStyleOpen.value;
+    } else if (section === 'unhighlightedMistakes') {
+        unhighlightedMistakesOpen.value = !unhighlightedMistakesOpen.value;
     }
 };
 
@@ -27,12 +33,22 @@ const isSectionOpen = (section) => {
         return coherenceOpen.value;
     } else if (section === 'writingStyle') {
         return writingStyleOpen.value;
+    } else if (section === 'unhighlightedMistakes') {
+        return unhighlightedMistakesOpen.value;
     }
     return false;
 };
 
 const sectionIcon = (section) => {
-    return isSectionOpen(section) ? 'arrow-icon open' : 'arrow-icon closed';
+    if (section === 'organization') {
+        return isSectionOpen('organization') ? 'arrow-icon open' : 'arrow-icon closed';
+    } else if (section === 'coherence') {
+        return isSectionOpen('coherence') ? 'arrow-icon open' : 'arrow-icon closed';
+    } else if (section === 'writingStyle') {
+        return isSectionOpen('writingStyle') ? 'arrow-icon open' : 'arrow-icon closed';
+    } else if (section === 'unhighlightedMistakes') {
+        return isSectionOpen('unhighlightedMistakes') ? 'arrow-icon open' : 'arrow-icon closed';
+    }
 };
 
 const handleScroll = () => {
@@ -70,7 +86,22 @@ onMounted(async () => {
 
 <template>
     <div class="feedback" ref="feedbackDiv">
-        <h3 class="text-center">Further Correction</h3>
+        <h3 class="text-center">Evaluation</h3>
+        <div v-if="props.unhighlightedMistakes.length > 0">
+            <h5 @click="toggleSection('unhighlightedMistakes')" class="expandable-header">
+                <span :class="sectionIcon('unhighlightedMistakes')"></span>
+                Mistakes that were not highlighted
+            </h5>
+            <div v-show="unhighlightedMistakesOpen">
+                <ul class="mt-2">
+                    <li v-for="(mistake, index) in props.unhighlightedMistakes" :key="index">
+                        <strong>Mistake:</strong> {{ mistake }}<br>
+                        <strong>Correction:</strong> {{ props.unhighlightedCorrections[index] }}<br>
+                        <strong>Explanation:</strong> {{ props.unhighlightedExplanations[index] }}
+                    </li>
+                </ul>
+            </div>
+        </div>
         <div>
             <h5 @click="toggleSection('organization')" class="expandable-header">
                 <span :class="sectionIcon('organization')"></span>
@@ -86,9 +117,9 @@ onMounted(async () => {
                         <ul class="mt-2">
                             <li><strong>Mistake:</strong> {{ mistake }} </li>
                             <li><strong>Correction:</strong> {{
-                props.furtherCorrectionData.organization.corrections[index] }}</li>
+            props.furtherCorrectionData.organization.corrections[index] }}</li>
                             <li><strong>Explanation:</strong> {{
-                props.furtherCorrectionData.organization.explanations[index] }}</li>
+            props.furtherCorrectionData.organization.explanations[index] }}</li>
                             <li><strong>Category:</strong> {{ props.furtherCorrectionData.organization.categories[index]
                                 }}</li>
                         </ul>
@@ -114,7 +145,7 @@ onMounted(async () => {
                             <li><strong>Correction:</strong> {{ props.furtherCorrectionData.coherence.corrections[index]
                                 }}</li>
                             <li><strong>Explanation:</strong> {{
-                props.furtherCorrectionData.coherence.explanations[index] }}</li>
+            props.furtherCorrectionData.coherence.explanations[index] }}</li>
                             <li><strong>Category:</strong> {{ props.furtherCorrectionData.coherence.categories[index] }}
                             </li>
                         </ul>
@@ -138,9 +169,9 @@ onMounted(async () => {
                         <ul class="mt-2">
                             <li><strong>Mistake:</strong> {{ mistake }}</li>
                             <li><strong>Correction:</strong> {{
-                props.furtherCorrectionData.writingStyle.corrections[index] }}</li>
+            props.furtherCorrectionData.writingStyle.corrections[index] }}</li>
                             <li><strong>Explanation:</strong> {{
-                props.furtherCorrectionData.writingStyle.explanations[index] }}</li>
+            props.furtherCorrectionData.writingStyle.explanations[index] }}</li>
                             <li><strong>Category:</strong> {{ props.furtherCorrectionData.writingStyle.categories[index]
                                 }}</li>
                         </ul>

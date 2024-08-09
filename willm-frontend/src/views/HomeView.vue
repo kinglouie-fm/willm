@@ -308,6 +308,7 @@ const highlightMistakes = () => {
 
   // Apply all replacements
   replacements.forEach(({ original, replacement }) => {
+    console.log("Replacing original:", original, "with replacement:", replacement);
     htmlContent = htmlContent.replace(original, replacement);
   });
 

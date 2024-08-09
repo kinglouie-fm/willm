@@ -247,7 +247,8 @@ const stripHtmlTags = (html) => {
 };
 
 const highlightMistakes = () => {
-  let htmlContent = normalizeText(editableDiv.value.innerHTML);
+  // Normalize the HTML content in the editable div
+  let htmlContent = editableDiv.value.innerHTML;
   const mistakesNotFound = [];
 
   contexts.value.forEach((context, index) => {
@@ -306,6 +307,7 @@ const normalizeText = (text) => {
     .toLowerCase() // Convert to lowercase
     .replace(/\\/g, '') // Remove backslashes
     .replace(/,/g, '') // Remove commas
+    .replace(/'/g, '') // Remove apostrophes
     .replace(/\s+/g, ' ') // Normalize spaces
     .trim(); // Trim leading and trailing spaces
 };

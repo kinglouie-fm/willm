@@ -188,6 +188,7 @@ const handleCorrect = async () => {
     if (error.response && error.response.status === 401) {
       message.info('Please log in again.');
     } else {
+      console.log(error)
       message.error('Error processing requests. Please try again.');
     }
   } finally {

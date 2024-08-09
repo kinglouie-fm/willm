@@ -128,6 +128,8 @@ const handleCorrect = async () => {
       scoreModel: authStore.getLLM('scoreModel'),
     });
 
+    console.log(correctionResponse)
+
     explanations.value = correctionResponse.data.explanations.map(explanation => {
       return explanation.replace(/(\n[T|X]:.*)/g, '').trim();
     });

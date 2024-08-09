@@ -303,6 +303,7 @@ const highlightMistakes = () => {
 
 // Helper function to normalize text
 const normalizeText = (text) => {
+  console.log("test")
   return text
     .toLowerCase() // Convert to lowercase
     .replace(/\\/g, '') // Remove backslashes

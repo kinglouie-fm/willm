@@ -262,13 +262,20 @@ const highlightMistakes = () => {
     let normalizedContext = normalizeText(context);
     let normalizedMistake = normalizeText(mistake);
 
+    console.log(`Normalized Context: ${normalizedContext}`);
+    console.log(`Normalized Mistake: ${normalizedMistake}`);
+    console.log(`Original HTML Content: ${htmlContent}`);
+
     // Create a flexible regex to find the context in the text
     let contextRegex = new RegExp(escapeForRegex(normalizedContext), 'gi');
+    console.log(`Context Regex: ${contextRegex}`);
 
     // Check if the context exists in the text
     if (contextRegex.test(normalizeText(htmlContent))) {
+      console.log(`Context Found: ${context}`);
       // If context is found, create a regex for the exact mistake
       let mistakeRegex = new RegExp(`\\b${escapeForRegex(normalizedMistake)}\\b`, 'gi');
+      console.log(`Mistake Regex: ${mistakeRegex}`);
 
       // Replace the context in the HTML content with highlighted mistake
       htmlContent = htmlContent.replace(contextRegex, (matchedContext) => {
@@ -278,7 +285,7 @@ const highlightMistakes = () => {
         });
       });
     } else {
-      console.log(`Context not found:`, context);
+      console.log(`Context not found: ${context}`);
       // Fallback to fuzzy matching or add to the not found list
       mistakesNotFound.push(index);
     }

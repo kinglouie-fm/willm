@@ -245,7 +245,7 @@ const stripHtmlTags = (html) => {
 const normalizeText = (text) => {
   return text.toLowerCase()
     .replace(/[\.,\/#!$%\^&\*;:{}=\-_`~()]/g, '')
-    .replace(/\s{2,}/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim();
 };
 

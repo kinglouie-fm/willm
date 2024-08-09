@@ -283,7 +283,6 @@ const highlightMistakes = () => {
     // Log for debugging
     console.log(`Normalized Context: ${normalizedContext}`);
     console.log(`Normalized Mistake: ${normalizedMistake}`);
-    console.log(`Original HTML Content: ${htmlContent}`);
 
     // Create the regex for context and mistake
     let contextRegex = new RegExp(escapeForRegex(normalizedContext), 'gi');

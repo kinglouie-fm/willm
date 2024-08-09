@@ -255,6 +255,9 @@ const highlightMistakes = () => {
   let htmlContent = editableDiv.value.innerHTML;
   const mistakesNotFound = [];
 
+  // Collect all replacements in an array
+  const replacements = [];
+
   contexts.value.forEach((context, index) => {
     const mistake = mistakes.value[index];
     const correction = corrections.value[index];
@@ -279,18 +282,33 @@ const highlightMistakes = () => {
       console.log(`Context Found: ${context}`);
 
       // Replace the context in the HTML content with highlighted mistake
-      htmlContent = htmlContent.replace(contextRegex, (matchedContext) => {
-        return matchedContext.replace(new RegExp(`\\b${escapeForRegex(normalizedMistake)}\\b`, 'gi'), (match) => {
-          const mistakeElement = `<span class="mistake" data-index="${index}" data-bs-toggle="popover" data-bs-html="true" data-bs-content="${escapeHTML(`<b>Mistake</b>: ${mistake}<br><b>Type</b>: ${category}<br><b>Correction</b>: ${correction}<br><b>Explanation</b>: ${explanation}`)}">${match}</span>`;
-          console.log(`Mistake highlighted: ${match}`);
-          return mistakeElement;
-        });
-      });
+      let contextMatches = htmlContent.matchAll(contextRegex);
+      for (const contextMatch of contextMatches) {
+        const matchedContext = contextMatch[0];
+        const mistakeRegex = new RegExp(`\\b${escapeForRegex(normalizedMistake)}\\b`, 'gi');
+        console.log(`Mistake Regex: ${mistakeRegex}`);
+
+        if (mistakeRegex.test(matchedContext)) {
+          const highlightedContext = matchedContext.replace(mistakeRegex, (match) => {
+            const mistakeElement = `<span class="mistake" data-index="${index}" data-bs-toggle="popover" data-bs-html="true" data-bs-content="${escapeHTML(`<b>Mistake</b>: ${mistake}<br><b>Type</b>: ${category}<br><b>Correction</b>: ${correction}<br><b>Explanation</b>: ${explanation}`)}">${match}</span>`;
+            console.log(`Mistake highlighted: ${match}`);
+            return mistakeElement;
+          });
+          // Store the replacement
+          replacements.push({ original: matchedContext, replacement: highlightedContext });
+        } else {
+          mistakesNotFound.push(index);
+        }
+      }
     } else {
       console.log(`Context not found: ${context}`);
-      // If the context wasn't found, add to not found list
       mistakesNotFound.push(index);
     }
+  });
+
+  // Apply all replacements
+  replacements.forEach(({ original, replacement }) => {
+    htmlContent = htmlContent.replace(original, replacement);
   });
 
   // Update the editable div content

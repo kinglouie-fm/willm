@@ -251,27 +251,40 @@ const normalizeText = (text) => {
 
 const highlightMistakes = () => {
   let htmlContent = editableDiv.value.innerHTML;
-  const mistakesNotFound = []; // To store indices of mistakes not found
+  const mistakesNotFound = [];
 
   contexts.value.forEach((context, index) => {
     const mistake = mistakes.value[index];
     const normalizedContext = normalizeText(context);
-    const regex = new RegExp(`(${escapeRegExp(normalizedContext)})`, 'gi');
+    const normalizedMistake = normalizeText(mistake);
 
-    if (!regex.test(htmlContent)) {
-      // Track mistakes that are not found
+    // Create a regex to find the context in the text
+    const contextRegex = new RegExp(`${escapeRegExp(normalizedContext)}`, 'gi');
+
+    // Check if the context exists in the text
+    if (contextRegex.test(htmlContent)) {
+      // If context is found, create a regex for the exact mistake
+      const mistakeRegex = new RegExp(`\\b${escapeRegExp(normalizedMistake)}\\b`, 'gi');
+
+      htmlContent = htmlContent.replace(contextRegex, (matchedContext) => {
+        // Within the matched context, look for the exact mistake
+        if (mistakeRegex.test(matchedContext)) {
+          return matchedContext.replace(mistakeRegex, (match) => {
+            const mistakeElement = `<span class="mistake" data-index="${index}" data-bs-toggle="popover" data-bs-html="true" data-bs-content="${escapeHTML(`<b>Mistake</b>: ${mistake}<br><b>Type</b>: ${categories.value[index]}<br><b>Correction</b>: ${corrections.value[index]}<br><b>Explanation</b>: ${explanations.value[index]}`)}">${match}</span>`;
+            return mistakeElement;
+          });
+        } else {
+          // If the mistake isn't found in the context, log it
+          mistakesNotFound.push(index);
+        }
+        return matchedContext; // Return the context, modified or not
+      });
+
+    } else {
+      console.log("contextRegex", contextRegex);
+      // If the context itself isn't found, log it
       mistakesNotFound.push(index);
     }
-
-    htmlContent = htmlContent.replace(regex, (match) => {
-      const normalizedMatch = normalizeText(match);
-      const mistakeRegex = new RegExp(`\\b${escapeRegExp(mistake)}\\b`, 'gi');
-      if (mistakeRegex.test(normalizedMatch)) {
-        const mistakeElement = `<span class="mistake" data-index="${index}" data-bs-toggle="popover" data-bs-html="true" data-bs-content="${escapeHTML(`<b>Mistake</b>: ${mistake}<br><b>Type</b>: ${categories.value[index]}<br><b>Correction</b>: ${corrections.value[index]}<br><b>Explanation</b>: ${explanations.value[index]}`)}">${mistake}</span>`;
-        return match.replace(mistakeRegex, mistakeElement);
-      }
-      return match;
-    });
   });
 
   editableDiv.value.innerHTML = htmlContent;

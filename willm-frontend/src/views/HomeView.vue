@@ -255,7 +255,6 @@ const highlightMistakes = () => {
   let htmlContent = editableDiv.value.innerHTML;
   const mistakesNotFound = [];
 
-  // Iterate through each context
   contexts.value.forEach((context, index) => {
     const mistake = mistakes.value[index];
     const correction = corrections.value[index];
@@ -272,20 +271,18 @@ const highlightMistakes = () => {
     console.log(`Original HTML Content: ${htmlContent}`);
 
     // Create the regex patterns
-    let contextRegex = new RegExp(escapeForRegex(normalizedContext), 'gi');
+    let contextRegex = new RegExp(`(${escapeForRegex(normalizedContext).replace(/\s+/g, '\\s+')})`, 'gi');
     console.log(`Context Regex: ${contextRegex}`);
 
     // Check if the context exists in the text
     if (contextRegex.test(normalizeText(htmlContent))) {
       console.log(`Context Found: ${context}`);
-      let mistakeRegex = new RegExp(`\\b${escapeForRegex(normalizedMistake)}\\b`, 'gi');
-      console.log(`Mistake Regex: ${mistakeRegex}`);
 
       // Replace the context in the HTML content with highlighted mistake
       htmlContent = htmlContent.replace(contextRegex, (matchedContext) => {
-        // Handle the replacement carefully to avoid breaking other matches
-        return matchedContext.replace(mistakeRegex, (match) => {
+        return matchedContext.replace(new RegExp(`\\b${escapeForRegex(normalizedMistake)}\\b`, 'gi'), (match) => {
           const mistakeElement = `<span class="mistake" data-index="${index}" data-bs-toggle="popover" data-bs-html="true" data-bs-content="${escapeHTML(`<b>Mistake</b>: ${mistake}<br><b>Type</b>: ${category}<br><b>Correction</b>: ${correction}<br><b>Explanation</b>: ${explanation}`)}">${match}</span>`;
+          console.log(`Mistake highlighted: ${match}`);
           return mistakeElement;
         });
       });

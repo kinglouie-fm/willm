@@ -8,7 +8,7 @@ import Review from '@/components/Review.vue';
 import { isAfter } from 'date-fns';
 import { message } from 'ant-design-vue';
 
-const textareaSmall = ref('Introduction');
+const textareaSmall = ref('');
 const mistakes = ref([]);
 const corrections = ref([]);
 const explanations = ref([]);

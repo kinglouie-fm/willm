@@ -8,7 +8,7 @@ import Review from '@/components/Review.vue';
 import { isAfter } from 'date-fns';
 import { message } from 'ant-design-vue';
 
-const textareaSmall = ref('Introduction');
+const textareaSmall = ref('');
 const mistakes = ref([]);
 const corrections = ref([]);
 const explanations = ref([]);
@@ -62,24 +62,26 @@ const handleSwitchChange = (event) => {
 
 const selectedComponent = ref('Review');
 
-const replaceDoubleBackslash = (text) => {
+const replaceBackslash = (text) => {
   // Replace double backslashes with a single backslash
   text = text.replace(/\\\\/g, '\\');
-  // Replace escaped double quotes with actual double quotes
+
+  // Handle escaped single quotes and double quotes
+  text = text.replace(/\\'/g, "'");
   text = text.replace(/\\"/g, '"');
-  // Optionally: Remove the outer single quotes if they're not needed
-  if (text.startsWith("'") && text.endsWith("'")) {
-    text = text.slice(1, -1);
-  }
+
+  // Optionally: Remove any remaining single backslashes before non-alphanumeric characters
+  text = text.replace(/\\(?=\W)/g, '');
 
   return text;
 };
 
 const cleanContext = (text) => {
   return text
-    .replace(/[\[\]\*\.\.\.]/g, '')
-    .replace(/\s{2,}/g, ' ')
-    .trim();
+    .replace(/[\[\]\*\.\.\.]/g, '') // Remove specific characters
+    .replace(/\s{2,}/g, ' ') // Replace multiple spaces with a single space
+    .replace(/\u200B/g, '')  // Remove zero-width spaces if present
+    .trim(); // Trim leading and trailing spaces
 };
 
 const handleCorrect = async () => {
@@ -128,6 +130,8 @@ const handleCorrect = async () => {
       scoreModel: authStore.getLLM('scoreModel'),
     });
 
+    console.log(correctionResponse)
+
     explanations.value = correctionResponse.data.explanations.map(explanation => {
       return explanation.replace(/(\n[T|X]:.*)/g, '').trim();
     });
@@ -137,12 +141,12 @@ const handleCorrect = async () => {
     });
 
     // Process initial correction response
-    mistakes.value = correctionResponse.data.mistakes.map(replaceDoubleBackslash);
-    corrections.value = correctionResponse.data.corrections.map(replaceDoubleBackslash);
-    explanations.value = correctionResponse.data.explanations.map(replaceDoubleBackslash);
-    categories.value = correctionResponse.data.categories.map(replaceDoubleBackslash);
-    contexts.value = correctionResponse.data.contexts.map(replaceDoubleBackslash);
-    contexts.value = contexts.value.map(cleanContext);
+    mistakes.value = correctionResponse.data.mistakes.map(replaceBackslash);
+    corrections.value = correctionResponse.data.corrections.map(replaceBackslash);
+    explanations.value = correctionResponse.data.explanations.map(replaceBackslash);
+    categories.value = correctionResponse.data.categories.map(replaceBackslash);
+    contexts.value = correctionResponse.data.contexts.map(replaceBackslash).map(cleanContext);
+    console.log(contexts.value)
 
     scores.value = correctionResponse.data.scores;
 
@@ -184,6 +188,7 @@ const handleCorrect = async () => {
     if (error.response && error.response.status === 401) {
       message.info('Please log in again.');
     } else {
+      console.log(error)
       message.error('Error processing requests. Please try again.');
     }
   } finally {
@@ -194,6 +199,7 @@ const handleCorrect = async () => {
     // Trigger question generation
     await axios.post('http://willm.corinth.informatik.rwth-aachen.de/question/generate');
   } catch (error) {
+    console.log(error)
     message.error('Error generating questions. Please contact the administrator.', 3);
   }
 };
@@ -214,8 +220,11 @@ const generateReview = async () => {
   } catch (error) {
     if (error.response && error.response.status === 401) {
       message.info('Please log in again.');
+    } else if (error.response && error.response.status === 403) {
+      message.info("No requests left for GPT 4o. Please try again tomorrow.", 4);
     } else {
-      message.error('Error generating review.');
+      console.log(error)
+      message.error('Error processing requests. Please try again.');
     }
   } finally {
     hideLoading();
@@ -242,51 +251,36 @@ const stripHtmlTags = (html) => {
   return div.textContent || div.innerText || '';
 };
 
-const normalizeText = (text) => {
-  return text.toLowerCase()
-    .replace(/[\.,\/#!$%\^&\*;:{}=\-_`~()]/g, '')
-    .replace(/\s{2,}/g, ' ')
-    .trim();
-};
-
 const highlightMistakes = () => {
   let htmlContent = editableDiv.value.innerHTML;
-  const mistakesNotFound = []; // To store indices of mistakes not found
-
   contexts.value.forEach((context, index) => {
     const mistake = mistakes.value[index];
-    const normalizedContext = normalizeText(context);
-    const regex = new RegExp(`(${escapeRegExp(normalizedContext)})`, 'gi');
-
-    if (!regex.test(htmlContent)) {
-      // Track mistakes that are not found
-      mistakesNotFound.push(index);
-    }
-
+    const regex = new RegExp(`(${context.replace(/\s+/g, '\\s+')})`, 'gi');
     htmlContent = htmlContent.replace(regex, (match) => {
-      const normalizedMatch = normalizeText(match);
-      const mistakeRegex = new RegExp(`\\b${escapeRegExp(mistake)}\\b`, 'gi');
-      if (mistakeRegex.test(normalizedMatch)) {
-        const mistakeElement = `<span class="mistake" data-index="${index}" data-bs-toggle="popover" data-bs-html="true" data-bs-content="${escapeHTML(`<b>Mistake</b>: ${mistake}<br><b>Type</b>: ${categories.value[index]}<br><b>Correction</b>: ${corrections.value[index]}<br><b>Explanation</b>: ${explanations.value[index]}`)}">${mistake}</span>`;
-        return match.replace(mistakeRegex, mistakeElement);
-      }
-      return match;
+      return match.replace(new RegExp(`\\b${escapeRegExp(mistake)}\\b`, 'gi'), `<span class="mistake" data-bs-toggle="popover" data-bs-html="true" data-bs-content="${escapeHTML(`<b>Mistake</b>: ${mistake}<br><b>Type</b>: ${categories.value[index]}<br><b>Correction</b>: ${corrections.value[index]}<br><b>Explanation</b>: ${explanations.value[index]}`)}">${mistake}</span>`);
     });
   });
-
   editableDiv.value.innerHTML = htmlContent;
   activatePopovers();
-
-  // Handle unhighlighted mistakes
-  unhighlightedMistakes.value = mistakesNotFound.map(index => mistakes.value[index]);
-  unhighlightedCorrections.value = mistakesNotFound.map(index => corrections.value[index]);
-  unhighlightedExplanations.value = mistakesNotFound.map(index => explanations.value[index]);
 };
 
+// Helper function to escape special characters for regex
 const escapeRegExp = (string) => {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 };
 
+// Helper function to normalize text
+const normalizeText = (text) => {
+  return text
+    .toLowerCase() // Convert to lowercase
+    .replace(/\\/g, '') // Remove backslashes
+    .replace(/,/g, '') // Remove commas
+    .replace(/'/g, '') // Remove apostrophes
+    .replace(/\s+/g, ' ') // Normalize spaces
+    .trim(); // Trim leading and trailing spaces
+};
+
+// Helper function to escape HTML special characters
 const escapeHTML = (string) => {
   return string
     .replace(/&/g, '&amp;')

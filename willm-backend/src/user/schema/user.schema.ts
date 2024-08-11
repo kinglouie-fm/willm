@@ -67,7 +67,7 @@ export class User extends Document {
   @Prop({ default: Date.now })
   last_login: Date;
 
-  @Prop({ default: '3.5-turbo-1106' })
+  @Prop({ default: '4o' })
   correctionModel: string;
 
   @Prop({ default: '3.5-turbo-1106' })

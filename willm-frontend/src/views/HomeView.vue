@@ -265,6 +265,13 @@ const highlightMistakes = () => {
     const category = categories.value[index];
     let contextFound = false;
 
+    context = context.replace(/M:.*$/, '').trim();
+    context = context.replace(/\\/g, '').trim();
+    if (context.includes('___')) {
+      context = context.replace('___', mistake);
+      console.log(`Placeholder replaced: ${context}`);
+    }
+
     // First attempt: strict match within the exact context
     const strictRegex = new RegExp(`(${escapeRegExp(context)})`, 'gi');
     console.log("Strict context regex: ", strictRegex);

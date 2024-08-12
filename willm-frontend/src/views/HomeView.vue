@@ -260,13 +260,46 @@ const highlightMistakes = () => {
   let htmlContent = editableDiv.value.innerHTML;
   contexts.value.forEach((context, index) => {
     const mistake = mistakes.value[index];
-    const regex = new RegExp(`(${context.replace(/\s+/g, '\\s+')})`, 'gi');
-    console.log("context regex: ", regex)
-    htmlContent = htmlContent.replace(regex, (match) => {
-      console.log("escaped regexp: ", escapeRegExp(mistake))
-      console.log("replacing", new RegExp(`\\b${escapeRegExp(mistake)}\\b`, 'gi'))
-      return match.replace(new RegExp(`\\b${escapeRegExp(mistake)}\\b`, 'gi'), `<span class="mistake" data-bs-toggle="popover" data-bs-html="true" data-bs-content="${escapeHTML(`<b>Mistake</b>: ${mistake}<br><b>Type</b>: ${categories.value[index]}<br><b>Correction</b>: ${corrections.value[index]}<br><b>Explanation</b>: ${explanations.value[index]}`)}">${mistake}</span>`);
+    const correction = corrections.value[index];
+    const explanation = explanations.value[index];
+    const category = categories.value[index];
+    let contextFound = false;
+
+    // First attempt: strict match within the exact context
+    const strictRegex = new RegExp(`(${escapeRegExp(context)})`, 'gi');
+    console.log("Strict context regex: ", strictRegex);
+
+    htmlContent = htmlContent.replace(strictRegex, (match) => {
+      const mistakeRegex = new RegExp(`\\b${escapeRegExp(mistake)}\\b`, 'gi');
+      if (mistakeRegex.test(match)) {
+        contextFound = true;
+        console.log("Strict match found and replaced:", mistakeRegex);
+        return match.replace(mistakeRegex, `<span class="mistake" data-bs-toggle="popover" data-bs-html="true" data-bs-content="${escapeHTML(`<b>Mistake</b>: ${mistake}<br><b>Type</b>: ${category}<br><b>Correction</b>: ${correction}<br><b>Explanation</b>: ${explanation}`)}">${mistake}</span>`);
+      }
+      return match;
     });
+
+    // If strict match was not successful, broaden the search context
+    if (!contextFound) {
+      const surroundingText = `.{0,20}`;
+      const broadRegex = new RegExp(`(${surroundingText}${escapeRegExp(context)}${surroundingText})`, 'gi');
+
+      htmlContent = htmlContent.replace(broadRegex, (match) => {
+        const mistakeRegex = new RegExp(`\\b${escapeRegExp(mistake)}\\b`, 'gi');
+        if (mistakeRegex.test(match)) {
+          return match.replace(mistakeRegex, `<span class="mistake" data-bs-toggle="popover" data-bs-html="true" data-bs-content="${escapeHTML(`<b>Mistake</b>: ${mistake}<br><b>Type</b>: ${category}<br><b>Correction</b>: ${correction}<br><b>Explanation</b>: ${explanation}`)}">${mistake}</span>`);
+        }
+        return match;
+      });
+    }
+
+    // If neither strict nor broad match was successful, add to unhighlighted arrays
+    if (!contextFound) {
+      console.log(`Mistake not found: ${mistake}`);
+      unhighlightedMistakes.value.push(mistake);
+      unhighlightedCorrections.value.push(correction);
+      unhighlightedExplanations.value.push(explanation);
+    }
   });
   editableDiv.value.innerHTML = htmlContent;
   activatePopovers();

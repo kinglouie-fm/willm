@@ -261,10 +261,7 @@ const highlightMistakes = () => {
   contexts.value.forEach((context, index) => {
     const mistake = mistakes.value[index];
     const regex = new RegExp(`(${context.replace(/\s+/g, '\\s+')})`, 'gi');
-    console.log("context regex: ", regex)
     htmlContent = htmlContent.replace(regex, (match) => {
-      console.log("escaped regexp: ", escapeRegExp(mistake))
-      console.log("replacing", new RegExp(`\\b${escapeRegExp(mistake)}\\b`, 'gi'))
       return match.replace(new RegExp(`\\b${escapeRegExp(mistake)}\\b`, 'gi'), `<span class="mistake" data-bs-toggle="popover" data-bs-html="true" data-bs-content="${escapeHTML(`<b>Mistake</b>: ${mistake}<br><b>Type</b>: ${categories.value[index]}<br><b>Correction</b>: ${corrections.value[index]}<br><b>Explanation</b>: ${explanations.value[index]}`)}">${mistake}</span>`);
     });
   });

@@ -78,7 +78,8 @@ const replaceBackslash = (text) => {
 
 const cleanContext = (text) => {
   return text
-    .replace(/[\[\]\*\.\.\.]/g, '') // Remove specific characters
+    .replace(/\[.*?\]/g, '') // Remove everything between square brackets, including the brackets themselves
+    .replace(/[\*\.\.\.]/g, '') // Remove specific characters (e.g., asterisks, ellipses)
     .replace(/\s{2,}/g, ' ') // Replace multiple spaces with a single space
     .replace(/\u200B/g, '')  // Remove zero-width spaces if present
     .trim(); // Trim leading and trailing spaces
@@ -258,6 +259,15 @@ const stripHtmlTags = (html) => {
 
 const highlightMistakes = () => {
   let htmlContent = editableDiv.value.innerHTML;
+
+  const normalizeText = (text) => {
+    return text
+      .toLowerCase() // Convert to lowercase
+      .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, '') // Remove punctuation
+      .replace(/\s{2,}/g, ' ') // Replace multiple spaces with a single space
+      .trim(); // Trim leading and trailing spaces
+  };
+
   contexts.value.forEach((context, index) => {
     const mistake = mistakes.value[index];
     const correction = corrections.value[index];
@@ -285,6 +295,34 @@ const highlightMistakes = () => {
       }
       return match;
     });
+
+    if (!contextFound) {
+      const strippedHtmlContent = normalizeText(htmlContent); // Strip punctuation from htmlContent
+      const strippedContext = normalizeText(context); // Strip punctuation from context
+      console.log("Stripped htmlContent:", strippedHtmlContent);
+      console.log("Stripped context:", strippedContext);
+
+      const broadRegex = new RegExp(`(${escapeRegExp(strippedContext)})`, 'gi');
+      console.log("Broad context regex with stripped punctuation: ", broadRegex);
+
+      // Attempt to match the stripped context
+      const matchIndex = strippedHtmlContent.search(broadRegex);
+      if (matchIndex !== -1) {
+        const matchLength = strippedContext.length;
+        const matchInOriginal = htmlContent.substring(matchIndex, matchIndex + matchLength);
+
+        // Highlight the mistake within the original content
+        htmlContent = htmlContent.replace(new RegExp(`\\b${escapeRegExp(matchInOriginal)}\\b`, 'gi'), (match) => {
+          const mistakeRegex = new RegExp(`\\b${escapeRegExp(mistake)}\\b`, 'gi');
+          if (mistakeRegex.test(match)) {
+            contextFound = true;
+            console.log("Broad match found and replaced:", normalizedMistake);
+            return match.replace(mistakeRegex, `<span class="mistake" data-bs-toggle="popover" data-bs-html="true" data-bs-content="${escapeHTML(`<b>Mistake</b>: ${mistake}<br><b>Type</b>: ${category}<br><b>Correction</b>: ${correction}<br><b>Explanation</b>: ${explanation}`)}">${mistake}</span>`);
+          }
+          return match;
+        });
+      }
+    }
 
     // If strict match was not successful, broaden the search context
     if (!contextFound) {

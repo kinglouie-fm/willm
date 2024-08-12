@@ -63,14 +63,9 @@ const handleSwitchChange = (event) => {
 const selectedComponent = ref('Review');
 
 const replaceBackslash = (text) => {
-  // Replace double backslashes with a single backslash
   text = text.replace(/\\\\/g, '\\');
-
-  // Handle escaped single quotes and double quotes
   text = text.replace(/\\'/g, "'");
   text = text.replace(/\\"/g, '"');
-
-  // Optionally: Remove any remaining single backslashes before non-alphanumeric characters
   text = text.replace(/\\(?=\W)/g, '');
 
   return text;
@@ -78,11 +73,10 @@ const replaceBackslash = (text) => {
 
 const cleanContext = (text) => {
   return text
-    .replace(/\[.*?\]/g, '') // Remove everything between square brackets, including the brackets themselves
-    .replace(/[\*\.\.\.]/g, '') // Remove specific characters (e.g., asterisks, ellipses)
-    .replace(/\s{2,}/g, ' ') // Replace multiple spaces with a single space
-    .replace(/\u200B/g, '')  // Remove zero-width spaces if present
-    .trim(); // Trim leading and trailing spaces
+    .replace(/\[.*?\]/g, '')
+    .replace(/[\*\.\.\.]/g, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
 };
 
 const handleCorrect = async () => {
@@ -152,7 +146,6 @@ const handleCorrect = async () => {
     explanations.value = correctionResponse.data.explanations.map(replaceBackslash);
     categories.value = correctionResponse.data.categories.map(replaceBackslash);
     contexts.value = correctionResponse.data.contexts.map(replaceBackslash).map(cleanContext);
-    console.log(contexts.value)
 
     scores.value = correctionResponse.data.scores;
 
@@ -194,7 +187,6 @@ const handleCorrect = async () => {
     if (error.response && error.response.status === 401) {
       message.info('Please log in again.');
     } else {
-      console.log(error)
       message.error('Error processing requests. Please try again.');
     }
   } finally {
@@ -205,7 +197,6 @@ const handleCorrect = async () => {
     // Trigger question generation
     await axios.post('https://academic-willm.de/question/generate');
   } catch (error) {
-    console.log(error)
     message.error('Error generating questions. Please contact the administrator.', 3);
   }
 };
@@ -229,7 +220,6 @@ const generateReview = async () => {
     } else if (error.response && error.response.status === 403) {
       message.info("No requests left for GPT 4o. Please try again tomorrow.", 4);
     } else {
-      console.log(error)
       message.error('Error processing requests. Please try again.');
     }
   } finally {
@@ -271,18 +261,15 @@ const highlightMistakes = () => {
     context = context.replace(/\\/g, '').trim();
     if (context.includes('___')) {
       context = context.replace('___', mistake);
-      console.log(`Placeholder replaced: ${context}`);
     }
 
     // First attempt: strict match within the exact context
     const strictRegex = new RegExp(`(${escapeRegExp(context)})`, 'gi');
-    console.log("Strict context regex: ", strictRegex);
 
     htmlContent = htmlContent.replace(strictRegex, (match) => {
       const mistakeRegex = new RegExp(`\\b${escapeRegExp(mistake)}\\b`, 'gi');
       if (mistakeRegex.test(match)) {
         contextFound = true;
-        console.log("Strict match found and replaced:", mistakeRegex);
         return match.replace(mistakeRegex, `<span class="mistake" data-bs-toggle="popover" data-bs-html="true" data-bs-content="${escapeHTML(`<b>Mistake</b>: ${mistake}<br><b>Type</b>: ${category}<br><b>Correction</b>: ${correction}<br><b>Explanation</b>: ${explanation}`)}">${mistake}</span>`);
       }
       return match;
@@ -304,7 +291,6 @@ const highlightMistakes = () => {
 
     // If neither strict nor broad match was successful, add to unhighlighted arrays
     if (!contextFound) {
-      console.log(`Mistake not found: ${mistake}`);
       unhighlightedMistakes.value.push(mistake);
       unhighlightedCorrections.value.push(correction);
       unhighlightedExplanations.value.push(explanation);
@@ -317,17 +303,6 @@ const highlightMistakes = () => {
 // Helper function to escape special characters for regex
 const escapeRegExp = (string) => {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-};
-
-// Helper function to normalize text
-const normalizeText = (text) => {
-  return text
-    .toLowerCase() // Convert to lowercase
-    .replace(/\\/g, '') // Remove backslashes
-    .replace(/,/g, '') // Remove commas
-    .replace(/'/g, '') // Remove apostrophes
-    .replace(/\s+/g, ' ') // Normalize spaces
-    .trim(); // Trim leading and trailing spaces
 };
 
 // Helper function to escape HTML special characters

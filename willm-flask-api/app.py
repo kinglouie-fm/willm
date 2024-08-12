@@ -199,7 +199,7 @@ def normalize_text(text):
         return text
 
     # Normalize ellipses by replacing inconsistent ellipses with a standard one
-    text = re.sub(r'\.\.\.\.?', '...', text)
+    text = re.sub(r'\.{3,}', '...', text)
 
     # Normalize quotes
     text = re.sub(r'^"|"$', '', text)  # Remove leading/trailing double quotes if present

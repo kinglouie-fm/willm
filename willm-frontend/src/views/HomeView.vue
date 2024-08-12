@@ -63,14 +63,9 @@ const handleSwitchChange = (event) => {
 const selectedComponent = ref('Review');
 
 const replaceBackslash = (text) => {
-  // Replace double backslashes with a single backslash
   text = text.replace(/\\\\/g, '\\');
-
-  // Handle escaped single quotes and double quotes
   text = text.replace(/\\'/g, "'");
   text = text.replace(/\\"/g, '"');
-
-  // Optionally: Remove any remaining single backslashes before non-alphanumeric characters
   text = text.replace(/\\(?=\W)/g, '');
 
   return text;
@@ -78,10 +73,11 @@ const replaceBackslash = (text) => {
 
 const cleanContext = (text) => {
   return text
-    .replace(/[\[\]\*\.\.\.]/g, '') // Remove specific characters
-    .replace(/\s{2,}/g, ' ') // Replace multiple spaces with a single space
+    .replace(/\[.*?\]/g, '')
+    .replace(/[\*\.\.\.]/g, '')
+    .replace(/\s{2,}/g, ' ')
     .replace(/\u200B/g, '')  // Remove zero-width spaces if present
-    .trim(); // Trim leading and trailing spaces
+    .trim();
 };
 
 const handleCorrect = async () => {
@@ -258,12 +254,56 @@ const stripHtmlTags = (html) => {
 
 const highlightMistakes = () => {
   let htmlContent = editableDiv.value.innerHTML;
+
   contexts.value.forEach((context, index) => {
     const mistake = mistakes.value[index];
-    const regex = new RegExp(`(${context.replace(/\s+/g, '\\s+')})`, 'gi');
-    htmlContent = htmlContent.replace(regex, (match) => {
-      return match.replace(new RegExp(`\\b${escapeRegExp(mistake)}\\b`, 'gi'), `<span class="mistake" data-bs-toggle="popover" data-bs-html="true" data-bs-content="${escapeHTML(`<b>Mistake</b>: ${mistake}<br><b>Type</b>: ${categories.value[index]}<br><b>Correction</b>: ${corrections.value[index]}<br><b>Explanation</b>: ${explanations.value[index]}`)}">${mistake}</span>`);
+    const correction = corrections.value[index];
+    const explanation = explanations.value[index];
+    const category = categories.value[index];
+    let contextFound = false;
+
+    context = context.replace(/M:.*$/, '').trim();
+    context = context.replace(/\\/g, '').trim();
+    if (context.includes('___')) {
+      context = context.replace('___', mistake);
+      console.log(`Placeholder replaced: ${context}`);
+    }
+
+    // First attempt: strict match within the exact context
+    const strictRegex = new RegExp(`(${escapeRegExp(context)})`, 'gi');
+    console.log("Strict context regex: ", strictRegex);
+
+    htmlContent = htmlContent.replace(strictRegex, (match) => {
+      const mistakeRegex = new RegExp(`\\b${escapeRegExp(mistake)}\\b`, 'gi');
+      if (mistakeRegex.test(match)) {
+        contextFound = true;
+        console.log("Strict match found and replaced:", mistakeRegex);
+        return match.replace(mistakeRegex, `<span class="mistake" data-bs-toggle="popover" data-bs-html="true" data-bs-content="${escapeHTML(`<b>Mistake</b>: ${mistake}<br><b>Type</b>: ${category}<br><b>Correction</b>: ${correction}<br><b>Explanation</b>: ${explanation}`)}">${mistake}</span>`);
+      }
+      return match;
     });
+
+    // If strict match was not successful, broaden the search context
+    if (!contextFound) {
+      const surroundingText = `.{0,20}`;
+      const broadRegex = new RegExp(`(${surroundingText}${escapeRegExp(context)}${surroundingText})`, 'gi');
+
+      htmlContent = htmlContent.replace(broadRegex, (match) => {
+        const mistakeRegex = new RegExp(`\\b${escapeRegExp(mistake)}\\b`, 'gi');
+        if (mistakeRegex.test(match)) {
+          return match.replace(mistakeRegex, `<span class="mistake" data-bs-toggle="popover" data-bs-html="true" data-bs-content="${escapeHTML(`<b>Mistake</b>: ${mistake}<br><b>Type</b>: ${category}<br><b>Correction</b>: ${correction}<br><b>Explanation</b>: ${explanation}`)}">${mistake}</span>`);
+        }
+        return match;
+      });
+    }
+
+    // If neither strict nor broad match was successful, add to unhighlighted arrays
+    if (!contextFound) {
+      console.log(`Mistake not found: ${mistake}`);
+      unhighlightedMistakes.value.push(mistake);
+      unhighlightedCorrections.value.push(correction);
+      unhighlightedExplanations.value.push(explanation);
+    }
   });
   editableDiv.value.innerHTML = htmlContent;
   activatePopovers();
@@ -272,17 +312,6 @@ const highlightMistakes = () => {
 // Helper function to escape special characters for regex
 const escapeRegExp = (string) => {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-};
-
-// Helper function to normalize text
-const normalizeText = (text) => {
-  return text
-    .toLowerCase() // Convert to lowercase
-    .replace(/\\/g, '') // Remove backslashes
-    .replace(/,/g, '') // Remove commas
-    .replace(/'/g, '') // Remove apostrophes
-    .replace(/\s+/g, ' ') // Normalize spaces
-    .trim(); // Trim leading and trailing spaces
 };
 
 // Helper function to escape HTML special characters

@@ -30,6 +30,8 @@ const modelKeys = {
     Review: 'reviewModel'
 };
 
+const isQuizDueToday = computed(() => authStore.quizDueToday);
+
 // Update LLM in the store and backend
 const updateLLM = async (modelKey, value) => {
     const newValue = value === '3.5-turbo-1106' ? '3.5-turbo-1106' : '4o';
@@ -235,6 +237,8 @@ const fetchData = () => {
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="hamburgerDropdown">
                         <li v-for="link in navigationLinks" :key="link.name || link">
                             <a class="dropdown-item" @click="handleNavigation(link)">
+                                <img v-if="link === 'Quiz' && isQuizDueToday" class="info-icon me-2"
+                                    src="/icons/marker-new-01.svg" alt="Quiz Due Today" />
                                 {{ link.name || link }}
                             </a>
                         </li>

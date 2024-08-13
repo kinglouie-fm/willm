@@ -60,9 +60,9 @@ export const useAuthStore = defineStore('auth', {
             this.nextQuizDate = quizResponse.data.nextQuizDate ? quizResponse.data.nextQuizDate.split('T')[0].split('-').reverse().join('.') : null;
 
             if (this.quizDueToday) {
-              message.info('Quiz is due today.');
+              message.error('Quiz is due today.', 5);
             } else if(this.nextQuizDate) {
-              message.info(`Next quiz date: ${this.nextQuizDate}`, 3);
+              message.info(`Next quiz date: ${this.nextQuizDate}`, 7);
             } else {
               setTimeout(() => {
                 message.info('No quiz scheduled yet.', 3);

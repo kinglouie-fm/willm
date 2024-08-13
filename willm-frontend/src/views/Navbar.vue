@@ -322,6 +322,5 @@ a:active {
 .marker-icon {
     width: 10px;
     height: 10px;
-    cursor: pointer;
 }
 </style>

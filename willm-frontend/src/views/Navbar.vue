@@ -237,7 +237,7 @@ const fetchData = () => {
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="hamburgerDropdown">
                         <li v-for="link in navigationLinks" :key="link.name || link">
                             <a class="dropdown-item" @click="handleNavigation(link)">
-                                <img v-if="link === 'Quiz' && isQuizDueToday" class="info-icon me-2"
+                                <img v-if="link === 'Quiz' && isQuizDueToday" class="marker-icon me-2"
                                     src="/icons/marker-new-01.svg" alt="Quiz Due Today" />
                                 {{ link.name || link }}
                             </a>
@@ -317,5 +317,11 @@ a,
 
 a:active {
     background-color: #eabc7c;
+}
+
+.marker-icon {
+    width: 10px;
+    height: 10px;
+    cursor: pointer;
 }
 </style>

@@ -49,8 +49,8 @@ let currentMistakeElement = null;
 const preTestSection = ref('');
 const preTestText = ref('');
 const preTestCount = ref(0);
-const MIN_LENGTH = 250;
-const MAX_LENGTH = 1500;
+const MIN_LENGTH = 270;
+const MAX_LENGTH = 330;
 const postTestText = ref('');
 const postTestSection = ref('');
 const postTestSections = ref([]);
@@ -694,7 +694,7 @@ onMounted(async () => {
           <img class="info-icon me-2" src="/icons/icon-info-01.svg" data-bs-toggle="popover" data-bs-placement="bottom"
             data-bs-content='
               <h5>Length Requirements:</h5>
-              <p>Minimum Length: 250 words<br>Maximum Length: 1500 words</p>
+              <p>300 words +- 10%</p>
               <h5>Number of Samples:</h5>
               <p>You can submit up to 3 different writing samples.</p>
               <h5>Consistency for Post-Test:</h5>
@@ -738,7 +738,7 @@ onMounted(async () => {
           <img class="info-icon me-2" src="/icons/icon-info-01.svg" data-bs-toggle="popover" data-bs-placement="bottom"
             data-bs-content='
         <h5>Length Requirements:</h5>
-        <p>Minimum Length: 250 words<br>Maximum Length: 1500 words</p>
+        <p>300 words +- 10%</p>
         <h5>Number of Samples:</h5>
         <p>You can submit up to 3 different writing samples.</p>
         <h5>Consistency for Post-Test:</h5>

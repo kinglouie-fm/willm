@@ -113,8 +113,8 @@ export class UserController {
 
   @Post('pre-test')
   async submitPreTest(@Body('text') text: string, @Body('section') section: string, @Req() req: Request, @Res() res: Response): Promise<any> {
-    const MIN_WORD_COUNT = 250;
-    const MAX_WORD_COUNT = 1500;
+    const MIN_WORD_COUNT = 270;
+    const MAX_WORD_COUNT = 330;
     const wordCount = text.trim().split(/\s+/).length;
 
     if (wordCount < MIN_WORD_COUNT || wordCount > MAX_WORD_COUNT) {
@@ -151,8 +151,8 @@ export class UserController {
 
   @Post('post-test')
   async submitPostTest(@Body('text') text: string, @Body('section') section: string, @Req() req: Request, @Res() res: Response): Promise<any> {
-    const MIN_WORD_COUNT = 250;
-    const MAX_WORD_COUNT = 1500;
+    const MIN_WORD_COUNT = 270;
+    const MAX_WORD_COUNT = 330;
     const wordCount = text.trim().split(/\s+/).length;
     const currentDate = new Date();
     const enableDate = parseISO('2024-08-28');

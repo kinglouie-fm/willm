@@ -110,6 +110,10 @@ const renderQuizScoreStars = (score) => {
     return stars.join('');
 };
 
+const pushToHome = () => {
+    router.push('/');
+};
+
 onMounted(fetchQuiz);
 
 const currentQuestion = computed(() => quiz.value?.questions[currentQuestionIndex.value] || null);
@@ -203,7 +207,7 @@ const currentQuestion = computed(() => quiz.value?.questions[currentQuestionInde
                         <div v-html="renderQuizScoreStars(quizScore)"></div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn" data-bs-dismiss="modal" @click="pushToHome">Close</button>
                     </div>
                 </div>
             </div>

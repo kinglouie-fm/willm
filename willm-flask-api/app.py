@@ -406,7 +406,7 @@ def generate_question():
         metadata['answer'] = answer_match.group(1).strip()
 
     if question_type in ['synonyms', 'argument_strengthening', 'coherence', 'organization']:
-        options_match = re.search(r'Options:\s*(A\..*?)(?=\nAnswer:)', output, re.DOTALL)
+        options_match = re.search(r'Options:\s*(A.*?)(?=\nAnswer:)', output, re.DOTALL)
         logging.info(f"Options match: {options_match}")
         if options_match:
             options_raw = options_match.group(1).strip()

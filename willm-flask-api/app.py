@@ -445,7 +445,7 @@ def academic_sentence_correction():
     data = request.json
     original_sentence = data['original_sentence']
     corrected_sentence = data['corrected_sentence']
-    model = '3.5-turbo-1106'
+    model = '4o'
     
     deployment = deployment_gpt35 if model == '3.5-turbo-1106' else deployment_gpt4o
 

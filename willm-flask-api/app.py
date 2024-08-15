@@ -367,7 +367,7 @@ def generate_question():
     user_id = data['user_id']
     question_type = data['type']
     text = data['text']
-    model = '3.5-turbo-1106'
+    model = '4o'
     
     deployment = deployment_gpt35 if model == '3.5-turbo-1106' else deployment_gpt4o
 
@@ -406,7 +406,7 @@ def generate_question():
         metadata['answer'] = answer_match.group(1).strip()
 
     if question_type in ['synonyms', 'argument_strengthening', 'coherence', 'organization']:
-        options_match = re.search(r'Options:\s*(A\..*?)(?=\nAnswer:)', output, re.DOTALL)
+        options_match = re.search(r'Options:\s*(A.*?)(?=\nAnswer:)', output, re.DOTALL)
         if options_match:
             options_raw = options_match.group(1).strip()
             options = "\n".join([option.strip() for option in options_raw.split('\n')])

@@ -92,7 +92,6 @@ const completeQuiz = async () => {
         });
         quizScore.value = response.data.score;
         new bootstrap.Modal(document.getElementById('completionModal')).show();
-        router.push('/');
     } catch (error) {
         console.error('Error completing quiz:', error);
         message.error('Error completing quiz.');
@@ -109,6 +108,10 @@ const renderQuizScoreStars = (score) => {
         stars.push('<span style="color: grey;">&#9733;</span>');
     }
     return stars.join('');
+};
+
+const pushToHome = () => {
+    router.push('/');
 };
 
 onMounted(fetchQuiz);
@@ -204,7 +207,7 @@ const currentQuestion = computed(() => quiz.value?.questions[currentQuestionInde
                         <div v-html="renderQuizScoreStars(quizScore)"></div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn" data-bs-dismiss="modal" @click="pushToHome">Close</button>
                     </div>
                 </div>
             </div>

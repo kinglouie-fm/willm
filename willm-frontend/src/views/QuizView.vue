@@ -92,7 +92,6 @@ const completeQuiz = async () => {
         });
         quizScore.value = response.data.score;
         new bootstrap.Modal(document.getElementById('completionModal')).show();
-        router.push('/');
     } catch (error) {
         console.error('Error completing quiz:', error);
         message.error('Error completing quiz.');

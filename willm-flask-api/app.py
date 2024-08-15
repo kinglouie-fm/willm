@@ -407,9 +407,12 @@ def generate_question():
 
     if question_type in ['synonyms', 'argument_strengthening', 'coherence', 'organization']:
         options_match = re.search(r'Options:\s*(A\..*?)(?=\nAnswer:)', output, re.DOTALL)
+        logging.info(f"Options match: {options_match}")
         if options_match:
             options_raw = options_match.group(1).strip()
+            logging.info(f"Options raw: {options_raw}")
             options = "\n".join([option.strip() for option in options_raw.split('\n')])
+            logging.info(f"Options: {options}")
             metadata['options'] = options
 
         if question_type == 'synonyms':

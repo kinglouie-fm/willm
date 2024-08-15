@@ -365,7 +365,7 @@ def suggest_question_type():
 def generate_question():
     data = request.json
     user_id = data['user_id']
-    question_type = 'synonyms'
+    question_type = data['type']
     text = data['text']
     model = '4o'
     

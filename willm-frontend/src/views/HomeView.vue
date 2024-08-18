@@ -550,7 +550,7 @@ const submitPostTest = async () => {
 
 const fetchPreTestSections = async () => {
   const currentDate = new Date();
-  const enableDate = new Date('2024-08-28');
+  const enableDate = new Date('2024-09-07');
   if (isAfter(currentDate, enableDate)) {
     try {
       const preTestResponse = await axios.get('https://academic-willm.de/user/pre-test-sections');

@@ -107,7 +107,7 @@ const checkQuiz = async () => {
 };
 
 // Determine if the post-test is enabled
-const isPostTestEnabled = ref(isAfter(new Date(), new Date('2024-08-28')));
+const isPostTestEnabled = ref(isAfter(new Date(), new Date('2024-09-07')));
 
 // Show post-test modal if enabled
 const showPostTestModal = () => {

@@ -24,8 +24,8 @@ const languages = [
 ];
 
 const modelKeys = {
-    Correction: 'correctionModel',
-    'Further Correction': 'furtherCorrectionModel',
+    'Grammar/Vocabulary': 'correctionModel',
+    'Organization/Coherence/Writing Style': 'furtherCorrectionModel',
     Score: 'scoreModel',
     Review: 'reviewModel'
 };

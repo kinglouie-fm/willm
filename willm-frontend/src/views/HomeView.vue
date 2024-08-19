@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
 import * as bootstrap from 'bootstrap';
 import { useAuthStore } from '../stores/auth';
@@ -55,6 +55,10 @@ const postTestText = ref('');
 const postTestSection = ref('');
 const postTestSections = ref([]);
 const preTestSections = ref([]);
+
+const wordCount = computed(() => {
+  return preTestText.value.trim().split(/\s+/).filter(word => word.length > 0).length;
+});
 
 const handleSwitchChange = (event) => {
   mode.value = event.target.checked ? 'learning' : 'productive';
@@ -717,8 +721,11 @@ onMounted(async () => {
         <div class="modal-body">
           <textarea v-model="preTestSection" class="form-control mb-2" rows="1"
             placeholder="Enter the section..."></textarea>
-          <textarea v-model="preTestText" class="form-control" rows="20"
+          <textarea v-model="preTestText" class="form-control mb-2" rows="20"
             placeholder="Enter your text here..."></textarea>
+          <div class="text-end">
+            <small>{{ wordCount }} words</small>
+          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn" v-if="preTestCount > 0" @click="completePreTestProcess">Complete

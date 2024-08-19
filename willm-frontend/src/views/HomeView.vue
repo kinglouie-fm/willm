@@ -60,6 +60,10 @@ const wordCount = computed(() => {
   return preTestText.value.trim().split(/\s+/).filter(word => word.length > 0).length;
 });
 
+const wordCountPostTest = computed(() => {
+  return postTestText.value.trim().split(/\s+/).filter(word => word.length > 0).length;
+});
+
 const handleSwitchChange = (event) => {
   mode.value = event.target.checked ? 'learning' : 'productive';
 };
@@ -773,8 +777,11 @@ onMounted(async () => {
             </ul>
             <textarea v-model="postTestSection" class="form-control mb-2" rows="1"
               placeholder="Enter the section..."></textarea>
-            <textarea v-model="postTestText" class="form-control" rows="20"
+            <textarea v-model="postTestText" class="form-control mb-2" rows="20"
               placeholder="Enter your text here..."></textarea>
+            <div class="text-end">
+              <small>{{ wordCountPostTest }} words</small>
+            </div>
           </div>
           <div v-else>
             <p>No pre-test sections found. Please complete the pre-test first.</p>

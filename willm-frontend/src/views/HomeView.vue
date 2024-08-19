@@ -735,7 +735,7 @@ onMounted(async () => {
         <div class="modal-footer">
           <button type="button" class="btn" v-if="preTestCount > 0" @click="completePreTestProcess">Complete
             Pre-Test</button>
-          <button type="button" class="btn" data-bs-dismiss="modal">Close</button>
+          <!-- <button type="button" class="btn" data-bs-dismiss="modal">Close</button> -->
           <button type="button" class="btn" @click="submitPreTest">Submit</button>
         </div>
       </div>

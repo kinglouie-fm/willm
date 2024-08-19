@@ -24,7 +24,7 @@ export const useAuthStore = defineStore('auth', {
   actions: {
     async register(username, password) {
       try {
-        const response = await axios.post('http://willm.corinth.informatik.rwth-aachen.de/user/register', { username, password, dataPrivacyConsent });
+        const response = await axios.post('https://willm.corinth.informatik.rwth-aachen.de/user/register', { username, password, dataPrivacyConsent });
         if (response.status === 201) {
           message.info('Registration successful. Please login.');
           router.push({ name: 'login' });

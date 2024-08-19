@@ -725,7 +725,7 @@ onMounted(async () => {
         </div>
         <div class="modal-body">
           <textarea v-model="preTestSection" class="form-control mb-2" rows="1"
-            placeholder="Enter the section..."></textarea>
+            placeholder="Enter the section... (Introduction, Methodology, ...)"></textarea>
           <textarea v-model="preTestText" class="form-control mb-2" rows="20"
             placeholder="Enter your text here..."></textarea>
           <div class="text-end">

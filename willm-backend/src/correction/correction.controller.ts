@@ -47,11 +47,9 @@ export class CorrectionController {
     const categories = initialResult.categories || [];
     const contexts = initialResult.contexts || [];
 
-    console.log("test")
     if(body.correctionModel === '4o') {
       await this.userService.setDailyRequestsLeft(userId, dailyRequestsLeft - 1);
       dailyRequestsLeft -= 1;
-      console.log("Set daily requests left to", dailyRequestsLeft);
     }
 
     const session = await this.sessionService.getCurrentSession(userId);

@@ -121,6 +121,7 @@ export class UserService {
   }
 
   async setDailyRequestsLeft(userId: Types.ObjectId, dailyRequestsLeft: number): Promise<void> {
+    console.log("Setting daily requests left to", dailyRequestsLeft);
     await this.userModel.updateOne(
       { _id: userId },
       { $set: { dailyRequestsLeft } }

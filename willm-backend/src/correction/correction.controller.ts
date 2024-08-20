@@ -11,7 +11,7 @@ import { ScoreService } from '../score/score.service';
 
 @Controller('correct')
 export class CorrectionController {
-  private readonly maxLength = 1500;
+  private readonly maxLength = 500;
   constructor(
     private readonly correctionService: CorrectionService,
     private readonly issueService: IssueService,
@@ -29,7 +29,9 @@ export class CorrectionController {
     const userId = req.user._id;
     let dailyRequestsLeft = await this.userService.getDailyRequestsLeft(userId);
 
-    if(body.text.length > this.maxLength) {
+    const wordCount = body.text.trim().split(/\s+/).filter(word => word.length > 0).length;
+
+    if (wordCount > this.maxLength) {
       return res.status(400).send("Text is too long");
     }
 

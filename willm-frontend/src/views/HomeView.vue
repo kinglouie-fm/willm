@@ -387,11 +387,13 @@ const updateText = () => {
 };
 
 const limitTextLength = () => {
-  const maxLength = 1500;
-  let textContent = editableDiv.value.innerText;
-  if (textContent.length > maxLength) {
-    editableDiv.value.innerText = textContent.slice(0, maxLength);
-    message.info(`Maximum length of ${maxLength} characters reached.`);
+  const maxLength = 500;
+  let textContent = editableDiv.innerText;
+  let words = textContent.trim().split(/\s+/).filter(word => word.length > 0);
+
+  if (words.length > maxLength) {
+    editableDiv.innerText = words.slice(0, maxLength).join(" ");
+    message.info(`Maximum limit of ${maxLength} words reached.`);
   }
 };
 

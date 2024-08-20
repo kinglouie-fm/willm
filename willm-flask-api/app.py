@@ -108,14 +108,14 @@ async def handle_correction():
 
     if model == '4o':
         unified_result = await handle_unified(data, language, model)
-        mistakes, corrections, explanations, categories, contexts, corrected_text = process_initial_result(unified_result)
+        mistakes, corrections, explanations, categories, contexts, corrected_text = process_initial_result(unified_result, model)
     elif model == '3.5-turbo-1106':
         sentences = split_into_sentences(data)
         tasks = [process_sentence(sentence, language, model) for sentence in sentences]
         results = await asyncio.gather(*tasks)
 
         combined_result = ' '.join(results)
-        mistakes, corrections, explanations, categories, contexts, corrected_text = process_initial_result(combined_result)
+        mistakes, corrections, explanations, categories, contexts, corrected_text = process_initial_result(combined_result, model)
 
     logging.info("Initial correction done")
     return jsonify({
@@ -241,7 +241,7 @@ def format_text_for_json(text):
 
     return text
 
-def process_initial_result(result):
+def process_initial_result(result, model):
     mistakes = []
     corrections = []
     explanations = []
@@ -255,7 +255,10 @@ def process_initial_result(result):
     explanations_match = re.findall(r'E: (.*?)\n', result, re.DOTALL)
     categories_match = re.findall(r'T: (.*?)\n', result, re.DOTALL)
     contexts_match = re.findall(r'X: (.*?)\n', result, re.DOTALL)
-    corrected_text_match = re.findall(r'Correction:\s*(.*?[\.\!\?])(?:\s|$)', result, re.DOTALL)
+    if model == '3.5-turbo-1106':
+        corrected_text_match = re.findall(r'Correction:\s*(.*?[\.\!\?])(?:\s|$)', result, re.DOTALL)
+    elif model == '4o':
+        corrected_text_match = re.findall(r'Correction:\s*(.*)', result, re.DOTALL)
 
     if fine_match:
         mistakes.append("The submitted writing is fine.")

@@ -420,7 +420,7 @@ def generate_question():
             if word_match:
                 metadata['word'] = word_match.group(1).strip()
         elif question_type == 'argument_strengthening':
-            argument_match = re.search(r'Argument:\s*(.*?)\n', output, re.DOTALL)
+            argument_match = re.search(r'Argument:\s*(.*?)\nOptions:', output, re.DOTALL)
             if argument_match:
                 metadata['argument'] = argument_match.group(1).strip()
         elif question_type in ['organization', 'coherence']:
@@ -429,7 +429,7 @@ def generate_question():
                 metadata['scenario'] = scenario_match.group(1).strip()
     else:
         if question_type == 'revision':
-            text_match = re.search(r'Text:\s*(.*?)\n', output, re.DOTALL)
+            text_match = re.search(r'Text:\s*(.*?)\nAnswer:', output, re.DOTALL)
             if text_match:
                 metadata['text'] = text_match.group(1).strip()
         elif question_type == 'academic_sentence':

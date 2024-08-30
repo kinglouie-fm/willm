@@ -582,7 +582,7 @@ Explanation: [Detailed explanation]
 """
 
 DECIDE_QUESTIONS = """
-You will be provided with a set of new questions and the history of the last two quizzes taken by a user. Your task is to return five question ids and add them to an array.
+You will be provided with a set of new questions and the history of the last two quizzes taken by a user. Your task is to return five question ids based on spaced repetition principles and add them to an array.
 Each new question only contains the question id and the question type.
 Each quiz history includes the question id, question type and whether the user answered correctly (result: true) or incorrectly (result: false).
 
@@ -594,7 +594,7 @@ Here are the new questions:
 Here is the quiz history:
 {quiz_history}
 
-Please return the five best question ids from the new questions for the next quiz in the following array output format:
+Based on spaced repetition principles, return the five best question ids from the new questions for the next quiz in the following array output format:
 Question IDs: [The five question ids separated by commas]
 
 Don't add anything else, such as explanations or additional comments.

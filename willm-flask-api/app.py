@@ -671,7 +671,7 @@ async def similarity_search():
         new_questions_str = '\n'.join([f"ID: {q['question_id']}, Type: {q['question_type']}" for q in questions])
         quiz_history_str = '\n'.join([f"Quiz: {idx + 1}\n" + '\n'.join([f"Question ID: {q['question_id']}, Type: {q['question_type']}, Result: {q['result']}" for q in quiz['questions']]) for idx, quiz in enumerate(quiz_history)])
 
-        selected_question_ids = await llm_decide_questions(new_questions_str, quiz_history_str)
+        selected_question_ids = llm_decide_questions(new_questions_str, quiz_history_str)
 
         # Check for missing question IDs
         missing_question_ids = set(selected_question_ids) - found_question_ids

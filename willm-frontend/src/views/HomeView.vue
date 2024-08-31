@@ -195,6 +195,8 @@ const handleCorrect = async () => {
   } catch (error) {
     if (error.response && error.response.status === 401) {
       message.info('Please log in again.');
+    } else if (error.response && error.response.status === 403) {
+      message.info("No requests left for GPT 4o. Please try again tomorrow.", 4);
     } else {
       message.error('Error processing requests. Please try again.');
     }

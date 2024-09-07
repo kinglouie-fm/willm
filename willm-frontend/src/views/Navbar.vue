@@ -112,8 +112,9 @@ const isPostTestEnabled = ref(isAfter(new Date(), new Date('2024-09-07')));
 // Show post-test modal if enabled
 const showPostTestModal = () => {
     if (isPostTestEnabled.value) {
-        const postTestModal = new bootstrap.Modal(document.getElementById('postTestModal'));
-        postTestModal.show();
+        // const postTestModal = new bootstrap.Modal(document.getElementById('postTestModal'));
+        // postTestModal.show();
+        window.dispatchEvent(new CustomEvent('openPostTestModal'));
     }
 };
 

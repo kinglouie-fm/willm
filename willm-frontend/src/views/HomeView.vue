@@ -590,6 +590,10 @@ onMounted(async () => {
   initPopover();
   await getRecentReview();
   await fetchPreTestSections();
+  window.addEventListener('openPostTestModal', () => {
+    const postTestModal = new bootstrap.Modal(document.getElementById('postTestModal'));
+    postTestModal.show();
+  });
 });
 </script>
 

@@ -112,9 +112,9 @@ const isPostTestEnabled = ref(isAfter(new Date(), new Date('2024-09-07')));
 // Show post-test modal if enabled
 const showPostTestModal = () => {
     if (isPostTestEnabled.value) {
-        // const postTestModal = new bootstrap.Modal(document.getElementById('postTestModal'));
-        // postTestModal.show();
-        window.dispatchEvent(new CustomEvent('openPostTestModal'));
+        const postTestModal = new bootstrap.Modal(document.getElementById('postTestModal'));
+        postTestModal.show();
+        // window.dispatchEvent(new CustomEvent('openPostTestModal'));
     }
 };
 
@@ -152,56 +152,6 @@ const fetchData = () => {
     scoreModel.value = authStore.getLLM('scoreModel');
     reviewModel.value = authStore.getLLM('reviewModel');
 }
-
-const postTestText = ref('');
-const postTestSection = ref('');
-const preTestSections = ref([]);
-const postTestSections = ref([]);
-
-const MIN_LENGTH = 270;
-const MAX_LENGTH = 330;
-
-const wordCountPostTest = computed(() => {
-    return postTestText.value.trim().split(/\s+/).filter(word => word.length > 0).length;
-});
-
-const submitPostTest = async () => {
-    if (wordCountPostTest.value < MIN_LENGTH || wordCountPostTest.value > MAX_LENGTH) {
-        message.info(`Please ensure your text is between ${MIN_LENGTH} and ${MAX_LENGTH} words.`);
-        return;
-    }
-
-    try {
-        await axios.post('/api/post-test', { text: postTestText.value, section: postTestSection.value });
-        message.success('Post-test submitted successfully!');
-        postTestText.value = '';
-        postTestSection.value = '';
-    } catch (error) {
-        message.error('Error submitting post-test.');
-    }
-};
-
-// Fetch Pre-Test Sections
-const fetchPreTestSections = async () => {
-    const currentDate = new Date();
-    const enableDate = new Date('2024-09-07');
-    if (isAfter(currentDate, enableDate)) {
-        try {
-            const preTestResponse = await axios.get('/api/pre-test-sections');
-            preTestSections.value = preTestResponse.data.sections;
-
-            const postTestResponse = await axios.get('/api/post-test-sections');
-            postTestSections.value = postTestResponse.data.sections;
-        } catch (error) {
-            message.error('Error fetching sections');
-        }
-    }
-};
-
-// Call the function on mount
-onMounted(async () => {
-    await fetchPreTestSections();
-});
 </script>
 
 <template>
@@ -212,10 +162,9 @@ onMounted(async () => {
             <div class="flex-grow-1"></div>
 
             <div v-if="authStore.isAuthenticated" class="d-flex align-items-center">
-                <button v-if="isPostTestEnabled" class="btn btn-post-test" data-bs-toggle="modal"
-                    data-bs-target="#postTestModal">
+                <!-- <button v-if="isPostTestEnabled" class="btn btn-post-test" @click="showPostTestModal">
                     Start Post-Test
-                </button>
+                </button> -->
 
                 <div class="dropdown">
                     <button id="userDropdown" class="btn btn-link ms-3" data-bs-toggle="dropdown" aria-expanded="false"
@@ -304,51 +253,16 @@ onMounted(async () => {
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <img class="info-icon me-2" src="/icons/icon-info-01.svg" data-bs-toggle="popover"
-                        data-bs-placement="bottom" data-bs-content='
-        <h5>Length Requirements:</h5>
-        <p>300 words +- 10%</p>
-        <h5>Number of Samples:</h5>
-        <p>You can submit up to 3 different writing samples.</p>
-        <h5>Consistency for Post-Test:</h5>
-        <p>You must use the same topic and sections for both the pre-test and post-test writing samples to
-          ensure comparability.</p>
-        <h5>Writing Requirements:</h5>
-        <p>Write the samples on your own without the help of writing improvement tools. This is crucial for an
-          effective evaluation.</p>
-        <h5>Suggested Writing Types:</h5>
-        <p><strong>Research Paper Scenario:</strong> Sections from a research paper, such as the introduction,
-          literature review, or methodology.<br>
-          <strong>Essays:</strong> Academic essays on a chosen topic, with a clear thesis and supporting
-          arguments.<br>
-          <strong>Reports:</strong> Academic or project reports, including executive summaries or analysis sections.
-        </p>
-    ' />
-                    <h5 class="modal-title" id="postTestModalLabel">Post-Test Submission</h5>
+                    <h5 class="modal-title" id="postTestModalLabel">Post-Test</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div v-if="preTestSections.length > 0">
-                        <p>Please enter the text for the following sections in the same order as the pre-test:</p>
-                        <ul>
-                            <li v-for="(section, index) in preTestSections" :key="index">{{ section }}</li>
-                        </ul>
-                        <textarea v-model="postTestSection" class="form-control mb-2" rows="1"
-                            placeholder="Enter the section..."></textarea>
-                        <textarea v-model="postTestText" class="form-control mb-2" rows="20"
-                            placeholder="Enter your text here..."></textarea>
-                        <div class="text-end">
-                            <small>{{ wordCountPostTest }} words</small>
-                        </div>
-                    </div>
-                    <div v-else>
-                        <p>No pre-test sections found. Please complete the pre-test first.</p>
-                    </div>
+                    <!-- Post-Test Content -->
+                    <p>Your post-test instructions or content goes here.</p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn" @click="submitPostTest"
-                        :disabled="preTestSections.length === 0">Submit</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Start Post-Test</button>
                 </div>
             </div>
         </div>

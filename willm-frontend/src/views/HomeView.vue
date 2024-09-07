@@ -673,7 +673,7 @@ onMounted(async () => {
           <div class="mx-5">
             <button type="button" class="btn btn-md me-2" @click="handleCorrect">AI Evaluation</button>
             <button type="button" class="btn btn-md" @click="generateReview">Review</button>
-            <button type="button" class="btn btn-md" @click="showPostTestModal">Start Post-Test</button>
+            <button type="button" class="btn btn-post-test" @click="showPostTestModal">Start Post-Test</button>
           </div>
         </div>
       </div>

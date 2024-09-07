@@ -248,25 +248,6 @@ const fetchData = () => {
             </div>
         </div>
     </nav>
-
-    <div class="modal fade" id="postTestModal" tabindex="-1" aria-labelledby="postTestModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="postTestModalLabel">Post-Test</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <!-- Post-Test Content -->
-                    <p>Your post-test instructions or content goes here.</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Start Post-Test</button>
-                </div>
-            </div>
-        </div>
-    </div>
 </template>
 
 <style scoped>

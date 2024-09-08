@@ -114,7 +114,6 @@ const showPostTestModal = () => {
     if (isPostTestEnabled.value) {
         const postTestModal = new bootstrap.Modal(document.getElementById('postTestModal'));
         postTestModal.show();
-        // window.dispatchEvent(new CustomEvent('openPostTestModal'));
     }
 };
 
@@ -162,9 +161,9 @@ const fetchData = () => {
             <div class="flex-grow-1"></div>
 
             <div v-if="authStore.isAuthenticated" class="d-flex align-items-center">
-                <!-- <button v-if="isPostTestEnabled" class="btn btn-post-test" @click="showPostTestModal">
+                <button v-if="isPostTestEnabled" class="btn btn-post-test" @click="showPostTestModal">
                     Start Post-Test
-                </button> -->
+                </button>
 
                 <div class="dropdown">
                     <button id="userDropdown" class="btn btn-link ms-3" data-bs-toggle="dropdown" aria-expanded="false"

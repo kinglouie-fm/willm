@@ -522,11 +522,6 @@ const showPreTestModal = () => {
   preTestModal.show();
 };
 
-const showPostTestModal = () => {
-  const postTestModal = new bootstrap.Modal(document.getElementById('postTestModal'));
-  postTestModal.show();
-};
-
 
 const submitPostTest = async () => {
   if (!validatePreTestTextLength(postTestText.value)) {
@@ -595,10 +590,6 @@ onMounted(async () => {
   initPopover();
   await getRecentReview();
   await fetchPreTestSections();
-  // window.addEventListener('openPostTestModal', () => {
-  //   const postTestModal = new bootstrap.Modal(document.getElementById('postTestModal'));
-  //   postTestModal.show();
-  // });
 });
 </script>
 
@@ -673,7 +664,6 @@ onMounted(async () => {
           <div class="mx-5">
             <button type="button" class="btn btn-md me-2" @click="handleCorrect">AI Evaluation</button>
             <button type="button" class="btn btn-md" @click="generateReview">Review</button>
-            <button type="button" class="btn btn-post-test" @click="showPostTestModal">Start Post-Test</button>
           </div>
         </div>
       </div>
@@ -841,10 +831,6 @@ onMounted(async () => {
   line-height: 1.5rem;
   font-size: 1.1rem;
   resize: none;
-}
-
-.btn-post-test {
-  color: #ee3636;
 }
 
 a {

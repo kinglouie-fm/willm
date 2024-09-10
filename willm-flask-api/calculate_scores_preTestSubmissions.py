@@ -58,8 +58,8 @@ def calculate_median(scores_list):
     return medians
 
 # Send request to Azure OpenAI and get scores
-def get_scores(postTestSubmission, postTestSection):
-    prompt = SCORES.format(text=postTestSubmission, section=postTestSection)
+def get_scores(preTestSubmission, preTestSection):
+    prompt = SCORES.format(text=preTestSubmission, section=preTestSection)
     responses = []
     
     for i in range(5):
@@ -80,11 +80,11 @@ def get_scores(postTestSubmission, postTestSection):
 def process_user_data(user_data):
     user_results = {}
     
-    for idx, submission in enumerate(user_data.get('postTestSubmissions', [])):
-        postTestSubmission = submission['text']
-        postTestSection = submission['section']
+    for idx, submission in enumerate(user_data.get('preTestSubmissions', [])):
+        preTestSubmission = submission['text']
+        preTestSection = submission['section']
         
-        scores_list = get_scores(postTestSubmission, postTestSection)
+        scores_list = get_scores(preTestSubmission, preTestSection)
         median_scores = calculate_median(scores_list)
         
         user_results[f'submission_{idx}'] = median_scores
@@ -122,7 +122,7 @@ def process_users(input_json_file, output_json_file, exclude_usernames):
 exclude_usernames = ['thillen', 'thillen1', 'hengover', 'jamal76er', 'jonathaMCNEILL', 'gilles', 'Fateme']
 
 input_json_file = '/Users/benthillen/Downloads/mongo/data-google/willm/users.json'
-output_json_file = '/Users/benthillen/Downloads/mongo/data-google/evaluation/user_scores_postTest.json'
+output_json_file = '/Users/benthillen/Downloads/mongo/data-google/evaluation/user_scores_preTest.json'
 
 # Call the main function
 if __name__ == "__main__":

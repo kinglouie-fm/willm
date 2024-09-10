@@ -1,10 +1,10 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify # type: ignore
 import asyncio
-from dotenv import load_dotenv
+from dotenv import load_dotenv # type: ignore
 import re
 import os
 import logging
-from openai import AzureOpenAI, AsyncAzureOpenAI
+from openai import AzureOpenAI, AsyncAzureOpenAI # type: ignore
 from chroma_langchain import chroma_langchain_handler
 from prompts import (
     SYSTEM_PROMPT_1, SYSTEM_PROMPT_1_MULTI, SYSTEM_PROMPT_2, SYSTEM_PROMPT_4, SYSTEM_PROMPT_5,

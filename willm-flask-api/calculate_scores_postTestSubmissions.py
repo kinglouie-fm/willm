@@ -2,8 +2,8 @@ import json
 import re
 import statistics
 import os
-from dotenv import load_dotenv
-from openai import AzureOpenAI
+from dotenv import load_dotenv # type: ignore
+from openai import AzureOpenAI # type: ignore
 from prompts import (SYSTEM_PROMPT_4, SCORES)
 
 # Load environment variables

@@ -119,10 +119,10 @@ def process_users(input_json_file, output_json_file, exclude_usernames):
         json.dump(all_user_results, outfile, indent=4)
 
 # List of usernames to exclude (remaining users: 17)
-exclude_usernames = ['thillen', 'thillen1', 'hengover', 'jamal76er', 'jonathaMCNEILL', 'gilles', 'Fateme']
+exclude_usernames = ['thillen', 'thillen1', 'hengover', 'jamal76er', 'jonathaMCNEILL', 'gilles', 'Fateme', 'mou', 'hanbin.9797@gmail.com', 'shyshin', 'a', 'test4', 'test5', 'jonas']
 
-input_json_file = '/Users/benthillen/Downloads/mongo/data-google/willm/users.json'
-output_json_file = '/Users/benthillen/Downloads/mongo/data-google/evaluation/user_scores_postTest.json'
+input_json_file = '/Users/benthillen/Downloads/mongo/aggregated-data/users.json'
+output_json_file = '/Users/benthillen/Downloads/mongo/evaluation/user_scores_postTest.json'
 
 # Call the main function
 if __name__ == "__main__":

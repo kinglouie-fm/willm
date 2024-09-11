@@ -2,8 +2,8 @@ import json
 import re
 
 # Path to your MongoDB JSON file
-input_file = '/Users/benthillen/Downloads/mongo/backup-google/willm/users.json'
-output_file = '/Users/benthillen/Downloads/mongo/data-google/willm/users.json'
+input_file = '/Users/benthillen/Downloads/mongo/aggregated-data/unvalid_json_users.json'
+output_file = '/Users/benthillen/Downloads/mongo/aggregated-data/users.json'
 
 # Function to convert extended MongoDB JSON to standard JSON
 def convert_mongo_json(mongo_str):

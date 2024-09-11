@@ -57,18 +57,19 @@ for element in pre_scores:
 
         # Calculate rank-biserial correlation (effect size)
         differences = np.array(post_scores[element]) - np.array(pre_scores[element])
-        ranks = stats.rankdata(np.abs(differences))
+        ranks = stats.rankdata(differences)
+        # Implicitly ignoring zero differences
         positive_ranks = ranks[differences > 0].sum()
         negative_ranks = ranks[differences < 0].sum()
-        n = len(differences[differences != 0])  # Only count non-zero differences
-        if n > 0:  # To avoid division by zero
-            r_biserial = (positive_ranks - negative_ranks) / n
+        total_ranks = positive_ranks + negative_ranks 
+        if total_ranks > 0:
+            r_biserial = (positive_ranks - negative_ranks) / total_ranks
             test_results[element]["rank_biserial_correlation"] = r_biserial
             print(f"{element.capitalize()} - Rank-biserial correlation: {r_biserial}")
         else:
             test_results[element]["rank_biserial_correlation"] = None
 
-    # Interpretation: Calculate median difference and check if it's an improvement or decline
+    # Calculate median difference and check if it's an improvement or decline
     median_difference = np.median(differences)
 
     # Interpret the median difference

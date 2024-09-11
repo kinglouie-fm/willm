@@ -55,8 +55,20 @@ for element in pre_scores:
         test_results[element] = {"test": "Wilcoxon signed-rank test", "p_value": w_p}
         print(f"{element.capitalize()} - Wilcoxon signed-rank test p-value: {w_p}")
 
+        # Calculate rank-biserial correlation (effect size)
+        differences = np.array(post_scores[element]) - np.array(pre_scores[element])
+        ranks = stats.rankdata(np.abs(differences))
+        positive_ranks = ranks[differences > 0].sum()
+        negative_ranks = ranks[differences < 0].sum()
+        n = len(differences[differences != 0])  # Only count non-zero differences
+        if n > 0:  # To avoid division by zero
+            r_biserial = (positive_ranks - negative_ranks) / n
+            test_results[element]["rank_biserial_correlation"] = r_biserial
+            print(f"{element.capitalize()} - Rank-biserial correlation: {r_biserial}")
+        else:
+            test_results[element]["rank_biserial_correlation"] = None
+
     # Interpretation: Calculate median difference and check if it's an improvement or decline
-    differences = np.array(post_scores[element]) - np.array(pre_scores[element])
     median_difference = np.median(differences)
 
     # Interpret the median difference

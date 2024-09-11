@@ -49,17 +49,28 @@ for user, submissions in post_test_data.items():
 #     qq_plot(post_scores[element], f'{element.capitalize()} (Post-Test)')
 
 # Boxplots with Jitter (to visualize outliers)
-def boxplot_with_jitter(pre, post, element):
-    plt.figure(figsize=(8, 6))
-    sns.boxplot(data=[pre, post], palette="Set3", showfliers=False)
-    sns.stripplot(data=[pre, post], palette="Set1", jitter=True, color='black', size=5)
-    plt.xticks([0, 1], ['Pre-Test', 'Post-Test'])
-    plt.title(f'{element.capitalize()} - Boxplot with Jitter')
-    plt.ylabel('Score')
+def combined_boxplots_with_jitter(pre_scores, post_scores):
+    elements = list(pre_scores.keys())
+    num_elements = len(elements)
+    
+    # Create a figure with subplots (1 row, 5 columns)
+    fig, axes = plt.subplots(1, num_elements, figsize=(20, 6), sharey=True)
+
+    # Loop through each element and plot its boxplot with jitter on the corresponding subplot
+    for i, element in enumerate(elements):
+        sns.boxplot(data=[pre_scores[element], post_scores[element]], palette="Set3", showfliers=False, ax=axes[i])
+        sns.stripplot(data=[pre_scores[element], post_scores[element]], palette="Set1", jitter=True, color='black', size=5, ax=axes[i])
+        axes[i].set_xticks([0, 1])
+        axes[i].set_xticklabels(['Pre-Test', 'Post-Test'])
+        axes[i].set_title(f'{element.capitalize()}')
+        axes[i].set_ylabel('Score')
+
+    # Adjust layout
+    plt.tight_layout()
     plt.show()
 
-for element in pre_scores:
-    boxplot_with_jitter(pre_scores[element], post_scores[element], element)
+# Call the function with pre_scores and post_scores data
+combined_boxplots_with_jitter(pre_scores, post_scores)
 
 # Paired Line Plot (to show individual improvements/decline)
 # def paired_line_plot(pre, post, element):

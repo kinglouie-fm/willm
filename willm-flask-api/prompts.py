@@ -355,59 +355,59 @@ Text:
 Scoring Criteria:
 
 1. Grammar:
-   - **9**: Uses a wide range of structures with full flexibility and accuracy; rare minor errors occur only as ‘slips’.
-   - **8**: Uses a wide range of structures accurately; occasional errors do not impede communication.
-   - **7**: Uses a variety of complex structures; produces frequent error-free sentences; occasional inappropriacies or errors.
-   - **6**: Uses a mix of simple and complex sentence forms; some errors in grammar and punctuation, but rarely impede meaning.
-   - **5**: Uses only a limited range of structures; attempts complex sentences but these tend to be less accurate than simple sentences.
-   - **4**: Produces frequent errors in grammar and punctuation; rarely uses subordinate clauses.
-   - **3**: Frequent grammatical errors and incorrect word forms obscure meaning.
-   - **2**: Continuous errors show lack of control of sentence structure.
-   - **1**: Little or no evidence of sentence forms.
+   - 9: Uses a wide range of structures with full flexibility and accuracy; rare minor errors occur only as ‘slips’.
+   - 8: Uses a wide range of structures accurately; occasional errors do not impede communication.
+   - 7: Uses a variety of complex structures; produces frequent error-free sentences; occasional inappropriacies or errors.
+   - 6: Uses a mix of simple and complex sentence forms; some errors in grammar and punctuation, but rarely impede meaning.
+   - 5: Uses only a limited range of structures; attempts complex sentences but these tend to be less accurate than simple sentences.
+   - 4: Produces frequent errors in grammar and punctuation; rarely uses subordinate clauses.
+   - 3: Frequent grammatical errors and incorrect word forms obscure meaning.
+   - 2: Continuous errors show lack of control of sentence structure.
+   - 1: Little or no evidence of sentence forms.
 
 2. Vocabulary:
-   - **9**: Uses a wide range of vocabulary with very natural and sophisticated control; rare minor errors occur only as ‘slips’.
-   - **8**: Uses a wide range of vocabulary fluently and flexibly to convey precise meanings.
-   - **7**: Sufficient range of vocabulary to allow some flexibility and precision; uses less common lexical items with some awareness of style and collocation.
-   - **6**: Adequate range of vocabulary for the task; attempts to use less common vocabulary but with some inaccuracy.
-   - **5**: Limited range of vocabulary; may demonstrate frequent errors in word choice, spelling, and/or word formation.
-   - **4**: Basic vocabulary is used repetitively; noticeable errors in word choice and formation.
-   - **3**: Limited control of vocabulary and frequent errors obscure meaning.
-   - **2**: Very limited range of words and expressions.
-   - **1**: No control over word choice and frequent errors impede understanding.
+   - 9: Uses a wide range of vocabulary with very natural and sophisticated control; rare minor errors occur only as ‘slips’.
+   - 8: Uses a wide range of vocabulary fluently and flexibly to convey precise meanings.
+   - 7: Sufficient range of vocabulary to allow some flexibility and precision; uses less common lexical items with some awareness of style and collocation.
+   - 6: Adequate range of vocabulary for the task; attempts to use less common vocabulary but with some inaccuracy.
+   - 5: Limited range of vocabulary; may demonstrate frequent errors in word choice, spelling, and/or word formation.
+   - 4: Basic vocabulary is used repetitively; noticeable errors in word choice and formation.
+   - 3: Limited control of vocabulary and frequent errors obscure meaning.
+   - 2: Very limited range of words and expressions.
+   - 1: No control over word choice and frequent errors impede understanding.
 
 3. Organization:
-   - **9**: Information and ideas are logically sequenced and fully developed; clear progression throughout.
-   - **8**: Logically organizes information and ideas; there is clear progression throughout.
-   - **7**: Logically organizes information and ideas with clear progression; uses a range of cohesive devices appropriately.
-   - **6**: Arranges information and ideas coherently with some progression; cohesive devices may be mechanical.
-   - **5**: Presents information with some organization but there may be a lack of overall progression.
-   - **4**: Limited organization; may not logically sequence ideas.
-   - **3**: Ideas are not arranged coherently; limited use of cohesive devices.
-   - **2**: Very little control of organizational features; ideas are not logically arranged.
-   - **1**: Fails to communicate any organized ideas.
+   - 9: Information and ideas are logically sequenced and fully developed; clear progression throughout.
+   - 8: Logically organizes information and ideas; there is clear progression throughout.
+   - 7: Logically organizes information and ideas with clear progression; uses a range of cohesive devices appropriately.
+   - 6: Arranges information and ideas coherently with some progression; cohesive devices may be mechanical.
+   - 5: Presents information with some organization but there may be a lack of overall progression.
+   - 4: Limited organization; may not logically sequence ideas.
+   - 3: Ideas are not arranged coherently; limited use of cohesive devices.
+   - 2: Very little control of organizational features; ideas are not logically arranged.
+   - 1: Fails to communicate any organized ideas.
 
 4. Coherence:
-   - **9**: Cohesive devices are used in such a way that it attracts no attention; ideas are fully developed and well-supported.
-   - **8**: Cohesive devices used effectively; ideas are well-developed and supported.
-   - **7**: Uses cohesive devices effectively; presents clear progression of ideas.
-   - **6**: Uses cohesive devices, though cohesion within and/or between sentences may be faulty or mechanical.
-   - **5**: Uses some cohesive devices but these may be inaccurate or repetitive.
-   - **4**: Relationships between ideas are unclear; limited use of cohesive devices.
-   - **3**: Lack of coherence; ideas are difficult to follow.
-   - **2**: Minimal use of cohesive devices; ideas are not logically connected.
-   - **1**: No coherent ideas are presented.
+   - 9: Cohesive devices are used in such a way that it attracts no attention; ideas are fully developed and well-supported.
+   - 8: Cohesive devices used effectively; ideas are well-developed and supported.
+   - 7: Uses cohesive devices effectively; presents clear progression of ideas.
+   - 6: Uses cohesive devices, though cohesion within and/or between sentences may be faulty or mechanical.
+   - 5: Uses some cohesive devices but these may be inaccurate or repetitive.
+   - 4: Relationships between ideas are unclear; limited use of cohesive devices.
+   - 3: Lack of coherence; ideas are difficult to follow.
+   - 2: Minimal use of cohesive devices; ideas are not logically connected.
+   - 1: No coherent ideas are presented.
 
 5. Writing Style:
-   - **9**: Engages the reader with an original and compelling style; tone and register are entirely appropriate for academic writing.
-   - **8**: Writing is engaging and the tone is appropriate for academic writing; minor errors in style do not detract from the overall impact.
-   - **7**: Demonstrates some complexity and flexibility in style; tone and register are appropriate for academic writing.
-   - **6**: Shows some variety in style and an attempt to engage the reader; tone may be uneven but generally appropriate for academic writing.
-   - **5**: Writing is somewhat engaging; tone and register may be inconsistent but some attempt at academic style is evident.
-   - **4**: Limited engagement with the reader; writing style may be flat and uninteresting.
-   - **3**: Writing style is simplistic and fails to engage the reader; tone is often inappropriate for academic writing.
-   - **2**: Very limited writing style; fails to engage the reader.
-   - **1**: No attempt to engage the reader; writing style is inappropriate for academic writing.
+   - 9: Engages the reader with an original and compelling style; tone and register are entirely appropriate for academic writing.
+   - 8: Writing is engaging and the tone is appropriate for academic writing; minor errors in style do not detract from the overall impact.
+   - 7: Demonstrates some complexity and flexibility in style; tone and register are appropriate for academic writing.
+   - 6: Shows some variety in style and an attempt to engage the reader; tone may be uneven but generally appropriate for academic writing.
+   - 5: Writing is somewhat engaging; tone and register may be inconsistent but some attempt at academic style is evident.
+   - 4: Limited engagement with the reader; writing style may be flat and uninteresting.
+   - 3: Writing style is simplistic and fails to engage the reader; tone is often inappropriate for academic writing.
+   - 2: Very limited writing style; fails to engage the reader.
+   - 1: No attempt to engage the reader; writing style is inappropriate for academic writing.
 
 Ensure the output is properly formatted and includes all necessary keys.
 Don't add anything else to the output.

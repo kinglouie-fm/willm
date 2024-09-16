@@ -15,7 +15,7 @@ import { GamificationService } from '../gamification/gamification.service';
 
 @Injectable()
 export class QuizService {
-  private readonly intervals = [0, 2, 4, 6]; // days for quizzes after 1st, 2nd, 3rd, and 4th quiz
+  private readonly intervals = [0, 2, 4, 5]; // days for quizzes after 1st, 2nd, 3rd, and 4th quiz
 
   constructor(
     @InjectModel(Quiz.name) private quizModel: Model<Quiz>,

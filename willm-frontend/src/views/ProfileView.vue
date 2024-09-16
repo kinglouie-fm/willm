@@ -25,9 +25,7 @@ const levels = {
     7: 2800,
     8: 3600,
     9: 4500,
-    10: 5500,
-    11: 6600,
-    12: 7800,
+    10: 5500
 };
 
 const achievementsConfig = {
@@ -256,25 +254,25 @@ onMounted(() => {
 
                                 <h5>Badges:</h5>
                                 <ul>
-                                    <li><strong>Rookie:</strong> Awarded for completing 2 quizzes.</li>
+                                    <li><strong>Rookie:</strong> Awarded for completing 1 quizzes.</li>
                                     <li><strong>Pro:</strong>
                                         <ul>
                                             <li>Complete 3 quizzes</li>
                                             <li>Maintain a 5-day streak</li>
-                                            <li>Give 20 correct answers</li>
+                                            <li>Give 10 correct answers</li>
                                         </ul>
                                     </li>
                                     <li><strong>Leader:</strong>
                                         <ul>
                                             <li>Complete 4 quizzes</li>
-                                            <li>Give 25 correct answers</li>
+                                            <li>Give 15 correct answers</li>
                                             <li>Reach 1 weekly streak</li>
                                         </ul>
                                     </li>
                                     <li><strong>Guru:</strong>
                                         <ul>
                                             <li>Complete 5 quizzes</li>
-                                            <li>Give 30 correct answers</li>
+                                            <li>Give 20 correct answers</li>
                                         </ul>
                                     </li>
                                 </ul>
@@ -306,7 +304,7 @@ onMounted(() => {
                                 <div class="me-3">{{ getAchievementProgress(key, gamificationData.achievements).next }}
                                 </div>
                                 <div class="me-3"><strong>Reward:</strong> {{ getAchievementProgress(key,
-                                gamificationData.achievements).rewardXP }} XP</div>
+                                    gamificationData.achievements).rewardXP }} XP</div>
                                 <AchievementProgressBar :currentCount="gamificationData.achievements[key]"
                                     :targetCount="getAchievementProgress(key, gamificationData.achievements).targetCount" />
                                 <div

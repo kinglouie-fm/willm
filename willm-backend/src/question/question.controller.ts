@@ -27,7 +27,7 @@ export class QuestionController {
 
     const submissions = await this.textService.findLastSubmissions(userId, 5);
 
-    if (submissions.length < 5) {
+    if (submissions.length < 2) {
       return {
         message: 'Not enough submissions to generate questions',
       }

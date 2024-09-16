@@ -75,7 +75,7 @@ const getNextLevelXP = (level) => {
         7: 2800,
         8: 3600,
         9: 4500,
-        10: 5500,
+        10: 5500
     };
     return levels[level + 1] || levels[10];
 };

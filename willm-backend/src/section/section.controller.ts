@@ -5,12 +5,14 @@ import { SectionService } from './section.service';
 export class SectionController {
   constructor(private readonly sectionService: SectionService) {}
 
+  // Add a new section
   @Post()
   async addSection(@Body('user_id') user_id: string, @Body() sectionData: any): Promise<{ message: string }> {
     await this.sectionService.addSection(user_id, sectionData);
     return { message: 'Section added successfully' };
   }
 
+  // Get sections for a specific user
   @Get(':user_id')
   async getSections(@Param('user_id') user_id: string) {
     return this.sectionService.findSectionsByUserId(user_id);

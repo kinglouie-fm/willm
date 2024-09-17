@@ -15,6 +15,7 @@ export class UserController {
     private readonly gamificationService: GamificationService,
   ) {}
 
+  // Register a new user
   @Post('register')
   async register(
     @Body('username') username: string,
@@ -22,9 +23,12 @@ export class UserController {
     @Body('dataPrivacyConsent') dataPrivacyConsent: boolean,
     @Res() res: Response
   ): Promise<void> {
+    // Check if the user has given data privacy consent
     if (!dataPrivacyConsent) {
       throw new UnauthorizedException('Data privacy consent is required.');
     }
+
+    // Check if the username is already taken
     try {
       await this.userService.register(username, password);
       res.status(201).json({ message: 'User registered successfully' });
@@ -36,17 +40,23 @@ export class UserController {
     }
   }
 
+  // Login a user
   @Post('login')
   async login(@Body('username') username: string, @Body('password') password: string, @Res() res: Response): Promise<any> {
     try {
+      // Validate the user's credentials
       const isValid = await this.userService.validateUser(username, password);
       if (!isValid) {
         return res.status(401).json({ message: 'Invalid credentials' });
       }
+
+      // Check if the user has completed the post-test and can no longer use the tool
       const user = await this.userService.findUserByUsername(username);
       if (user.postTestsCompleted) {
         return res.status(403).json({ message: 'You have completed the post-test and can no longer use the tool.' });
       }
+
+      // Generate a JWT token and set it as a cookie
       const token = this.userService.generateJwtToken(username);
       res.cookie('auth_token', token, { httpOnly: true, secure: false });
   
@@ -60,12 +70,14 @@ export class UserController {
     }
   }
 
+  // Logout a user
   @Post('logout')
   async logout(@Res() res: Response): Promise<any> {
     res.clearCookie('auth_token');
     return res.send({ message: 'Logout successful' });
   }
 
+  // Get the user's profile
   @Get('profile')
   async profile(@Req() req: Request, @Res() res: Response): Promise<any> {
     const token = req.cookies['auth_token'];
@@ -89,6 +101,7 @@ export class UserController {
     });
   }
 
+  // Get the users' pre-test status (completed or not, number of submissions)
   @Get('pre-test-status')
   async getPreTestStatus(@Req() req: Request, @Res() res: Response): Promise<any> {
     const user = await this.userService.findUserByToken(req.cookies['auth_token']);
@@ -98,6 +111,7 @@ export class UserController {
     return res.status(200).json({ preTestsCompleted: user.preTestsCompleted, preTestCount: user.preTestSubmissions.length });
   }
 
+  // Get the users' post-test status (completed or not, number of submissions)
   @Post('complete-pre-test')
   async completePreTest(@Req() req: Request, @Res() res: Response): Promise<any> {
     const user = await this.userService.findUserByToken(req.cookies['auth_token']);
@@ -111,16 +125,19 @@ export class UserController {
     return res.status(200).json({ message: 'Pre-test process completed successfully', preTestsCompleted: true });
   }
 
+  // Submit a pre-test
   @Post('pre-test')
   async submitPreTest(@Body('text') text: string, @Body('section') section: string, @Req() req: Request, @Res() res: Response): Promise<any> {
     const MIN_WORD_COUNT = 270;
     const MAX_WORD_COUNT = 330;
     const wordCount = text.trim().split(/\s+/).length;
 
+    // Check if the text has the correct word count
     if (wordCount < MIN_WORD_COUNT || wordCount > MAX_WORD_COUNT) {
       throw new BadRequestException(`Text must be between ${MIN_WORD_COUNT} and ${MAX_WORD_COUNT} words.`);
     }
 
+    // Check if the user is authorized
     const user = await this.userService.findUserByToken(req.cookies['auth_token']);
     if (!user) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -129,6 +146,7 @@ export class UserController {
     return res.status(200).json({ message: 'Pre-test submitted successfully' });
   }
 
+  // Get the sections for a user's pre-test submissions
   @Get('pre-test-sections')
   async getPreTestSections(@Req() req: Request, @Res() res: Response): Promise<any> {
     const user = await this.userService.findUserByToken(req.cookies['auth_token']);
@@ -139,6 +157,7 @@ export class UserController {
     return res.status(200).json({ sections });
   }
 
+  // Get the sections for a user's post-test submissions
   @Get('post-test-sections')
   async getPostTestSections(@Req() req: Request, @Res() res: Response): Promise<any> {
     const user = await this.userService.findUserByToken(req.cookies['auth_token']);
@@ -149,27 +168,32 @@ export class UserController {
     return res.status(200).json({ sections });
   }
 
+  // Submit a post-test
   @Post('post-test')
   async submitPostTest(@Body('text') text: string, @Body('section') section: string, @Req() req: Request, @Res() res: Response): Promise<any> {
     const MIN_WORD_COUNT = 270;
     const MAX_WORD_COUNT = 330;
     const wordCount = text.trim().split(/\s+/).length;
     const currentDate = new Date();
+    // Enable post-tests after September 7th, 2024
     const enableDate = parseISO('2024-09-07');
 
     if (!isAfter(currentDate, enableDate)) {
       return res.status(400).json({ message: 'Post-tests can only be submitted after August 28th.' });
     }
 
+    // Check if the text has the correct word count
     if (wordCount < MIN_WORD_COUNT || wordCount > MAX_WORD_COUNT) {
       throw new BadRequestException(`Text must be between ${MIN_WORD_COUNT} and ${MAX_WORD_COUNT} words.`);
     }
 
+    // Check if the user is authorized
     const user = await this.userService.findUserByToken(req.cookies['auth_token']);
     if (!user) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
+    // Try to add the post-test submission
     try {
       const updatedUser = await this.userService.addPostTestSubmission(user._id.toString(), text, section);
       if (updatedUser.postTestsCompleted) {
@@ -181,6 +205,7 @@ export class UserController {
     }
   }
 
+  // Get the user's gamification data
   @UseGuards(JwtAuthGuard)
   @Get('gamification')
   async getGamification(@Req() req: Request) {
@@ -196,6 +221,7 @@ export class UserController {
     };
   }
 
+  // Reset the user's streaks
   @UseGuards(JwtAuthGuard)
   @Get('reset-streaks')
   async resetStreaks(@Req() req: Request) {
@@ -204,6 +230,7 @@ export class UserController {
     return { message: 'Streaks reset' };
   }
 
+  // Update the user's language learning model data
   @UseGuards(JwtAuthGuard)
   @Patch('updateModel')
   async updateModel(
@@ -231,6 +258,7 @@ export class UserController {
     return res.status(200).json({ message: 'Model updated successfully' });
   }
 
+  // Update the user's explanation language
   @UseGuards(JwtAuthGuard)
   @Patch('updateLanguage')
   async updateLanguage(

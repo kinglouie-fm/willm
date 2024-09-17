@@ -8,6 +8,7 @@ import { Types } from 'mongoose';
 export class QuizController {
   constructor(private readonly quizService: QuizService) {}
 
+  // Generate a quiz for a user
   @UseGuards(JwtAuthGuard)
   @Post('generate')
   async generateQuiz(@Req() req: Request) {
@@ -15,6 +16,7 @@ export class QuizController {
     return this.quizService.generateQuiz(userId);
   }
 
+  // Submit an answer for a question
   @UseGuards(JwtAuthGuard)
   @Post('submit-answer')
   async submitAnswer(@Req() req: Request, @Body() body) {
@@ -23,6 +25,7 @@ export class QuizController {
     return this.quizService.submitQuizAnswer(userId, quizId, questionId, userAnswer);
   }
 
+  // Explain the answer for a question
   @UseGuards(JwtAuthGuard)
   @Post('explain-answer')
   async explainAnswer(@Req() req: Request, @Body() body) {
@@ -32,6 +35,7 @@ export class QuizController {
     return explanation;
   }
 
+  // Skip a quiz
   @UseGuards(JwtAuthGuard)
   @Post('skip')
   async skipQuiz(@Req() req: Request, @Body() body) {
@@ -41,6 +45,7 @@ export class QuizController {
     return result;
   }
 
+  // Mark a quiz as completed
   @UseGuards(JwtAuthGuard)
   @Post('complete')
   async completeQuiz(@Req() req: Request, @Body() body) {
@@ -50,6 +55,7 @@ export class QuizController {
     return result;
   }
 
+  // Check if a quiz is due and generate it if it is
   @UseGuards(JwtAuthGuard)
   @Get('check-quiz')
   async checkQuiz(@Req() req: Request) {
@@ -58,6 +64,7 @@ export class QuizController {
     return result;
   }
 
+  // Get today's quiz
   @UseGuards(JwtAuthGuard)
   @Get('get-todays-quiz')
   async getTodaysQuiz(@Req() req: Request) {

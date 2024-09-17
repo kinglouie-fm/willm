@@ -18,10 +18,12 @@ export class ReviewService {
     @InjectModel(Review.name) private reviewModel: Model<Review>
   ) {}
 
+  // Generate a review for a user
   async generateReview(userId: Types.ObjectId, review_model: string): Promise<any> {
     // Retrieve the last 10 texts for the user
     const texts = await this.textService.findLastSubmissions(userId, 10);
 
+    // If there are not enough texts, return an error message
     if (!texts || texts.length < 5) {
       return { reviewData: 'Not enough texts available to generate a review.' };
     }
@@ -30,6 +32,7 @@ export class ReviewService {
     const recentTextIds: Types.ObjectId[] = texts.slice(0, 5).map(text => text._id) as Types.ObjectId[];
     let previousTextIds: Types.ObjectId[] = [];
 
+    // If there are at least 10 texts, save the ids of text 6-10 
     if (texts.length >= 10) {
       previousTextIds = texts.slice(5, 10).map(text => text._id) as Types.ObjectId[];
     }
@@ -37,6 +40,7 @@ export class ReviewService {
     // Fetch issues for recent group
     const recentIssues = await this.issueService.getIssuesByTextIds(recentTextIds);
 
+    // If there are no issues, return an error message
     if (!recentIssues || recentIssues.length === 0) {
       return { reviewData: 'Not enough recent issues to generate a review.' };
     }
@@ -105,6 +109,7 @@ export class ReviewService {
         return acc;
       }, {});
 
+      // For generating coherence/organization tips, use the first 2 sections for coherence and the first 3 sections for organization
       const sections = Object.keys(sectionTexts);
       if (sections.length >= 2) {
         coherenceSections.push(...sections.slice(0, 2).map((section, i) => `Section ${i + 1}\n${sectionTexts[section].join(' ')}`));
@@ -117,19 +122,23 @@ export class ReviewService {
     let coherence_tip = 'coherence_tip not generated';
     let organization_tip = 'organization_tip not generated';
 
+    // If there are enough sections, generate coherence/organization tips
     if (coherenceSections.length >= 2 || organizationSections.length >= 3) {
       let dailyRequestsLeft = await this.userService.getDailyRequestsLeft(userId);
 
+      // If the user has no daily requests left for 4o, return an error message
       if (dailyRequestsLeft <= 0 && review_model === '4o') {
         return { reviewData: 'No recent review available.' };
       }
 
+      // Generate coherence/organization tips using the Flask API
       const response = await lastValueFrom(this.httpService.post('http://flask-api:8031/review/generate', {
         model: review_model,
         coherence_text: coherenceSections.length >= 2 ? coherenceSections.join('\n\n') : 'coherence_tip not generated',
         organization_text: organizationSections.length >= 3 ? organizationSections.join('\n\n') : 'organization_tip not generated',
       }));
 
+      // Decrement the user's daily requests left
       if(review_model === '4o') {
         await this.userService.setDailyRequestsLeft(userId, dailyRequestsLeft - 1);
         dailyRequestsLeft -= 1;
@@ -155,6 +164,7 @@ export class ReviewService {
     return { reviewData };
   }
 
+  // Calculate the frequency of each category in a list of issues
   getCategoryFrequency(issues) {
     return issues.reduce((acc, issue) => {
       acc[issue.category] = (acc[issue.category] || 0) + 1;
@@ -162,10 +172,12 @@ export class ReviewService {
     }, {});
   }
 
+  // Get the top 3 categories by frequency
   getTopCategories(frequency) {
     return Object.keys(frequency).sort((a, b) => frequency[b] - frequency[a]).slice(0, 3);
   }
 
+  // Map categories to their respective types
   getCategoryTypeMap(issues) {
     return issues.reduce((acc, issue) => {
       if (!acc[issue.category]) {
@@ -175,10 +187,12 @@ export class ReviewService {
     }, {});
   }
 
+  // Calculate improvements by comparing recent with previous frequencies
   calculateImprovements(reviewData, recentGrammarVocabFrequency, previousGrammarVocabFrequency, recentOrgCohWritingFrequency, previousOrgCohWritingFrequency, recentGrammarVocabIssues, recentOrgCohWritingIssues) {
     const grammarVocabTypeMap = this.getCategoryTypeMap(recentGrammarVocabIssues);
     const orgCohWritingTypeMap = this.getCategoryTypeMap(recentOrgCohWritingIssues);
 
+    // Compare frequencies and add improvements to reviewData
     const compareFrequencies = (recentFreq, previousFreq, typeMap) => {
       Object.keys(previousFreq).forEach(category => {
         const prevFreq = previousFreq[category];
@@ -192,10 +206,12 @@ export class ReviewService {
       });
     };
 
+    // Compare frequencies for grammar_vocab and orgCohWriting
     compareFrequencies(recentGrammarVocabFrequency, previousGrammarVocabFrequency, grammarVocabTypeMap);
     compareFrequencies(recentOrgCohWritingFrequency, previousOrgCohWritingFrequency, orgCohWritingTypeMap);
   }
 
+  // Get the most recent review for a user
   async getRecentReview(userId: Types.ObjectId): Promise<any> {
     const recentReview = await this.reviewModel.findOne({ user_id: userId }).sort({ date_created: -1 }).exec();
     if (!recentReview) {

@@ -28,9 +28,11 @@ export class QuestionService {
     private readonly issueService: IssueService,
   ) {}
 
+  // Generate questions for a user
   async generateQuestions(userId: Types.ObjectId) {
     const submissions = await this.textService.findLastSubmissions(userId, 5);
 
+    // Store the text content for each section
     const sectionTexts = submissions.reduce((acc, sub) => {
         if (!acc[sub.section]) {
             acc[sub.section] = [];
@@ -42,9 +44,11 @@ export class QuestionService {
     const sections = Object.keys(sectionTexts);
     let combinedText = '';
 
-    // Determine question type
+    // Determine question type by requesting a suggestion from the Flask API
     const lastThreeSubmissions = submissions.slice(0, 3).map(sub => sub.content).join(' ');
     const suggestedQuestionType = await this.suggestQuestionType(lastThreeSubmissions);
+
+    // Check if the suggested question type is balanced and store it if it is
     const questionType = await this.selectQuestionType(suggestedQuestionType, userId);
 
     let textForQuestion = '';
@@ -81,6 +85,7 @@ export class QuestionService {
 
     console.log("Making request to flask-api for question generation");
 
+    // Make a request to the Flask API to generate the question
     const response = await lastValueFrom(this.httpService.post('http://flask-api:8031/question/generate', {
         user_id: userId,
         type: questionType,
@@ -92,19 +97,24 @@ export class QuestionService {
     return response.data;
   }
 
+  // Suggest a question type based on the last three submissions
   private async suggestQuestionType(lastThreeSubmissions: string): Promise<string> {
     console.log("Making request to flask-api for question type suggestion");
+
+    // Make a request to the Flask API to suggest a question type
     const response = await lastValueFrom(this.httpService.post('http://flask-api:8031/question/suggest-type', { lastThreeSubmissions }));
     const questionType = response.data.type;
     return this.questionTypes.includes(questionType) ? questionType : null;
   }
 
+  // Select a question type based on the current round robin index
   private async selectQuestionType(suggestedType: string, userId: Types.ObjectId): Promise<string> {
     if (suggestedType && await this.isBalanced(suggestedType)) {
         console.log(`Suggested question type ${suggestedType} is balanced`);
         return suggestedType;
     }
     
+    // Round robin through the question types
     while (true) {
       let questionType = this.questionTypes[this.currentQuestionIndex];
       this.currentQuestionIndex = (this.currentQuestionIndex + 1) % this.questionTypes.length;
@@ -121,6 +131,7 @@ export class QuestionService {
         }, {});
         const sections = Object.keys(sectionTexts);
 
+        // Skip coherence and organization if there are not enough sections
         if (sections.length < 2) {
           console.log(`Skipping ${questionType} due to insufficient sections`);
 
@@ -145,6 +156,7 @@ export class QuestionService {
     return typeCount ? typeCount.count <= average + threshold : true;
   }
 
+  // Update the count of generated questions for a specific question type
   private async updateQuestionCount(questionType: string): Promise<void> {
     await this.questionCountModel.findOneAndUpdate(
       { questionType },
@@ -153,6 +165,7 @@ export class QuestionService {
     );
   }
 
+  // Evaluate a user submitted academic sentence correction
   async evaluateAcademicSentence(originalSentence: string, correctedSentence: string) {
     const response = await lastValueFrom(this.httpService.post('http://flask-api:8031/question/academic_sentence_correction', {
       original_sentence: originalSentence,
@@ -162,6 +175,7 @@ export class QuestionService {
     return response.data;
   }
 
+  // Find a text with at least 3 grammar/vocab issues
   private async findTextWithIssues(userId: Types.ObjectId): Promise<string | null> {
     const issues = await this.issueService.getLastIssuesByType(userId, 10);
     const grammarVocabIssues = issues.filter(issue => issue.type === 'grammar_vocab');

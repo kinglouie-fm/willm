@@ -14,6 +14,7 @@ export class SessionService {
     private readonly userService: UserService
   ) {}
 
+  // Get the current session for a user
   async getCurrentSession(userId: string): Promise<Session> {
     const now = new Date();
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -24,6 +25,7 @@ export class SessionService {
       date_created: { $gte: startOfToday },
     });
 
+    // If there's no session, create a new one
     if (!session) {
       session = new this.sessionModel({
         user_id: new Types.ObjectId(userId),
@@ -39,6 +41,7 @@ export class SessionService {
     return session;
   }
 
+  // Get all sessions for a user
   async getSessionsByUserId(userId: string): Promise<Session[]> {
     const sessions = await this.sessionModel.find({ user_id: new Types.ObjectId(userId) }).sort({ date_created: -1 }).exec();
     return sessions;

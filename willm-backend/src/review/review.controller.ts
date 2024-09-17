@@ -7,6 +7,7 @@ import { Request, Response } from 'express';
 export class ReviewController {
   constructor(private readonly reviewService: ReviewService) {}
 
+  // Generate a review
   @UseGuards(JwtAuthGuard)
   @Post('generate')
   async generateReview(@Req() req: Request, @Res() res: Response, @Body() body: { reviewModel: string }) {
@@ -15,6 +16,7 @@ export class ReviewController {
     return res.status(200).json(reviewResult);
   }
 
+  // Get the most recent review
   @UseGuards(JwtAuthGuard)
   @Get('recent')
   async getRecentReview(@Req() req: Request, @Res() res: Response) {

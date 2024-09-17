@@ -11,6 +11,7 @@ export class QuestionController {
     private readonly textService: TextService,
   ) {}
 
+  // Generate questions for a user
   @UseGuards(JwtAuthGuard)
   @Post('generate')
   async generateQuestion(@Req() req: Request) {
@@ -19,33 +20,27 @@ export class QuestionController {
     // Check submission count
     const submissionCount = await this.textService.getSubmissionCount(userId);
 
+    // Only generate questions every 3 submissions
     if (submissionCount % 3 !== 0) {
       return {
         message: "Not generating questions for this submission",
       };
     }
 
+    // Find the last 5 submissions
     const submissions = await this.textService.findLastSubmissions(userId, 5);
 
+    // If there are not enough submissions, return an error message
     if (submissions.length < 2) {
       return {
         message: 'Not enough submissions to generate questions',
       }
     }
 
+    // Generate questions
     const questions = await this.questionService.generateQuestions(userId);
     return questions;
   }
-
-  // @UseGuards(JwtAuthGuard)
-  // @Post('academic_sentence_correction')
-  // async academicSentenceCorrection(
-  //   @Body('original_sentence') originalSentence: string,
-  //   @Body('corrected_sentence') correctedSentence: string,
-  // ) {
-  //   const evaluation = await this.questionService.evaluateAcademicSentence(originalSentence, correctedSentence);
-  //   return evaluation;
-  // }
 
   // For testing purposes only
   @UseGuards(JwtAuthGuard)

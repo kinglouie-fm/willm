@@ -9,6 +9,7 @@ import { Types } from 'mongoose';
 import { TextService } from '../text/text.service';
 import { ScoreService } from '../score/score.service';
 
+// This controller is responsible for handling correction requests
 @Controller('correct')
 export class CorrectionController {
   private readonly maxLength = 500;
@@ -35,11 +36,14 @@ export class CorrectionController {
       return res.status(400).send("Text is too long");
     }
 
+    // Check if the user has any daily requests left for gpt-4o
     if (dailyRequestsLeft <= 0 && body.correctionModel === '4o') {
       return res.status(403).send({ message: "No more gpt-4o requests left for today" });
     }
     
     console.log("Handling correction request");
+
+    // Perform initial correction (grammar, vocabulary)
     const initialResult = await this.correctionService.callPythonService(body.text, body.section, 'initial', body.language, body.correctionModel);
     const correctedText = initialResult.correctedText;
 
@@ -49,6 +53,7 @@ export class CorrectionController {
     const categories = initialResult.categories || [];
     const contexts = initialResult.contexts || [];
 
+    // Decrement dailyRequestsLeft if 4o model is used
     if(body.correctionModel === '4o') {
       await this.userService.setDailyRequestsLeft(userId, dailyRequestsLeft - 1);
       dailyRequestsLeft -= 1;
@@ -72,12 +77,15 @@ export class CorrectionController {
     // Generate scores for the text and save them with the text_id
     const textId = text._id as Types.ObjectId;
 
+    // Check if the user has any daily requests left for gpt-4o
     if (dailyRequestsLeft <= 0 && body.scoreModel === '4o') {
       return res.status(403).send({ message: "No more gpt-4o requests left for today" });
     }
 
+    // Generate scores for the text
     const scoreData = await this.scoreService.generateScore(body.text, userId, body.section, textId, body.scoreModel);
 
+    // Decrement dailyRequestsLeft if 4o model is used
     if(body.scoreModel === '4o') {
       await this.userService.setDailyRequestsLeft(userId, dailyRequestsLeft - 1);
       dailyRequestsLeft -= 1;
@@ -100,7 +108,6 @@ export class CorrectionController {
       });
       session.issues.push(issue._id as Types.ObjectId);
     }
-
     await session.save();
 
     // Perform further correction if correctedText is available
@@ -109,12 +116,15 @@ export class CorrectionController {
       try {
         console.log("Performing further correction");
 
+        // Check if the user has any daily requests left for gpt-4o
         if (dailyRequestsLeft <= 0 && body.furtherCorrectionModel === '4o') {
           return res.status(403).send({ message: "No more gpt-4o requests left for today" });
         }
 
+        // Perform further correction (organization, coherence, writing style)
         furtherCorrectionResult = await this.correctionService.callPythonService(correctedText, body.section, 'further', body.language, body.furtherCorrectionModel);
 
+        // Decrement dailyRequestsLeft if 4o model is used
         if(body.furtherCorrectionModel === '4o') {
           await this.userService.setDailyRequestsLeft(userId, dailyRequestsLeft - 1);
           dailyRequestsLeft -= 1;
@@ -122,6 +132,7 @@ export class CorrectionController {
 
         const { organization, coherence, writingStyle } = furtherCorrectionResult;
 
+        // Combine mistakes and corrections from all three categories
         const combinedMistakes = [
           ...(organization?.mistakes ?? []).map((mistake, i) => organization.corrections && organization.corrections[i] ? ({ mistake, correction: organization.corrections[i], type: 'organization', category: organization.categories[i] }) : null),
           ...(coherence?.mistakes ?? []).map((mistake, i) => coherence.corrections && coherence.corrections[i] ? ({ mistake, correction: coherence.corrections[i], type: 'coherence', category: coherence.categories[i] }) : null),
@@ -145,7 +156,6 @@ export class CorrectionController {
           });
           session.issues.push(issue._id as Types.ObjectId);
         }
-
         await session.save();
 
       } catch (error) {

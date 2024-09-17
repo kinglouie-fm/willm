@@ -11,6 +11,7 @@ export class IssueService {
     @InjectModel(User.name) private userModel: Model<User>,
   ) {}
 
+  // Add an issue to the database
   async addIssue(userId: string, issueData: any): Promise<Issue> {
     const issue = new this.issueModel({
       ...issueData,
@@ -18,19 +19,20 @@ export class IssueService {
     });
     const savedIssue = await issue.save();
 
-    // await this.userModel.findByIdAndUpdate(userId, { $push: { issues: savedIssue._id } });
-
     return savedIssue;
   }
 
+  // Get all issues by sessions for a user
   async getIssuesBySessions(sessionIds: Types.ObjectId[]): Promise<Issue[]> {
     return this.issueModel.find({ session: { $in: sessionIds } }).exec();
   }
 
+  // Get all issues by ids for a user
   async getIssuesByTextIds(textIds: Types.ObjectId[]): Promise<Issue[]> {
     return this.issueModel.find({ text: { $in: textIds } }).exec();
   }
 
+  // Get all issues by user
   async getLastIssuesByType(userId: Types.ObjectId, limit: number): Promise<Issue[]> {
     const types = ['grammar_vocab', 'organization', 'coherence', 'writing_style'];
     const issues = await Promise.all(

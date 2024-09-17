@@ -15,7 +15,7 @@ import { GamificationService } from '../gamification/gamification.service';
 
 @Injectable()
 export class QuizService {
-  private readonly intervals = [0, 2, 4, 5]; // days for quizzes after 1st, 2nd, 3rd, and 4th quiz
+  private readonly intervals = [0, 2, 4, 5]; // Intervals in days for quiz scheduling
 
   constructor(
     @InjectModel(Quiz.name) private quizModel: Model<Quiz>,
@@ -29,6 +29,7 @@ export class QuizService {
     private readonly httpService: HttpService,
   ) {}
 
+  // Check if a quiz is due today (after user logged in) and adjust the next quiz date.
   async handleLoginQuiz(user: User): Promise<{ message: string, nextQuizDate: Date | null, quizDueToday: boolean }> {
     const sessions = await this.sessionService.getSessionsByUserId(user._id.toString());
     const distinctDates = new Set(sessions.map(session => {
@@ -36,16 +37,18 @@ export class QuizService {
       return date.toISOString().split('T')[0]; // Keep only the date part
     }));
 
+    // Check if there are at least 3 distinct dates/sessions for a user
     if (distinctDates.size >= 3) {
       const quizSchedule = await this.quizScheduleModel.findOne({ user_id: user._id });
       const currentDate = new Date();
       const currentDateStr = currentDate.toISOString().split('T')[0];
 
+      // If no quiz schedule exists, generate the first quiz and set the next quiz date to today
       if (!quizSchedule) {
-        // Generate the first quiz and set the next quiz date to today
         await this.setNextQuizDate(user._id as Types.ObjectId, new Date(), 0);
         return { message: 'First quiz scheduled', nextQuizDate: new Date(), quizDueToday: true };
       } else {
+        // Check if the next quiz date is in the past
         let nextQuizDateStr = quizSchedule.next_quiz_date.toISOString().split('T')[0];
 
         // If the next quiz date is in the past, mark the quiz as missed and reschedule
@@ -68,6 +71,7 @@ export class QuizService {
     }
   }
 
+  // Check if a quiz is due today and generate it if needed
   async checkAndGenerateQuizIfDue(userId: Types.ObjectId): Promise<{ message: string, nextQuizDate: Date | null, quizDueToday: boolean }> {
     const quizSchedule = await this.quizScheduleModel.findOne({ user_id: userId });
     const currentDate = new Date();
@@ -89,16 +93,19 @@ export class QuizService {
         }
       });
 
+      // If a quiz already exists for today, check if all questions are answered
       if (existingQuiz) {
-        // Check if all questions are answered
         const allAnswered = existingQuiz.questions.every(question => question.answered);
+        // If all questions are answered, mark the quiz as completed
         if (allAnswered) {
           await this.markQuizAsCompleted(userId, existingQuiz.quiz_id);
           return { message: 'No quiz due today', nextQuizDate: quizSchedule.next_quiz_date, quizDueToday: false };
         } else {
+          // If not all questions are answered, return the existing quiz
           return { message: 'Quiz already exists for today', nextQuizDate: quizSchedule.next_quiz_date, quizDueToday: true };
         }
       } else {
+        // If no quiz exists for today, generate a new quiz
         await this.generateQuiz(userId);
         return { message: 'Quiz generated', nextQuizDate: quizSchedule.next_quiz_date, quizDueToday: true };
       }
@@ -107,6 +114,7 @@ export class QuizService {
     }
   }
 
+  // Get today's quiz
   async getTodaysQuiz(userId: Types.ObjectId): Promise<any> {
     const quizSchedule = await this.quizScheduleModel.findOne({ user_id: userId });
     const currentDate = new Date();
@@ -118,8 +126,10 @@ export class QuizService {
 
     const nextQuizDateStr = quizSchedule.next_quiz_date.toISOString().split('T')[0];
 
+    // Check if the next quiz date is today
     if (currentDateStr === nextQuizDateStr) {
       const quiz = await this.quizModel.findOne({ user_id: userId, date_created: { $gte: new Date(currentDateStr) } });
+      // If a quiz exists for today, return it without the correct answers
       if (quiz) {
         const quizWithoutAnswers = {
           ...quiz.toObject(),
@@ -136,6 +146,7 @@ export class QuizService {
     }
   }
 
+  // Generate a quiz for a user
   async generateQuiz(userId: Types.ObjectId): Promise<any> {
     // Get the last 3 text IDs
     const textIds = await this.textService.getLastTextIds(userId, 3);
@@ -212,13 +223,17 @@ export class QuizService {
     return { quiz };
   }
 
+  // Set the next quiz date for a user
   async setNextQuizDate(userId: Types.ObjectId, date: Date, intervalIndex: number): Promise<void> {
     const existingSchedule = await this.quizScheduleModel.findOne({ user_id: userId });
+
+    // If a schedule already exists, update it
     if (existingSchedule) {
       existingSchedule.next_quiz_date = date;
       existingSchedule.current_interval_index = intervalIndex;
       await existingSchedule.save();
     } else {
+      // If no schedule exists, create a new one
       const newSchedule = new this.quizScheduleModel({
         user_id: userId,
         next_quiz_date: date,
@@ -229,6 +244,7 @@ export class QuizService {
     await this.incrementTotalQuizzes(userId);
   }
 
+  // Increment the total quizzes count for a user
   async incrementTotalQuizzes(userId: Types.ObjectId): Promise<void> {
     await this.quizScheduleModel.findOneAndUpdate(
       { user_id: userId },
@@ -237,6 +253,7 @@ export class QuizService {
     );
   }
 
+  // Increment the completed quizzes count for a user
   async incrementCompletedQuizzes(userId: Types.ObjectId): Promise<void> {
     await this.quizScheduleModel.findOneAndUpdate(
       { user_id: userId },
@@ -245,6 +262,7 @@ export class QuizService {
     );
   }
 
+  // Create a query for semantic similarity search
   createQueryFromData(issues, recentReview, scores): string {
     let query = 'Issues: ';
     issues.forEach(issue => {
@@ -265,6 +283,7 @@ export class QuizService {
     return query;
   }
 
+  // Submit an answer for a question and return the result
   async submitQuizAnswer(userId: Types.ObjectId, quizId: string, questionId: string, userAnswer: string): Promise<{ question: any, isCorrect: boolean, correctAnswer: any, message?: string }> {
     const quiz = await this.quizModel.findOne({ user_id: userId, quiz_id: quizId });
 
@@ -272,25 +291,31 @@ export class QuizService {
       throw new Error('Quiz not found');
     }
 
+    // Find the question in the quiz
     const question = quiz.questions.find(q => q.question_id === questionId);
 
     if (!question) {
       throw new Error('Question not found');
     }
 
+    // Check if the question is already answered
     if (question.answered === true) {
       return { question, isCorrect: question.result, correctAnswer: question.correct_answer, message: 'Question already answered' };
     }
 
+    // Update the question with the user's answer and check if it is correct
     question.user_answer = userAnswer;
     question.answered = true;
+    // Check the answer based on the question type
     if (question.question_type === 'academic_sentence') {
+      // Call the academic sentence correction service
       const response = await lastValueFrom(this.httpService.post('http://flask-api:8031/question/academic_sentence_correction', { 
         original_sentence: question.sentence,
         corrected_sentence: userAnswer
       }));
       const result = response.data;
 
+      // Check the result and set the question as correct or incorrect
       if (result.answer.includes('Not Good')) {
         question.result = false;
       } else if (result.answer.includes('Good')) {
@@ -299,6 +324,7 @@ export class QuizService {
         throw new Error('Unexpected response from academic sentence correction service');
       }
     } else if (['synonyms', 'argument_strengthening', 'organization', 'coherence'].includes(question.question_type)) {
+      // Check if the first character of the user answer matches the correct answer
       const userAnswerChar = userAnswer.charAt(0);
       const correctAnswerChar = question.correct_answer.charAt(0);
 
@@ -313,6 +339,7 @@ export class QuizService {
     
     await quiz.save();
 
+    // Handle gamification for correct answers
     if (question.result) {
       await this.gamificationService.handleCorrectAnswer(userId);
     }
@@ -320,6 +347,7 @@ export class QuizService {
     return { question, isCorrect: question.result, correctAnswer: question.correct_answer };
   }
 
+  // Explain the answer for a question
   async explainAnswer(userId: Types.ObjectId, quizId: string, questionId: string, userAnswer: string) {
     const quiz = await this.quizModel.findOne({ user_id: userId, quiz_id: quizId });
 
@@ -333,6 +361,7 @@ export class QuizService {
       throw new Error('Question not found');
     }
 
+    // Call the explanation service
     const response = await lastValueFrom(this.httpService.post('http://flask-api:8031/question/explain-answer',{
         question: question,
         options: question.options || [],
@@ -347,6 +376,7 @@ export class QuizService {
     return response.data;
   }
 
+  // Mark a quiz as skipped and update the next quiz date
   async markQuizAsSkipped(userId: Types.ObjectId, quizId: string): Promise<{ message: string, nextQuizDate: Date }> {
     const quiz = await this.quizModel.findOne({ user_id: userId, quiz_id: quizId });
 
@@ -367,6 +397,7 @@ export class QuizService {
     return { message: 'Quiz marked as skipped', nextQuizDate };
   }
 
+  // Mark a quiz as missed and update the next quiz date
   async markQuizAsMissed(userId: Types.ObjectId): Promise<{ message: string, nextQuizDate: Date }> {
     const quizSchedule = await this.quizScheduleModel.findOne({ user_id: userId });
     const newIntervalIndex = Math.max(quizSchedule.current_interval_index - 1, 0);
@@ -378,6 +409,7 @@ export class QuizService {
     return { message: 'Quiz marked as missed', nextQuizDate };
   }
 
+  // Mark a quiz as completed and update the next quiz date
   async markQuizAsCompleted(userId: Types.ObjectId, quizId: string): Promise<{ message: string, score: number, nextQuizDate: Date }> {
     const quiz = await this.quizModel.findOne({ user_id: userId, quiz_id: quizId });
 
@@ -404,12 +436,14 @@ export class QuizService {
     return { message: `Quiz marked as completed. Score: ${quiz.score}`, score: quiz.score, nextQuizDate };
   }
 
+  // Get the interval for the current date
   getIntervalForCurrentDate(nextQuizDate: Date): number {
     const currentDate = new Date();
     const daysDiff = Math.ceil((nextQuizDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24));
     return this.intervals.find(interval => interval === daysDiff) || 0;
   }
 
+  // Calculate the score for a quiz based on the number of correct answers on a scale of 1-3
   async calculateQuizScore(quizId: string): Promise<number> {
     const quiz = await this.quizModel.findOne({ quiz_id: quizId });
 
@@ -428,6 +462,8 @@ export class QuizService {
     }
   }
 
+
+  // Get the last quiz for a user
   async getLastQuizForUser(userId: Types.ObjectId): Promise<Quiz> {
     return this.quizModel.findOne({ user_id: userId }).sort({ date_created: -1 }).exec();
   }

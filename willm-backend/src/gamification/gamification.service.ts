@@ -6,6 +6,7 @@ import { User } from '../user/schema/user.schema';
 
 @Injectable()
 export class GamificationService {
+  // Configuration for XP allocation, achievements, badges, and levels
   private readonly config = {
     xp_allocation: {
       daily_login: 50,
@@ -80,6 +81,7 @@ export class GamificationService {
 
   constructor(@InjectModel(User.name) private userModel: Model<User>) {}
 
+  // Update gamification status of user when user logs in
   async handleLogin(userId: Types.ObjectId): Promise<void> {
     const user = await this.userModel.findById(userId);
     const now = new Date();
@@ -92,6 +94,7 @@ export class GamificationService {
       const lastLoginDateOnly = new Date(lastLoginDate.getFullYear(), lastLoginDate.getMonth(), lastLoginDate.getDate()).getTime();
       const diffInDays = (nowDate - lastLoginDateOnly) / (1000 * 60 * 60 * 24);
 
+      // Update dailystreak (and weekly streak if applicable)
       if (diffInDays === 1) {
           user.daily_streak += 1;
 
@@ -104,6 +107,7 @@ export class GamificationService {
           user.weekly_streak = 0;
       }
 
+      // Update weekly streak
       if (user.daily_streak % 7 === 0) {
           user.weekly_streak += 1;
           // Update max weekly streaks
@@ -112,9 +116,11 @@ export class GamificationService {
           }
       }
 
+      // Mark fields as modified for saving in the database
       user.markModified('achievements.max_consecutive_days');
       user.markModified('achievements.max_weekly_streaks');
 
+      // Update last login date and grant XP
       user.last_login = now;
       user.xp += this.getXPForAction('daily_login');
       await this.checkAchievementsAndBadges(user);
@@ -122,9 +128,11 @@ export class GamificationService {
     }
   }
 
+  // Update gamification status of user when user completes a quiz
   async handleQuizCompletion(userId: Types.ObjectId, score: number): Promise<void> {
     const user = await this.userModel.findById(userId);
 
+    // Grant XP for getting a max score in quiz
     if(score === 5) {
       user.xp += this.getXPForAction('max_score_bonus');
     }
@@ -132,12 +140,14 @@ export class GamificationService {
     // Update achievements
     user.achievements.quizzes_completed = (user.achievements.quizzes_completed || 0) + 1;
 
+    // Mark quizzes_completed as modified for saving in the database
     user.markModified('achievements.quizzes_completed');
 
     await this.checkAchievementsAndBadges(user);
     await user.save();
   }
 
+  // Update gamification status of user when user answers a question correctly
   async handleCorrectAnswer(userId: Types.ObjectId): Promise<void> {
     const user = await this.userModel.findById(userId);
 
@@ -147,22 +157,26 @@ export class GamificationService {
     // Grant XP for a correct answer
     user.xp += this.getXPForAction('correct_answer');
 
+    // Mark correct_answers as modified for saving in the database
     user.markModified('achievements.correct_answers');
 
     await this.checkAchievementsAndBadges(user);
     await user.save();
   }
 
+  // Get XP for a specific action from the configuration
   getXPForAction(action: string): number {
     return this.config.xp_allocation[action] || 0;
   }
 
+  // Check achievements and badges based on the user's progress
   async checkAchievementsAndBadges(user: User): Promise<void> {
     // Check achievements
     for (const [key, stages] of Object.entries(this.config.xp_allocation.achievements)) {
       const userProgress = user.achievements[key] || 0;
       const rewardedStages = user.rewarded_achievements[key] || [];
 
+      // Check each stage of the achievement
       for (const [stage, xp] of Object.entries(stages)) {
         const stageNumber = Number(stage);
         console.log("Checking achievement", key, "stage", stage, "userProgress", userProgress, "rewardedStages", rewardedStages);
@@ -209,7 +223,7 @@ export class GamificationService {
     }
     user.level = newLevel;
 
-    // Mark fields as modified if needed
+    // Mark fields as modified if applicable
     if (badgesModified) {
       user.markModified('badges');
     }
@@ -218,6 +232,7 @@ export class GamificationService {
     user.markModified('rewarded_achievements');
   }
 
+  // Reset daily and weekly streaks for a user
   async resetStreaks(userId: Types.ObjectId): Promise<void> {
     const user = await this.userModel.findById(userId);
 

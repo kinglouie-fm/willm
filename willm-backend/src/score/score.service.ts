@@ -12,6 +12,7 @@ export class ScoreService {
     private readonly httpService: HttpService,
   ) {}
 
+  // Generate scores for a text
   async generateScore(text: string, userId: string, section: string, textId: Types.ObjectId, scoreModel: string): Promise<any> {
     const response = await lastValueFrom(this.httpService.post("http://flask-api:8031/generate-scores", { text, scoreModel }));
     const scoreData = response.data;
@@ -37,24 +38,29 @@ export class ScoreService {
     return scoreData;
   }
 
+  // Find scores for a specific user
   async findScoresByUserId(userId: string): Promise<Score[]> {
     return this.scoreModel.find({ user_id: userId }).exec();
   }
 
+  // Get unique sections for a user (Not used at the moment)
   async getUniqueSections(userId: string): Promise<string[]> {
     try {
       const allSections = await this.scoreModel.distinct('section', { user_id: userId }).exec();
       const validSections = [];
 
+      // Check if there are at least two scores for each section
       for (const section of allSections) {
         const latestScore = await this.scoreModel.findOne({ user_id: userId, section: section }).sort({ date_created: -1 }).exec();
 
+        // Check if the latest score is at least 5 days old
         if (latestScore) {
           const dateThreshold = new Date(latestScore.date_created);
           dateThreshold.setDate(dateThreshold.getDate() - 5);
 
           const olderScore = await this.scoreModel.findOne({ user_id: userId, section: section, date_created: { $lt: dateThreshold } }).sort({ date_created: -1 }).exec();
 
+          // If there is an older score, add the section to the list of valid sections
           if (olderScore) {
             validSections.push(section);
           }
@@ -68,6 +74,7 @@ export class ScoreService {
     }
   }
 
+  // Compare scores for a specific section
   async compareScores(userId: string, section: string): Promise<any> {
     const latestScore = await this.findLatestScoreBySection(userId, section);
 
@@ -75,16 +82,21 @@ export class ScoreService {
       return { message: "No scores available for the selected section." };
     }
 
+    // Check if the latest score is at least 5 days old
     const dateThreshold = new Date(latestScore.date_created);
     dateThreshold.setDate(dateThreshold.getDate() - 5);
 
+    // Find older scores for comparison
     const olderScores = await this.findOlderScoresBySection(userId, section, dateThreshold);
 
     if (!olderScores.length) {
       return { message: "No older scores available for comparison. Please try again later." };
     }
  
+    // Calculate median score for older scores
     const medianOlderScore = this.calculateMedianScore(olderScores);
+
+    // Calculate improvement for each score category
     const comparison = {
       grammar: this.calculateImprovement(latestScore.grammar, medianOlderScore.grammar),
       vocabulary: this.calculateImprovement(latestScore.vocabulary, medianOlderScore.vocabulary),
@@ -93,29 +105,35 @@ export class ScoreService {
       writing_style: this.calculateImprovement(latestScore.writing_style, medianOlderScore.writing_style),
     };
 
+    // Calculate days difference between the latest score and the oldest score used for comparison
     const daysDifference = this.calculateDaysDifference(latestScore.date_created, olderScores[olderScores.length - 1].date_created);
 
     return { latestScore, comparison, daysDifference, medianOlderScore };
   }
 
+  // Find the latest score for a specific section
   private async findLatestScoreBySection(userId: string, section: string): Promise<Score> {
     return this.scoreModel.findOne({ user_id: userId, section: section }).sort({ date_created: -1 }).exec();
   }
 
+  // Find older scores for a specific section
   private async findOlderScoresBySection(userId: string, section: string, date: Date): Promise<Score[]> {
     return this.scoreModel.find({ user_id: userId, section: section, date_created: { $lt: date } }).sort({ date_created: -1 }).exec();
   }
 
+  // Calculate improvement between two scores
   private calculateImprovement(latest: number, older: number): number {
     return ((latest - older) / older);
   }
 
+  // Calculate days difference between two dates
   private calculateDaysDifference(date1: Date, date2: Date): number {
     const diffTime = Math.abs(date2.getTime() - date1.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
   }
 
+  // Calculate median score for a list of scores
   private calculateMedianScore(scores: Score[]): any {
     const scoresToCalculate = scores.map(score => ({
       grammar: score.grammar,
@@ -125,6 +143,7 @@ export class ScoreService {
       writing_style: score.writing_style,
     }));
 
+    // Calculate median for a list of numbers
     const median = (arr: number[]): number => {
       const sorted = arr.slice().sort((a, b) => a - b);
       const mid = Math.floor(sorted.length / 2);
@@ -140,6 +159,7 @@ export class ScoreService {
     };
   }
 
+  // Find scores for a list of text ids
   async findScoresByTextIds(textIds: Types.ObjectId[]): Promise<Score[]> {
     return this.scoreModel.find({ text_id: { $in: textIds } }).exec();
   }

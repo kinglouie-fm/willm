@@ -6,6 +6,8 @@ import { lastValueFrom } from 'rxjs';
 export class CorrectionService {
   constructor(private readonly httpService: HttpService) {}
 
+  // Call the Python service to handle the correction based on the phase (initial or further)
+  // TODO: Put logic from correction.controller.ts here
   async callPythonService(text: string, section: string, phase: string, language: string, model: string) {
     let apiUrl;
     if (phase === 'initial') {

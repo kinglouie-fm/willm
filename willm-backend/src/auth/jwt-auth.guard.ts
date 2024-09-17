@@ -6,6 +6,7 @@ import { UserService } from '../user/user.service';
 export class JwtAuthGuard implements CanActivate {
   constructor(private readonly userService: UserService) {}
 
+  // determines whether the current request is allowed to proceed
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
     const token = request.cookies['auth_token'];

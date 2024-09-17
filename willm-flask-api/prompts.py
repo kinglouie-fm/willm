@@ -88,28 +88,6 @@ Don't add anything else to the output.
 Now, correct the following submitted writing: {text}
 """
 
-SYSTEM_PROMPT_CHECK_RESPONSE_FROM_MULTI = """
-Check the provided input for format. If correct, return "nothing to change." Otherwise, reformat it to match the expected structure.
-"""
-
-CHECK_RESPONSE_FROM_MULTI = """
-Validate and reformat the input. If the text is in the correct format, return "nothing to change." If not, reformat it as follows:
-
-Expected Format:
-
-M: Incorrect word/segment
-C: Corrected word/segment
-E: Explanation with rules
-T: Error category
-X: One word before and after the mistake
-
-Each set (M, C, E, T, X) should be separated by a blank line.
-Do not wrap each (M, C, E, T, X) with quotation marks nor brackets.
-
-Check the following text for format consistency. If correct, return "nothing to change." If not, reformat it accordingly: 
-{text_to_be_checked}
-"""
-
 SYSTEM_PROMPT_2 = """
 You are an assistant designed to help improve academic writing by providing detailed feedback on organization, coherence, and writing style. The user will submit a piece of writing, and your task is to identify weaknesses and provide improvements. Categorize each mistake into one of the specified categories. Provide the explanations in {language}.
 """
@@ -183,150 +161,6 @@ Don't add anything else to the output.
 
 Now, correct the following submitted writing: {text}
 """
-
-# ORGANIZATION_PROMPT = """
-# Identify problems with the logical flow of ideas, such as sudden shifts in topic, redundancy, or deviations from the main topic.
-# Use formal English only.
-# Tend to use common and easy-to-understand words or phrases.
-# Avoid wordy sentences.
-# Avoid using the same words or phrases repeatedly.
-# Ignore grammar or vocabulary mistakes.
-# Specifically focus on the section {section}.
-
-# Categorize each mistake into one of the following categories:
-# - disorganized ideas
-# - poor paragraph structure
-
-# For each mistake, you should provide the following:
-
-# 1. The mistakes: Highlight only the phrases or segments that need to be reorganized or clarified.
-# 2. The corrections: Provide the corrected organization.
-# 3. The explanations: Explain why the organization is problematic and how to improve it.
-# 4. The category: Specify the category of the mistake.
-
-# Output the feedback in the following structure, using a triple format:
-
-# M: [Highlight only the incorrect phrase/segment]
-# C: [Provide the corrected phrase/segment]
-# E: [Explain why the organization is problematic and how to improve it]
-# T: [Category]
-
-# Don't use bullet points or any other sort of list. Separate each set of mistakes/corrections/explanations with a blank line.
-
-# If the submitted writing is good as it is, simply state: "The submitted writing is fine."
-
-# Don't add anything else to the output.
-
-# Now, correct the following submitted writing: {text}
-# """
-
-# COHERENCE_PROMPT = """
-# Point out issues that affect the overall coherence of the writing, such as unclear references or lack of logical connections between sentences or paragraphs.
-# Use formal English only.
-# Tend to use common and easy-to-understand words or phrases.
-# Avoid wordy sentences.
-# Avoid trivial statements.
-# Avoid using the same words or phrases repeatedly.
-# Ignore grammar or vocabulary mistakes.
-# Specifically focus on the section {section}.
-
-# Categorize each mistake into one of the following categories:
-# - irrelevant content
-# - poor logical flow
-# - poor transitions
-# - repetitive information
-
-# For each mistake, you should provide the following:
-
-# 1. The mistakes: Highlight the specific parts causing the incoherence.
-# 2. The corrections: Provide the corrected coherence improvement.
-# 3. The explanations: Explain why the coherence is problematic and how to improve it.
-# 4. The category: Specify the category of the mistake.
-
-# Output the feedback in the following structure, using a triple format:
-
-# M: [Highlight only the incorrect phrase/segment]
-# C: [Provide the corrected phrase/segment]
-# E: [Explain why the coherence is problematic and how to improve it]
-# T: [Category]
-
-# Don't use bullet points or any other sort of list. Separate each set of mistakes/corrections/explanations with a blank line.
-
-# If the submitted writing is good as it is, simply state: "The submitted writing is fine."
-
-# Don't add anything else to the output.
-
-# Now, correct the following submitted writing: {text}
-# """
-
-# WRITING_STYLE_PROMPT = """
-# Suggest improvements related to writing style, including the use of active/passive voice, formal tone, clarity, and conciseness. Highlight only the words or phrases that need stylistic improvement and explain why the suggested style is preferable.
-# Use formal English only.
-# Tend to use common and easy-to-understand words or phrases.
-# Avoid wordy sentences.
-# Avoid using the same words or phrases repeatedly.
-# Ignore grammar or vocabulary mistakes.
-# Specifically focus on the section {section}.
-
-# Categorize each mistake into one of the following categories:
-# - formal tone missing
-# - missing precision and clarity
-# - passive voice overuse
-
-# For each mistake, you should provide the following:
-
-# 1. The mistakes: Highlight only the words or phrases that need stylistic improvement.
-# 2. The corrections: Provide the corrected stylistic change.
-# 3. The explanations: Explain why the writing style is problematic and how to improve it.
-# 4. The category: Specify the category of the mistake.
-
-# Output the feedback in the following structure, using a triple format:
-
-# M: [Highlight only the incorrect phrase/segment]
-# C: [Provide the corrected phrase/segment]
-# E: [Explain why the writing style is problematic and how to improve it]
-# T: [Category]
-
-# Don't use bullet points or any other sort of list. Separate each set of mistakes/corrections/explanations with a blank line.
-
-# If the submitted writing is good as it is, simply state: "The submitted writing is fine."
-
-# Don't add anything else to the output.
-
-# Now, correct the following submitted writing: {text}
-# """
-
-# SYSTEM_PROMPT_3="""
-# You are an assistant designed to give general or detailed improvements. Your job is to identify improvements that the user made in their writing over time or within a specific section. You will be provided with a list of issues that were present in the writing, and you need to generate improvements.
-# """
-
-# GENERAL_IMPROVEMENT = """
-# The following issues are listed in chronological order from oldest to newest:
-# - {issues}
-
-# Generate improvements highlighting:
-# 1. Grammar and Vocabulary Improvements
-# 2. Organization and Coherence
-# 3. Writing Style
-
-# The improvements should include:
-# - Frequency and types of errors.
-# - Reductions in specific error types over sessions.
-# - Changes in the structure and flow of sections.
-# - Improvements in style, such as varied sentence structures and tone.
-# """
-
-# DETAILED_IMPROVEMENTS = """
-# The following issues are listed in chronological order from oldest to newest for section {section_name}:
-# - {issues}
-
-# Generate detailed improvements highlighting:
-# 1. Grammar and Vocabulary Improvements
-# 2. Organization and Coherence
-# 3. Writing Style
-
-# The improvements should compare errors across sessions and highlight specific improvements made in this section.
-# """
 
 SYSTEM_PROMPT_4 = """
 You are an assistant designed to evaluate academic writing. Your task is to assess the provided text and assign scores in five categories: grammar, vocabulary, organization, coherence, and writing style. Use the criteria based on IELTS, TOEFL, and PTE scoring rubrics. The scores should range from 1 to 9, with 9 being the highest proficiency level. Return the scores in the following format and no other:
@@ -487,19 +321,6 @@ Argument: [The argument that needs to be strengthened]
 Options: [The options enumerated with A, B, C, D, E]
 Answer: [The correct option]
 """
-
-# PEER_REVIEW_PROMPT = """
-# I will provide you with a text that includes a submission from a user. Identify a section in the submission that could benefit from peer review feedback and generate a multiple choice question based on this section. Provide the section of the academic text and five options for feedback, with only one correct feedback option.
-
-# Text:
-# {text}
-
-# Output format:
-# Type: peer_review
-# Question: [The section]
-# Options: [The options enumerated with A, B, C, D, E]
-# Answer: [The correct option]
-# """
 
 ORGANIZATION_PROMPT = """
 Given the provided text which includes two excerpts from sections (Introduction, Literature Review etc.) of a user his academic paper, create one multiple-choice sentence completion question to test the user's understanding of logical progression in academic writing. 

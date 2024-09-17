@@ -20,30 +20,35 @@ app = Flask(__name__)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Load environment variables
 azure_openai_api_key = os.getenv("AZURE_OPENAI_API_KEY")
 azure_openai_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
 deployment_gpt35 = os.getenv("DEPLOYMENT_NAME_GPT35")
 deployment_gpt4o = os.getenv("DEPLOYMENT_NAME_GPT4o")
+
+# Print environment variables for debugging
 print(azure_openai_api_key, azure_openai_endpoint, deployment_gpt35, deployment_gpt4o)
 
+# Initialize the asynchronous Azure OpenAI client
 async_client = AsyncAzureOpenAI(
     api_key=azure_openai_api_key,  
     api_version="2024-02-01",
     azure_endpoint = azure_openai_endpoint
 )
 
+# Initialize synchronous the Azure OpenAI client
 client = AzureOpenAI(
     api_key=azure_openai_api_key,
     api_version="2024-02-01",
     azure_endpoint = azure_openai_endpoint
 )
 
-# openai.api_key = os.getenv('FLASK_API_KEY')
-
+# Split text into sentences
 def split_into_sentences(text):
     sentences = re.split(r'(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?)\s', text)
     return sentences
 
+# Format prompt and fetch asynchronous response from Azure OpenAI
 async def fetch_openai_response_async(system_prompt_template, prompt_template, data, section=None, language='English', model='3.5-turbo-1106'):
     system_prompt = system_prompt_template.format(language=language)
     prompt = prompt_template.format(text=data, section=section, language=language)
@@ -52,6 +57,7 @@ async def fetch_openai_response_async(system_prompt_template, prompt_template, d
 
     deployment = deployment_gpt35 if model == '3.5-turbo-1106' else deployment_gpt4o
 
+    # Call the asynchronous function to fetch the response
     response = await async_client.chat.completions.create(
         model=deployment,
         messages=[
@@ -63,6 +69,7 @@ async def fetch_openai_response_async(system_prompt_template, prompt_template, d
 
     return response.choices[0].message.content
 
+# Format prompt and fetch synchronous response from Azure OpenAI
 def fetch_openai_response_sync(system_prompt_template, prompt_template, data, section=None, language='English', model='3.5-turbo-1106'):
     system_prompt = system_prompt_template.format(language=language)
     prompt = prompt_template.format(text=data, section=section, language=language)
@@ -71,6 +78,7 @@ def fetch_openai_response_sync(system_prompt_template, prompt_template, data, se
 
     deployment = deployment_gpt35 if model == '3.5-turbo-1106' else deployment_gpt4o
 
+    # Call the synchronous function to fetch the response
     response = client.chat.completions.create(
         model=deployment,
         messages=[
@@ -82,18 +90,23 @@ def fetch_openai_response_sync(system_prompt_template, prompt_template, data, se
 
     return response.choices[0].message.content
 
+# Call the asynchronous function to handle the grammar and vocabulary correction
 async def handle_unified(data, language, model):
     return await fetch_openai_response_async(SYSTEM_PROMPT_1, UNIFIED_PROMPT, data, language=language, model=model)
 
+# Call the asynchronous function to handle the grammar and vocabulary correction for each sentence
 async def process_sentence(sentence, language, model):
     return await fetch_openai_response_async(SYSTEM_PROMPT_1_MULTI, UNIFIED_PROMPT_MULTI, sentence, language=language, model=model)
 
+# Call the synchronous function to handle the organization/coherence/writing style correction
 def handle_unified_2(data, section, language, model):
     return fetch_openai_response_sync(SYSTEM_PROMPT_2, UNIFIED_PROMPT_2, data, section, language=language, model=model)
 
+# Call the synchronous function to handle the scores generation
 def handle_scores(data, model):
     return fetch_openai_response_sync(SYSTEM_PROMPT_4, SCORES, data, model=model)
 
+# Route for handling the grammar and vocabulary request from NestJS. Request considers the language and model
 @app.route('/handle-correction', methods=['POST'])
 async def handle_correction():
     data = request.json.get('text')
@@ -106,9 +119,11 @@ async def handle_correction():
     if model not in ['3.5-turbo-1106', '4o']:
         return jsonify({"error": "Invalid model"}), 400
 
+    # For the 4o model, the text is processed as a whole
     if model == '4o':
         unified_result = await handle_unified(data, language, model)
         mistakes, corrections, explanations, categories, contexts, corrected_text = process_initial_result(unified_result, model)
+    # For the 3.5-turbo-1106 model, the text is split into sentences and processed individually
     elif model == '3.5-turbo-1106':
         sentences = split_into_sentences(data)
         tasks = [process_sentence(sentence, language, model) for sentence in sentences]
@@ -127,6 +142,7 @@ async def handle_correction():
         "correctedText": corrected_text
     })
 
+# Route for handling the organization/coherence/writing style request from NestJS. Request considers the language and model
 @app.route('/handle-further-correction', methods=['POST'])
 def handle_further_correction():
     data = request.json.get('text')
@@ -148,6 +164,7 @@ def handle_further_correction():
 
     return jsonify(feedback)
 
+# Route for handling the scores generation request from NestJS. Request considers the model
 @app.route('/generate-scores', methods=['POST'])
 def generate_scores():
     data = request.json.get('text')
@@ -168,6 +185,7 @@ def generate_scores():
         logger.error(f"Error generating scores: {e}")
         return jsonify({"error": e}), 500
 
+# Function to postprocess the scores from the response text
 def parse_scores(response_text):
     scores = {
         "grammar": None,
@@ -194,6 +212,7 @@ def parse_scores(response_text):
 
     return scores
 
+# Function to normalize and format the text to be used in the JSON response
 def normalize_text(text):
     if text is None:
         return text
@@ -201,9 +220,9 @@ def normalize_text(text):
     # Normalize ellipses by replacing inconsistent ellipses with a standard one
     text = re.sub(r'\.{3,}', '...', text)
 
-    # Normalize quotes
-    text = re.sub(r'^"|"$', '', text)  # Remove leading/trailing double quotes if present
-    text = re.sub(r"^'|'$", '', text)  # Remove leading/trailing single quotes if present
+    # Remove leading/trailing single quotes if present
+    text = re.sub(r'^"|"$', '', text)
+    text = re.sub(r"^'|'$", '', text)
 
     # Escape necessary characters
     text = text.replace("'", "\\'")
@@ -211,6 +230,7 @@ def normalize_text(text):
 
     return text
 
+# Function to format the text for JSON response (for explanation)
 def format_text_for_json(text):
     if text is None:
         return text
@@ -225,9 +245,9 @@ def format_text_for_json(text):
     
     # If the text starts and ends with single quotes, escape only the end if necessary
     elif text.startswith("'") and text.endswith("'"):
-        text = text[1:-1]  # Remove the wrapping single quotes
-        text = text.replace("\\'", "'")  # Avoid double escaping already escaped single quotes
-        text = f"'{text}'"  # Re-wrap with single quotes
+        text = text[1:-1]
+        text = text.replace("\\'", "'")
+        text = f"'{text}'"
 
     else:
         # If the text ends with a quotation mark, escape it
@@ -241,6 +261,7 @@ def format_text_for_json(text):
 
     return text
 
+# Function to process the grammar and vocabulary correction result from the LLM
 def process_initial_result(result, model):
     mistakes = []
     corrections = []
@@ -249,17 +270,21 @@ def process_initial_result(result, model):
     contexts = []
     corrected_text = ""
 
+    # Define regex patterns to extract the necessary information
     fine_match = re.search(r'The submitted writing is fine.', result)
     mistakes_match = re.findall(r'M: (.*?)\n', result, re.DOTALL)
     corrections_match = re.findall(r'C: (.*?)\n', result, re.DOTALL)
     explanations_match = re.findall(r'E: (.*?)\n', result, re.DOTALL)
     categories_match = re.findall(r'T: (.*?)\n', result, re.DOTALL)
     contexts_match = re.findall(r'X: (.*?)\n', result, re.DOTALL)
+
+    # Extract the corrected text based on the model
     if model == '3.5-turbo-1106':
         corrected_text_match = re.findall(r'Correction:\s*(.*?[\.\!\?])(?:\s|$)', result, re.DOTALL)
     elif model == '4o':
         corrected_text_match = re.findall(r'Correction:\s*(.*)', result, re.DOTALL)
 
+    # Normalize and/or format the extracted information
     if fine_match:
         mistakes.append("The submitted writing is fine.")
         corrections.append("The submitted writing is fine.")
@@ -281,6 +306,7 @@ def process_initial_result(result, model):
 
     return mistakes, corrections, explanations, categories, contexts, corrected_text
 
+# Function to process the organization/coherence/writing style correction result from the LLM
 def process_further_result(result):
     if "Writing Style" in result:
         result = result.replace("Writing Style", "WritingStyle")
@@ -296,8 +322,12 @@ def process_further_result(result):
 
     # Extracting each section content
     sections = ["Organization", "Coherence", "WritingStyle"]
+
+    # Loop over each section to extract the necessary information
     for section in sections:
         section_pattern = rf"{section}:(.*?)(\n\n|\Z)"
+
+        # Extracting the content of the section
         section_match = re.search(section_pattern, result, re.DOTALL)
         if section_match:
             section_content = section_match.group(1).strip()
@@ -324,6 +354,7 @@ def process_further_result(result):
 
     return feedback
 
+# Question prompts for different types of questions
 question_prompts = {
     'revision': REVISION_PROMPT,
     'synonyms': SYNONYMS_PROMPT,
@@ -333,10 +364,13 @@ question_prompts = {
     'organization': ORGANIZATION_PROMPT,
 }
 
+# Route for handling the suggestion of a question type based on the last three submissions
 @app.route('/question/suggest-type', methods=['POST'])
 def suggest_question_type():
     data = request.json
     text = data['lastThreeSubmissions']
+
+    # Model is strictly 3.5-turbo-1106
     model = '3.5-turbo-1106'
 
     deployment = deployment_gpt35 if model == '3.5-turbo-1106' else deployment_gpt4o
@@ -353,23 +387,28 @@ def suggest_question_type():
     response_content = response.choices[0].message.content.strip()
     logging.info(f"Question type suggestion: {response_content}")
 
+    # Extract the suggested question type from the response
     question_type = None
     for q_type in question_prompts.keys():
         if q_type in response_content.lower():
             question_type = q_type
             break
 
+    # Return the suggested question type if it is valid
     if question_type in question_prompts:
         logger.info(f"Suggested question type from LLM: {question_type}")
         return jsonify({"type": question_type})
     return jsonify({"type": None})
 
+# Route for generating a question based on the provided text and question type
 @app.route('/question/generate', methods=['POST'])
 def generate_question():
     data = request.json
     user_id = data['user_id']
     question_type = data['type']
     text = data['text']
+
+    # Model is strictly 4o
     model = '4o'
     
     deployment = deployment_gpt35 if model == '3.5-turbo-1106' else deployment_gpt4o
@@ -377,12 +416,14 @@ def generate_question():
     if question_type not in question_prompts:
         return jsonify({"error": "Invalid question type"}), 400
 
+    # Construct the prompt based on the question type
     prompt_template = question_prompts[question_type]
     if question_type in ['revision', 'synonyms', 'academic_sentence', 'argument_strengthening']:
         prompt = prompt_template.format(lastSubmission=text)
     else:
         prompt = prompt_template.format(text=text)
 
+    # Generate the question based on the prompt
     response = client.chat.completions.create(
         model=deployment,
         messages=[
@@ -400,14 +441,17 @@ def generate_question():
         'type': question_type
     }
 
+    # Extract the question, answer, and other relevant information from the generated output
     question_match = re.search(r'Question:\s*(.*?)\n', output, re.DOTALL)
     if question_match:
         metadata['question'] = question_match.group(1).strip()
     
+    # Extract the answer
     answer_match = re.search(r'Answer:\s*(.*)', output, re.DOTALL)
     if answer_match:
         metadata['answer'] = answer_match.group(1).strip()
 
+    # Extract other relevant information based on the question type
     if question_type in ['synonyms', 'argument_strengthening', 'coherence', 'organization']:
         options_match = re.search(r'Options:\s*(A.*?)(?=\nAnswer:)', output, re.DOTALL)
         if options_match:
@@ -443,11 +487,14 @@ def generate_question():
 
     return jsonify(metadata)
 
+# Route for generating an evaluation of the correctness of the users' submitted academic sentence
 @app.route('/question/academic_sentence_correction', methods=['POST'])
 def academic_sentence_correction():
     data = request.json
     original_sentence = data['original_sentence']
     corrected_sentence = data['corrected_sentence']
+
+    # Model is strictly 4o
     model = '4o'
     
     deployment = deployment_gpt35 if model == '3.5-turbo-1106' else deployment_gpt4o
@@ -457,6 +504,7 @@ def academic_sentence_correction():
         corrected_sentence=corrected_sentence
     )
 
+    # Generate the response based on the prompt
     response = client.chat.completions.create(
         model=deployment,
         messages=[
@@ -468,6 +516,7 @@ def academic_sentence_correction():
 
     output = response.choices[0].message.content
 
+    # Extract the evaluation of the corrected sentence
     answer_match = re.search(r'Answer:\s*(.*)', output)
 
     if answer_match:
@@ -479,6 +528,7 @@ def academic_sentence_correction():
     else:
         return jsonify({"error": "Failed to parse the generated output"}), 500
     
+# Route for generating an explanation why the user's answer is incorrect
 @app.route('/question/explain-answer', methods=['POST'])
 def explain_answer():
     data = request.json
@@ -490,6 +540,8 @@ def explain_answer():
     scenario = data.get('scenario', [])
     correct_answer = data['correct_answer']
     user_answer = data['user_answer']
+
+    # Model is strictly 4o
     model = '4o'
     
     deployment = deployment_gpt4o if model == '4o' else deployment_gpt35
@@ -497,6 +549,7 @@ def explain_answer():
     options_str = '\n'.join(options)
     scenario_str = '\n'.join(scenario)
 
+    # Construct the prompt based on the provided data
     prompt = EXPLAIN_ANSWER.format(
         question=question,
         text=text,
@@ -508,6 +561,7 @@ def explain_answer():
         user_answer=user_answer
     )
 
+    # Generate the response based on the prompt
     response = client.chat.completions.create(
         model=deployment,
         messages=[
@@ -519,8 +573,10 @@ def explain_answer():
 
     output = response.choices[0].message.content
 
+    # Extract the explanation from the generated output
     explanation_match = re.search(r'Explanation:\s*(.*)', output, re.DOTALL)
 
+    # Return the explanation if it is extracted successfully
     if explanation_match:
         explanation = explanation_match.group(1).strip()
         return jsonify({
@@ -530,6 +586,7 @@ def explain_answer():
     else:
         return jsonify({"error": "Failed to parse the generated output"}), 500
 
+# Route for generating a tip for improving coherence or organization
 @app.route('/review/generate', methods=['POST'])
 def generate_review():
     model = request.json.get('model', '3.5-turbo-1106')
@@ -546,6 +603,7 @@ def generate_review():
 
     deployment = deployment_gpt4o if model == '4o' else deployment_gpt35
 
+    # Construct the prompt and generate the response
     if coherence_text:
         coherence_prompt = COHERENCE_TIP_PROMPT.format(text=coherence_text)
         coherence_response = client.chat.completions.create(
@@ -576,7 +634,7 @@ def generate_review():
         "organization_tip": organization_tip
     })
 
-# FOR TESTING ONLY
+# FOR TESTING ONLY. Add a question manually to the Chroma collection
 @app.route('/question/add', methods=['POST'])
 def add_question():
     data = request.json
@@ -614,7 +672,7 @@ def add_question():
         "document_id": document_id
     })
 
-# FOR TESTING ONLY
+# FOR TESTING ONLY. Request all questions manually from the Chroma collection
 @app.route('/question/get/<user_id>', methods=['GET'])
 def get_questions(user_id):
     documents = chroma_langchain_handler.get_documents(user_id)
@@ -631,6 +689,7 @@ def get_questions(user_id):
 
     return jsonify(result)
 
+# Perform similarity search in ChromaDB
 @app.route('/quiz/similarity-search', methods=['POST'])
 async def similarity_search():
     data = request.json
@@ -673,8 +732,10 @@ async def similarity_search():
 
         selected_question_ids = llm_decide_questions(new_questions_str, quiz_history_str)
 
-        # Check for missing question IDs
+        # Check for missing question IDs. If some of these selected questions weren't part of the original similarity search results, then retrieve them separately.
         missing_question_ids = set(selected_question_ids) - found_question_ids
+
+        # Fetch the missing questions from ChromaDB
         if missing_question_ids:
             missing_documents = chroma_langchain_handler.get_documents_by_ids(user_id, list(missing_question_ids))
             for metadata, page_content in zip(missing_documents['metadatas'], missing_documents['documents']):
@@ -696,12 +757,14 @@ async def similarity_search():
 
     return jsonify(questions)
 
+# Call the LLM to decide on the question types based on the new questions and quiz history
 def llm_decide_questions(new_questions, quiz_history):
     prompt = DECIDE_QUESTIONS.format(new_questions=new_questions, quiz_history=quiz_history)
     model = '4o'
 
     deployment = deployment_gpt4o if model == '4o' else deployment_gpt35
 
+    # Generate the response based on the prompt
     response = client.chat.completions.create(
         model=deployment,
         messages=[
@@ -711,6 +774,7 @@ def llm_decide_questions(new_questions, quiz_history):
         max_tokens=500
     )
 
+    # Extract the question IDs from the response
     question_ids_str = response.choices[0].message.content
     matches = re.findall(r'\[(.*?)\]', question_ids_str)
     if matches:
@@ -727,5 +791,6 @@ def llm_decide_questions(new_questions, quiz_history):
     logging.error("Failed to extract question IDs from the LLM response.")
     return []
 
+# Run the Flask app on port 8031
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8031)

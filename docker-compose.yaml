@@ -1,0 +1,51 @@
+services:
+  # Frontend-Backend service
+  frontend-backend:
+    build:
+      context: /home/thillen/Data/willm
+      dockerfile: dockerfile
+    ports:
+      - "3101:3101"
+    depends_on:
+      - flask-api
+      - mongodb
+
+  # MongoDB service
+  mongodb:
+    image: willm-mongo:7.0
+    ports:
+      - "27017:27017"
+    volumes:
+      - /home/thillen/Data/data/mongo:/data/db
+
+  # Flask API service
+  flask-api:
+    build:
+      context: /home/thillen/Data/willm/willm-flask-api
+      dockerfile: Dockerfile
+    ports:
+      - "8031:8031"
+    environment:
+      - FLASK_API_KEY=${FLASK_API_KEY}
+    depends_on:
+      chromadb:
+        condition: service_healthy
+
+  # ChromaDB service with healthcheck
+  chromadb:
+    image: willm-chromadb/chroma:latest
+    volumes:
+      - /home/thillen/Data/data/chroma:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+      - ALLOW_RESET=TRUE
+      - PERSIST_DIRECTORY=/chroma/chroma
+    ports:
+      - "8032:8031"
+    command: [ "uvicorn", "chromadb.app:app", "--host", "0.0.0.0", "--port", "8031", "--proxy-headers", "--log-config", "chromadb/log_config.yml", "--timeout-keep-alive", "30" ]
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:8031/api/v1/heartbeat || exit 1" ]
+      interval: 30s
+      retries: 5
+      start_period: 20s
+      timeout: 10s

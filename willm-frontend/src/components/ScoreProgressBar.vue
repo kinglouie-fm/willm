@@ -1,7 +1,7 @@
 <script setup>
-// Define the expected order of the scores
 const scoreOrder = ['grammar', 'vocabulary', 'organization', 'coherence', 'writing_style'];
 
+// Define props
 const props = defineProps({
     latestScore: Number,
     medianScore: Number
@@ -27,10 +27,10 @@ const props = defineProps({
                     <div class="progress-bar median-latest"
                         :style="{ width: ((props.latestScore - 1) / 8) * 100 + '%' }"></div>
                     <div class="progress-bar difference" :style="{
-                    left: ((props.latestScore - 1) / 8) * 100 + '%',
-                    width: ((props.medianScore - props.latestScore) / 8) * 100 + '%',
-                    backgroundColor: 'red'
-                }"></div>
+                        left: ((props.latestScore - 1) / 8) * 100 + '%',
+                        width: ((props.medianScore - props.latestScore) / 8) * 100 + '%',
+                        backgroundColor: 'red'
+                    }"></div>
                 </div>
             </div>
             <div class="scores">

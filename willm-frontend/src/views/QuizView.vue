@@ -11,9 +11,9 @@ const userAnswer = ref('');
 const answerResult = ref(null);
 const explanation = ref('');
 const quizScore = ref(null);
-
 const router = useRouter();
 
+// Fetch the quiz data from the API
 const fetchQuiz = async () => {
     try {
         const response = await axios.get('https://willm.corinth.informatik.rwth-aachen.de/quiz/get-todays-quiz');
@@ -32,6 +32,7 @@ const fetchQuiz = async () => {
     }
 };
 
+// Submit the user's answer to the current question
 const submitAnswer = async (selectedAnswer = null, option) => {
     const hideLoading = message.loading('Submitting answer...', 0);
     try {
@@ -64,6 +65,7 @@ const submitAnswer = async (selectedAnswer = null, option) => {
     }
 };
 
+// Request an explanation for the current question. Only available after submitting an incorrect answer
 const requestExplanation = async () => {
     try {
         const response = await axios.post('https://willm.corinth.informatik.rwth-aachen.de/quiz/explain-answer', {
@@ -78,6 +80,7 @@ const requestExplanation = async () => {
     }
 };
 
+// Move to the next question in the quiz
 const nextQuestion = () => {
     currentQuestionIndex.value++;
     userAnswer.value = '';
@@ -85,6 +88,7 @@ const nextQuestion = () => {
     explanation.value = '';
 };
 
+// Complete the quiz and display the score
 const completeQuiz = async () => {
     try {
         const response = await axios.post('https://willm.corinth.informatik.rwth-aachen.de/quiz/complete', {
@@ -98,6 +102,7 @@ const completeQuiz = async () => {
     }
 };
 
+// Render the quiz score as stars
 const renderQuizScoreStars = (score) => {
     const totalStars = 3;
     const stars = [];
@@ -110,12 +115,14 @@ const renderQuizScoreStars = (score) => {
     return stars.join('');
 };
 
+// Redirect to the home page
 const pushToHome = () => {
     router.push('/');
 };
 
 onMounted(fetchQuiz);
 
+// Watch for changes in the current question index
 const currentQuestion = computed(() => quiz.value?.questions[currentQuestionIndex.value] || null);
 </script>
 

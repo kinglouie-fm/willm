@@ -6,6 +6,7 @@ const authStore = useAuthStore();
 const username = ref('');
 const password = ref('');
 
+// Login function
 const login = async () => {
     await authStore.login(username.value, password.value);
 };

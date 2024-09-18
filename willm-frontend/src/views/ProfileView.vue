@@ -11,7 +11,6 @@ const sections = ref([]);
 const selectedSection = ref('');
 const comparisonData = ref(null);
 const response_message = ref('');
-
 const gamificationData = ref(null); // Initialize as null to check for loading state
 
 const levels = {
@@ -53,10 +52,12 @@ const achievementsConfig = {
     },
 };
 
+// Get the XP required for the next level
 const getNextLevelXP = (level) => {
     return levels[level + 1] || levels[10];
 };
 
+// Fetch the sections available for comparison
 const getSections = async () => {
     try {
         const response = await axios.get('https://willm.corinth.informatik.rwth-aachen.de/score/sections');
@@ -70,6 +71,7 @@ const getSections = async () => {
     }
 };
 
+// Fetch the comparison data for the selected section
 const fetchComparison = async () => {
     if (selectedSection.value) {
         try {
@@ -87,11 +89,13 @@ const fetchComparison = async () => {
     }
 };
 
+// Select a section for comparison
 const selectSection = (section) => {
     selectedSection.value = section;
     fetchComparison();
 };
 
+// Fetch the gamification data for the user
 const fetchGamification = async () => {
     try {
         const response = await axios.get('https://willm.corinth.informatik.rwth-aachen.de/user/gamification', { withCredentials: true });
@@ -101,6 +105,7 @@ const fetchGamification = async () => {
     }
 };
 
+// Get the progress of an achievement
 const getAchievementProgress = (key, achievements) => {
     const stages = achievementsConfig[key];
     const achievedStages = Object.keys(stages).filter(stage => achievements[key] >= Number(stage));
@@ -131,6 +136,7 @@ const getAchievementProgress = (key, achievements) => {
     };
 };
 
+// Render stars for the achievement progress
 const renderStars = (currentStep, totalStep) => {
     const stars = [];
     for (let i = 0; i < currentStep; i++) {
@@ -142,6 +148,7 @@ const renderStars = (currentStep, totalStep) => {
     return stars.join('');
 };
 
+// Format the key for display
 const formatKey = (key) => {
     return key
         .split('_')
@@ -149,6 +156,7 @@ const formatKey = (key) => {
         .join(' ');
 };
 
+// Initialize the popover for info icons
 const initPopover = () => {
     const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
     popoverTriggerList.forEach((popoverTriggerEl) => {

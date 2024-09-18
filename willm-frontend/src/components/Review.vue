@@ -3,6 +3,7 @@ import { computed, ref, onMounted } from 'vue';
 
 const feedbackDiv = ref(null);
 
+// Define props
 const props = defineProps({
     reviewData: {
         type: [Object, String],
@@ -10,6 +11,7 @@ const props = defineProps({
     }
 });
 
+// Add shadow to bottom of feedback div if overflow to indicate that there is more content
 const handleScroll = () => {
     const element = feedbackDiv.value;
     if (!element) return;
@@ -23,6 +25,7 @@ const handleScroll = () => {
     }
 };
 
+// Check if feedback div has overflow and add shadow to bottom if it does
 const checkInitialOverflow = () => {
     const element = feedbackDiv.value;
     if (!element) return;
@@ -34,6 +37,7 @@ const checkInitialOverflow = () => {
     }
 };
 
+// Get right display key
 const getDisplayKey = (key) => {
     if (key === 'grammar_vocab') {
         return 'Grammar and Vocabulary';
@@ -144,7 +148,7 @@ onMounted(async () => {
                                     <ul>
                                         <li v-for="(tip, index) in categoryData.tips" :key="index">
                                             {{ tip }} <span v-if="categoryData.frequencies[index]"> (Frequency: {{
-                categoryData.frequencies[index] }})</span>
+                                                categoryData.frequencies[index] }})</span>
                                         </li>
                                     </ul>
                                 </template>

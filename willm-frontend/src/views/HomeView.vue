@@ -8,6 +8,9 @@ import Review from '@/components/Review.vue';
 import { isAfter } from 'date-fns';
 import { message } from 'ant-design-vue';
 
+/* 
+ * CONSTANTS/REACTIVE VARIABLES
+*/
 const textareaSmall = ref('');
 const mistakes = ref([]);
 const corrections = ref([]);
@@ -56,20 +59,24 @@ const postTestSection = ref('');
 const postTestSections = ref([]);
 const preTestSections = ref([]);
 
+// Calculate word count for pre-test text
 const wordCount = computed(() => {
   return preTestText.value.trim().split(/\s+/).filter(word => word.length > 0).length;
 });
 
+// Calculate word count for post-test text
 const wordCountPostTest = computed(() => {
   return postTestText.value.trim().split(/\s+/).filter(word => word.length > 0).length;
 });
 
+// Handle switch change between learning and productive mode
 const handleSwitchChange = (event) => {
   mode.value = event.target.checked ? 'learning' : 'productive';
 };
 
 const selectedComponent = ref('Review');
 
+// Replace backslashes and clean up text for display
 const replaceBackslash = (text) => {
   text = text.replace(/\\\\/g, '\\');
   text = text.replace(/\\'/g, "'");
@@ -79,6 +86,7 @@ const replaceBackslash = (text) => {
   return text;
 };
 
+// Clean up context text for display
 const cleanContext = (text) => {
   return text
     .replace(/\[.*?\]/g, '')
@@ -88,6 +96,7 @@ const cleanContext = (text) => {
     .trim();
 };
 
+// Handle correct button click
 const handleCorrect = async () => {
   let textToCorrect = editableDiv.value.innerText.replace(/\u00A0/g, ' ');
   if (!textToCorrect) {
@@ -100,6 +109,7 @@ const handleCorrect = async () => {
     return;
   }
 
+  // Strip HTML tags from text for processing
   textToCorrect = stripHtmlTags(textToCorrect);
   editableDiv.value.innerText = textToCorrect;
 
@@ -127,8 +137,10 @@ const handleCorrect = async () => {
     writingStyle: { mistakes: [], corrections: [], explanations: [], categories: [] },
   };
 
+  // Show loading spinner as long as the request is being processed
   const hideLoading = message.loading("Evaluating text...", 0);
   try {
+    // Request correction from the backend
     const correctionResponse = await axios.post('https://willm.corinth.informatik.rwth-aachen.de/correct', {
       text: textToCorrect,
       section: textareaSmall.value,
@@ -141,10 +153,12 @@ const handleCorrect = async () => {
 
     console.log(correctionResponse)
 
+    // Process response data (explanations/categories)
     explanations.value = correctionResponse.data.explanations.map(explanation => {
       return explanation.replace(/(\n[T|X]:.*)/g, '').trim();
     });
 
+    // Process response data (categories)
     categories.value = correctionResponse.data.categories.map(category => {
       return category.replace(/(\n[X]:.*)/g, '').trim();
     });
@@ -158,10 +172,11 @@ const handleCorrect = async () => {
 
     scores.value = correctionResponse.data.scores;
 
+    // Highlight mistakes in the text
     highlightMistakes();
     selectedComponent.value = 'Evaluation';
 
-    // Process further correction response if available
+    // Process further correction response by storing the data in the reactive variable
     if (correctionResponse.data.furtherCorrection) {
       const furtherCorrection = correctionResponse.data.furtherCorrection;
 
@@ -201,6 +216,7 @@ const handleCorrect = async () => {
       message.error('Error processing requests. Please try again.');
     }
   } finally {
+    // Hide loading spinner
     hideLoading();
   }
 
@@ -212,9 +228,12 @@ const handleCorrect = async () => {
   }
 };
 
+// Generate review
 const generateReview = async () => {
+  // Show loading spinner as long as the request is being processed
   const hideLoading = message.loading("Generating review...", 0);
   try {
+    // Request review generation from the backend
     const response = await axios.post('https://willm.corinth.informatik.rwth-aachen.de/review/generate', { reviewModel: authStore.getLLM('reviewModel') });
     if (response.data.reviewData === 'No text available.') {
       message.info('Not enough texts to generate the review');
@@ -234,10 +253,12 @@ const generateReview = async () => {
       message.error('Error processing requests. Please try again.');
     }
   } finally {
+    // Hide loading spinner
     hideLoading();
   }
 };
 
+// Get recent review
 const getRecentReview = async () => {
   try {
     const response = await axios.get('https://willm.corinth.informatik.rwth-aachen.de/review/recent');
@@ -252,15 +273,18 @@ const getRecentReview = async () => {
   }
 };
 
+// Strip HTML tags from text
 const stripHtmlTags = (html) => {
   let div = document.createElement('div');
   div.innerHTML = html;
   return div.textContent || div.innerText || '';
 };
 
+// Highlight mistakes in the text
 const highlightMistakes = () => {
   let htmlContent = editableDiv.value.innerHTML;
 
+  // For each mistake, find the context in the text and highlight it
   contexts.value.forEach((context, index) => {
     const mistake = mistakes.value[index];
     const correction = corrections.value[index];
@@ -326,11 +350,13 @@ const escapeHTML = (string) => {
     .replace(/'/g, '&#039;');
 };
 
+// Activate popovers over highlighted mistakes
 const activatePopovers = () => {
   if (!editableDiv.value) {
     return;
   }
 
+  // Add popovers to all highlighted mistakes
   const popoverElements = editableDiv.value.querySelectorAll('.mistake');
   popoverElements.forEach((el, index) => {
     new bootstrap.Popover(el, {
@@ -340,6 +366,7 @@ const activatePopovers = () => {
       placement: 'top'
     });
 
+    // Show popover on hover
     el.addEventListener('mouseenter', () => {
       const popoverInstance = bootstrap.Popover.getInstance(el);
       if (popoverInstance) {
@@ -347,6 +374,7 @@ const activatePopovers = () => {
       }
     });
 
+    // Hide popover on mouse leave
     el.addEventListener('mouseleave', () => {
       const popoverInstance = bootstrap.Popover.getInstance(el);
       if (popoverInstance) {
@@ -354,6 +382,7 @@ const activatePopovers = () => {
       }
     });
 
+    // Handle click on popover depending on the mode (either learning or productive)
     el.addEventListener('click', (e) => {
       e.stopPropagation();
       const index = el.getAttribute('data-index');
@@ -385,10 +414,12 @@ const activatePopovers = () => {
   });
 };
 
+// Check if the text is over the maximum word limit and cut it off if necessary
 const updateText = () => {
   limitTextLength();
 };
 
+// Limit the text length to 500 words
 const limitTextLength = () => {
   const maxLength = 500;
   let textContent = editableDiv.value.innerText;
@@ -400,6 +431,7 @@ const limitTextLength = () => {
   }
 };
 
+// Apply correction to the text
 const applyCorrection = () => {
   if (userCorrection.value.trim() === currentCorrection.value.trim()) {
     if (currentMistakeElement) {
@@ -424,6 +456,7 @@ const applyCorrection = () => {
   }
 };
 
+// Initialize popovers for the info icons
 const initPopover = () => {
   const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
   popoverTriggerList.forEach((popoverTriggerEl) => {
@@ -443,11 +476,17 @@ const initPopover = () => {
   });
 };
 
+/**
+ * PRE-TEST FUNCTIONS
+ */
+
+// Check if the text length is within the required range
 const validatePreTestTextLength = (text) => {
   const wordCount = text.trim().split(/\s+/).length;
   return wordCount >= MIN_LENGTH && wordCount <= MAX_LENGTH;
 };
 
+// Complete the pre-test process
 const completePreTestProcess = async () => {
   try {
     if (preTestCount.value >= 1) {
@@ -465,6 +504,7 @@ const completePreTestProcess = async () => {
   }
 };
 
+// Check the pre-test status (if the user has completed the pre-tests)
 const checkPreTestStatus = async () => {
   try {
     const response = await axios.get('https://willm.corinth.informatik.rwth-aachen.de/user/pre-test-status');
@@ -485,6 +525,7 @@ const checkPreTestStatus = async () => {
   }
 };
 
+// Submit the pre-test
 const submitPreTest = async () => {
   if (!preTestSection.value) {
     message.info('Please enter the section for the text.');
@@ -518,12 +559,17 @@ const submitPreTest = async () => {
   }
 };
 
+// Show the pre-test modal
 const showPreTestModal = () => {
   const preTestModal = new bootstrap.Modal(document.getElementById('preTestModal'));
   preTestModal.show();
 };
 
+/**
+ * POST-TEST FUNCTIONS
+ */
 
+// Submit the post-test
 const submitPostTest = async () => {
   if (!validatePreTestTextLength(postTestText.value)) {
     message.info(`Please ensure your text is between ${MIN_LENGTH} and ${MAX_LENGTH} words.`, 5);
@@ -560,7 +606,7 @@ const submitPostTest = async () => {
   }
 };
 
-
+// Fetch pre-test sections for displaying them in the post-test modal
 const fetchPreTestSections = async () => {
   const currentDate = new Date();
   const enableDate = new Date('2024-09-07');

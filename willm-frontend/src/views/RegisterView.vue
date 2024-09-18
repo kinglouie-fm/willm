@@ -9,6 +9,7 @@ const password = ref('');
 const dataPrivacyConsent = ref(false);
 const showPrivacyPolicy = ref(false);
 
+// Register the user with the entered username and password
 const register = async () => {
     if (dataPrivacyConsent.value) {
         await authStore.register(username.value, password.value, dataPrivacyConsent.value);
@@ -17,6 +18,7 @@ const register = async () => {
     }
 };
 
+// Toggle the visibility of the data privacy consent modal
 const togglePrivacyPolicy = () => {
     showPrivacyPolicy.value = !showPrivacyPolicy.value;
 };

@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 
+// Define props
 const props = defineProps({
     furtherCorrectionData: Object,
     unhighlightedMistakes: Array,
@@ -14,6 +15,7 @@ const coherenceOpen = ref(false);
 const writingStyleOpen = ref(false);
 const feedbackDiv = ref(null);
 
+// Toggle section open/close
 const toggleSection = (section) => {
     if (section === 'organization') {
         organizationOpen.value = !organizationOpen.value;
@@ -26,6 +28,7 @@ const toggleSection = (section) => {
     }
 };
 
+// Check if section is open
 const isSectionOpen = (section) => {
     if (section === 'organization') {
         return organizationOpen.value;
@@ -39,6 +42,7 @@ const isSectionOpen = (section) => {
     return false;
 };
 
+// Get section icon
 const sectionIcon = (section) => {
     if (section === 'organization') {
         return isSectionOpen('organization') ? 'arrow-icon open' : 'arrow-icon closed';
@@ -51,6 +55,7 @@ const sectionIcon = (section) => {
     }
 };
 
+// Add shadow to bottom of feedback div if overflow to indicate that there is more content
 const handleScroll = () => {
     const element = feedbackDiv.value;
     if (!element) return;
@@ -64,6 +69,7 @@ const handleScroll = () => {
     }
 };
 
+// Check if there is initial overflow to indicate that there is more content
 const checkInitialOverflow = () => {
     const element = feedbackDiv.value;
     if (!element) return;
@@ -117,9 +123,9 @@ onMounted(async () => {
                         <ul class="mt-2">
                             <li><strong>Mistake:</strong> {{ mistake }} </li>
                             <li><strong>Correction:</strong> {{
-            props.furtherCorrectionData.organization.corrections[index] }}</li>
+                                props.furtherCorrectionData.organization.corrections[index] }}</li>
                             <li><strong>Explanation:</strong> {{
-            props.furtherCorrectionData.organization.explanations[index] }}</li>
+                                props.furtherCorrectionData.organization.explanations[index] }}</li>
                             <li><strong>Category:</strong> {{ props.furtherCorrectionData.organization.categories[index]
                                 }}</li>
                         </ul>
@@ -145,7 +151,7 @@ onMounted(async () => {
                             <li><strong>Correction:</strong> {{ props.furtherCorrectionData.coherence.corrections[index]
                                 }}</li>
                             <li><strong>Explanation:</strong> {{
-            props.furtherCorrectionData.coherence.explanations[index] }}</li>
+                                props.furtherCorrectionData.coherence.explanations[index] }}</li>
                             <li><strong>Category:</strong> {{ props.furtherCorrectionData.coherence.categories[index] }}
                             </li>
                         </ul>
@@ -169,9 +175,9 @@ onMounted(async () => {
                         <ul class="mt-2">
                             <li><strong>Mistake:</strong> {{ mistake }}</li>
                             <li><strong>Correction:</strong> {{
-            props.furtherCorrectionData.writingStyle.corrections[index] }}</li>
+                                props.furtherCorrectionData.writingStyle.corrections[index] }}</li>
                             <li><strong>Explanation:</strong> {{
-            props.furtherCorrectionData.writingStyle.explanations[index] }}</li>
+                                props.furtherCorrectionData.writingStyle.explanations[index] }}</li>
                             <li><strong>Category:</strong> {{ props.furtherCorrectionData.writingStyle.categories[index]
                                 }}</li>
                         </ul>

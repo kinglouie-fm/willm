@@ -1,9 +1,11 @@
+<!-- SIDEBAR COMPONENT NOT USED -->
 <script setup>
 import { ref, watch } from 'vue';
 import Correction from './Correction.vue';
 import Review from './Review.vue';
 import Scores from './Scores.vue';
 
+// Define props
 const props = defineProps({
     isOpen: Boolean,
     reviewData: [Object, String],
@@ -12,8 +14,10 @@ const props = defineProps({
     scores: Object
 });
 
+// Define emits
 const emit = defineEmits(['close']);
 
+// Close sidebar
 const closeSidebar = () => {
     emit('close');
 };

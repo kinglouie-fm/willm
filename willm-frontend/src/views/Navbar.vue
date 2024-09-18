@@ -30,6 +30,7 @@ const modelKeys = {
     Review: 'reviewModel'
 };
 
+// Computed property to check if a quiz is due today
 const isQuizDueToday = computed(() => authStore.quizDueToday);
 
 // Update LLM in the store and backend
@@ -51,7 +52,7 @@ const updateLLM = async (modelKey, value) => {
     }
 };
 
-// Update Language in the store and backend
+// Update explanation language in the store and backend
 const updateLanguage = async () => {
     try {
         await axios.patch('https://willm.corinth.informatik.rwth-aachen.de/user/updateLanguage', {
@@ -117,6 +118,7 @@ const showPostTestModal = () => {
     }
 };
 
+// Computed property to determine the navigation links based on the current route
 const navigationLinks = computed(() => {
     if (route.name === 'home') {
         return ['Profile', 'Quiz', 'Logout'];
@@ -129,6 +131,7 @@ const navigationLinks = computed(() => {
     }
 });
 
+// Handle navigation to different routes
 const handleNavigation = (link) => {
     if (typeof link === 'string') {
         if (link.toLowerCase() === 'logout') {
@@ -143,6 +146,7 @@ const handleNavigation = (link) => {
     }
 };
 
+// Fetch user data from the store
 const fetchData = () => {
     gamificationData.value = authStore.getGamificationData();
     selectedLanguage.value = authStore.getLanguage();

@@ -1,6 +1,7 @@
 <script setup>
 const scoreOrder = ['grammar', 'vocabulary', 'organization', 'coherence', 'writing_style'];
 
+// Define props
 const props = defineProps({
     scores: {
         type: Object,

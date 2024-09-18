@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 
+// Define props
 const props = defineProps({
     currentLevel: Number,
     currentXP: Number,
@@ -8,6 +9,7 @@ const props = defineProps({
     nextLevel: Number,
 });
 
+// Calculate progress percentage
 const progressPercentage = computed(() => {
     return (props.currentXP / props.maxXP) * 100;
 });

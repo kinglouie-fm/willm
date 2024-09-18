@@ -2,6 +2,7 @@
 import Scores from './Scores.vue';
 import Correction from './Correction.vue';
 
+// Define props
 const props = defineProps({
     scores: Object,
     furtherCorrectionData: Object,

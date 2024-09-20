@@ -17,7 +17,7 @@ user_id_to_username = {user['_id']: user['username'] for user in users_data}
 with open('/Users/benthillen/Downloads/mongo/aggregated-data/user_texts.json', 'r') as user_texts_file:
     user_texts_data = json.load(user_texts_file)
 
-# Create a dictionary to store the number of submissions per user (excluding specific users)
+# Create a dictionary to store the number of submissions per username (excluding specific users)
 user_submission_counts = {}
 
 # Loop through each user in the user_texts data
@@ -33,15 +33,15 @@ for user in user_texts_data:
             print(f"Skipping user: {username}")
             continue
     
-    # Count the number of submissions for the user if not excluded
-    num_submissions = len(user["submissions"])
-    
-    # Store the count of submissions for the user
-    user_submission_counts[user_id] = num_submissions
+        # Count the number of submissions for the user if not excluded
+        num_submissions = len(user["submissions"])
+        
+        # Store the count of submissions for the user (use username as key)
+        user_submission_counts[username] = num_submissions
 
 # Print or save the result
 print(user_submission_counts)
 
 # Optionally, save the submission counts to a file
-with open('/path/to/your/user_submission_counts.json', 'w') as outfile:
+with open('/Users/benthillen/Downloads/mongo/evaluation/user_submission_counts.json', 'w') as outfile:
     json.dump(user_submission_counts, outfile, indent=4)

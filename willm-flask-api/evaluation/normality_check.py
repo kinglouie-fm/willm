@@ -1,9 +1,9 @@
 import json
 import numpy as np  # type: ignore
 import scipy.stats as stats  # type: ignore
-import matplotlib.pyplot as plt
-import seaborn as sns
-from scipy.stats import norm, probplot
+import matplotlib.pyplot as plt # type: ignore
+import seaborn as sns # type: ignore
+from scipy.stats import norm, probplot # type: ignore
 
 # Function to convert NumPy types to Python native types
 def convert_to_native_types(data):
@@ -88,12 +88,6 @@ for element in score_differences:
             "p_value": p_value
         }
         print(f"{element.capitalize()} - Shapiro-Wilk p-value: {p_value}")
-
-        # After the Shapiro-Wilk test, plot the histogram with normal curve
-        histogram_with_normal_curve(score_differences[element], f'{element.capitalize()} Differences')
-
-        # Also plot the Q-Q plot for normality check
-        qq_plot(score_differences[element], f'{element.capitalize()} Differences')
     else:
         normality_results[element] = {
             "normal": None,

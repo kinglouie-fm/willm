@@ -1,6 +1,6 @@
 import json
-import numpy as np
-import scipy.stats as stats
+import numpy as np # type: ignore
+import scipy.stats as stats # type: ignore
 
 # Load pre-test and post-test data from JSON files
 with open('/Users/benthillen/Downloads/mongo/evaluation/user_scores_preTest.json', 'r') as pre_file:

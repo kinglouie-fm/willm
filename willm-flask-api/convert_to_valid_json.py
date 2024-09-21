@@ -1,7 +1,7 @@
 import json
 
 # Open the texts.json file
-with open('/Users/benthillen/Downloads/mongo/aggregated-data/unvalid_json_texts.json', 'r') as file:
+with open('/Users/benthillen/Downloads/mongo/aggregated-data/unvalid_json_quizzes.json', 'r') as file:
     # Read all lines in the file
     lines = file.readlines()
 
@@ -15,5 +15,5 @@ for line in lines:
         print(f"Error decoding JSON: {e}")
 
 # Save the new valid JSON array into a new file
-with open('/Users/benthillen/Downloads/mongo/aggregated-data/texts.json', 'w') as outfile:
+with open('/Users/benthillen/Downloads/mongo/aggregated-data/quizzes.json', 'w') as outfile:
     json.dump(json_objects, outfile, indent=4)

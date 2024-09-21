@@ -10,7 +10,7 @@ excluded_usernames = [
 def map_user_ids_to_usernames(users_data):
     user_id_to_username = {}
     for user in users_data:
-        user_id = user['_id']['$oid']
+        user_id = user['_id']
         username = user.get('username')
         if username not in excluded_usernames:
             user_id_to_username[user_id] = username
@@ -34,8 +34,14 @@ with open('/Users/benthillen/Downloads/mongo/aggregated-data/quizzes.json', 'r')
 for quiz in quizzes_data:
     user_id = quiz['user_id']['$oid']
     
-    # Skip quiz if the user is in the exclusion list
+    # Check if user_id is in the exclusion list
     if user_id not in user_id_to_username:
+        print(f"Skipping quiz for user_id {user_id} because the username is excluded.")
+        continue
+    
+    # Check if the quiz is completed
+    if not quiz.get('completed', False):
+        print(f"Skipping quiz for user_id {user_id} because the quiz is not completed.")
         continue
     
     username = user_id_to_username[user_id]
@@ -49,11 +55,11 @@ for quiz in quizzes_data:
     
     # Increment the number of quizzes and append the quiz score
     user_quiz_data[username]['num_quizzes'] += 1
-    user_quiz_data[username]['quiz_scores'].append(quiz['score']['$numberInt'])
-
-# Convert the scores to integers
-for username, data in user_quiz_data.items():
-    data['quiz_scores'] = [int(score) for score in data['quiz_scores']]
+    
+    # Extract and convert quiz score to integer
+    score = quiz.get('score', {}).get('$numberInt', None)
+    if score is not None:
+        user_quiz_data[username]['quiz_scores'].append(int(score))
 
 # Save the user quiz data to a JSON file
 with open('/Users/benthillen/Downloads/mongo/evaluation/user_quiz_counts.json', 'w') as output_file:

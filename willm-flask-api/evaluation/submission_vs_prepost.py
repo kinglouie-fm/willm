@@ -1,6 +1,6 @@
 import json
-import numpy as np
-import scipy.stats as stats
+import numpy as np # type: ignore
+import scipy.stats as stats # type: ignore
 
 # Load the submission count data
 with open('/Users/benthillen/Downloads/mongo/evaluation/user_submission_counts.json', 'r') as submission_file:

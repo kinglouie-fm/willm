@@ -1,6 +1,6 @@
 import json
-import numpy as np # type: ignore
-import scipy.stats as stats # type: ignore
+import numpy as np
+import scipy.stats as stats
 
 # Load the submission count data
 with open('/Users/benthillen/Downloads/mongo/evaluation/user_submission_counts.json', 'r') as submission_file:
@@ -31,7 +31,7 @@ for user, submission_count in submission_counts.items():
     if user in post_test_scores:  # Ensure the user exists in both datasets
         submission_counts_list.append(submission_count)
         
-        # Extract and aggregate the post-test scores for each element
+        # Extract and aggregate the post-test scores for each element using the median of multiple submissions
         grammar_scores.append(aggregate_scores(post_test_scores[user], "grammar"))
         vocabulary_scores.append(aggregate_scores(post_test_scores[user], "vocabulary"))
         organization_scores.append(aggregate_scores(post_test_scores[user], "organization"))
@@ -46,7 +46,7 @@ normality_results = {}
 
 # Perform the Shapiro-Wilk test for normality on the post-test scores
 for element, scores in zip(["grammar", "vocabulary", "organization", "coherence", "writing_style"], 
-                           [grammar_scores, vocabulary_scores, organization_scores, coherence_scores, writing_style_scores, ]):
+                           [grammar_scores, vocabulary_scores, organization_scores, coherence_scores, writing_style_scores]):
     
     # Only perform Shapiro-Wilk test if there are more than 3 scores (Shapiro requires at least 3 data points)
     if len(scores) > 2:
@@ -59,13 +59,13 @@ for element, scores in zip(["grammar", "vocabulary", "organization", "coherence"
 
 # Perform Pearson or Kendall's Tau based on the normality test result
 for element, scores in zip(["grammar", "vocabulary", "organization", "coherence", "writing_style"], 
-                           [grammar_scores, vocabulary_scores, organization_scores, coherence_scores, writing_style_scores, ]):
+                           [grammar_scores, vocabulary_scores, organization_scores, coherence_scores, writing_style_scores]):
     
-    if normality_results[element]["normal"] is True:
+    if normality_results[element]["normal"] == True:
         # Use Pearson correlation if the data is normally distributed
         pearson_corr, pearson_p = stats.pearsonr(submission_counts_array, scores)
         print(f"{element.capitalize()} - Pearson correlation: {pearson_corr:.4f}, p-value: {pearson_p:.4f}")
-    elif normality_results[element]["normal"] is False:
+    elif normality_results[element]["normal"] == False:
         # Use Kendall's Tau correlation if the data is not normally distributed
         kendall_corr, kendall_p = stats.kendalltau(submission_counts_array, scores)
         print(f"{element.capitalize()} - Kendall's Tau correlation: {kendall_corr:.4f}, p-value: {kendall_p:.4f}")

@@ -1,4 +1,4 @@
-import pandas as pd
+import pandas as pd # type: ignore
 
 file_path = '/Users/benthillen/Downloads/mongo/aggregated-data/sus.xlsx' 
 df = pd.read_excel(file_path)

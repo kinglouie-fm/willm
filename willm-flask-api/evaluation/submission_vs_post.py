@@ -10,13 +10,13 @@ with open('/Users/benthillen/Downloads/mongo/evaluation/user_submission_counts.j
 with open('/Users/benthillen/Downloads/mongo/evaluation/user_scores_postTest.json', 'r') as scores_file:
     post_test_scores = json.load(scores_file)
 
-# Function to compute the median score across multiple submissions for a user
+# Function to compute the mean score across multiple submissions for a user
 def aggregate_scores(submissions, element):
     scores = []
     for sub_id, scores_data in submissions.items():
         if element in scores_data:
             scores.append(scores_data[element])
-    return np.median(scores) if scores else None
+    return np.mean(scores) if scores else None
 
 # Initialize empty lists to store user data for correlations
 vocabulary_scores = []
@@ -31,7 +31,7 @@ for user, submission_count in submission_counts.items():
     if user in post_test_scores:  # Ensure the user exists in both datasets
         submission_counts_list.append(submission_count)
         
-        # Extract and aggregate the post-test scores for each element using the median of multiple submissions
+        # Extract and aggregate the post-test scores for each element using the mean of multiple submissions
         grammar_scores.append(aggregate_scores(post_test_scores[user], "grammar"))
         vocabulary_scores.append(aggregate_scores(post_test_scores[user], "vocabulary"))
         organization_scores.append(aggregate_scores(post_test_scores[user], "organization"))

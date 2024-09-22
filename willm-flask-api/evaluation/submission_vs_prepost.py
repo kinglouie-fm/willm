@@ -14,13 +14,13 @@ with open('/Users/benthillen/Downloads/mongo/evaluation/user_scores_preTest.json
 with open('/Users/benthillen/Downloads/mongo/evaluation/user_scores_postTest.json', 'r') as post_file:
     post_test_scores = json.load(post_file)
 
-# Function to compute the median score across multiple submissions for a user
+# Function to compute the mean score across multiple submissions for a user
 def aggregate_scores(submissions, element):
     scores = []
     for sub_id, scores_data in submissions.items():
         if element in scores_data:
             scores.append(scores_data[element])
-    return np.median(scores) if scores else None
+    return np.mean(scores) if scores else None
 
 # Initialize empty lists to store differences and submission counts
 vocabulary_differences = []
@@ -35,7 +35,7 @@ for user, submission_count in submission_counts.items():
     if user in pre_test_scores and user in post_test_scores:  # Ensure the user exists in both datasets
         submission_counts_list.append(submission_count)
         
-        # Calculate the pre-post difference for each writing element using the median of multiple submissions
+        # Calculate the pre-post difference for each writing element using the mean of multiple submissions
         grammar_diff = aggregate_scores(post_test_scores[user], "grammar") - aggregate_scores(pre_test_scores[user], "grammar")
         vocabulary_diff = aggregate_scores(post_test_scores[user], "vocabulary") - aggregate_scores(pre_test_scores[user], "vocabulary")
         organization_diff = aggregate_scores(post_test_scores[user], "organization") - aggregate_scores(pre_test_scores[user], "organization")

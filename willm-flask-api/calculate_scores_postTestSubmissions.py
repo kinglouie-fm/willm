@@ -46,16 +46,16 @@ def parse_scores(response_text):
 
     return scores
 
-# Calculate the median for the scores
-def calculate_median(scores_list):
-    medians = {}
+# Calculate the mean for the scores
+def calculate_mean(scores_list):
+    means = {}
     for key in scores_list[0]:
         element_scores = [score[key] for score in scores_list if score[key] is not None]
         if element_scores:
-            medians[key] = statistics.median(element_scores)
+            means[key] = statistics.mean(element_scores)
         else:
-            medians[key] = None
-    return medians
+            means[key] = None
+    return means
 
 # Send request to Azure OpenAI and get scores
 def get_scores(postTestSubmission, postTestSection):
@@ -85,9 +85,9 @@ def process_user_data(user_data):
         postTestSection = submission['section']
         
         scores_list = get_scores(postTestSubmission, postTestSection)
-        median_scores = calculate_median(scores_list)
+        mean_scores = calculate_mean(scores_list)
         
-        user_results[f'submission_{idx}'] = median_scores
+        user_results[f'submission_{idx}'] = mean_scores
     
     return user_results
 

@@ -19,13 +19,13 @@ def map_user_ids_to_usernames(users_data):
             user_id_to_username[user_id] = username
     return user_id_to_username
 
-# Function to compute the median score across multiple submissions for a user
+# Function to compute the mean score across multiple submissions for a user
 def aggregate_scores(submissions, element):
     scores = []
     for sub_id, scores_data in submissions.items():
         if element in scores_data:
             scores.append(scores_data[element])
-    return np.median(scores) if scores else None
+    return np.mean(scores) if scores else None
 
 # Load necessary JSON files
 with open('/Users/benthillen/Downloads/mongo/aggregated-data/users.json', 'r') as users_file:

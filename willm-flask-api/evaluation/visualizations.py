@@ -15,13 +15,13 @@ with open('/Users/benthillen/Downloads/mongo/evaluation/user_scores_postTest.jso
 pre_scores = {"grammar": [], "vocabulary": [], "organization": [], "coherence": [], "writing_style": []}
 post_scores = {"grammar": [], "vocabulary": [], "organization": [], "coherence": [], "writing_style": []}
 
-# Function to compute the median score across multiple submissions for a user
+# Function to compute the mean score across multiple submissions for a user
 def aggregate_scores(submissions, element):
     scores = []
     for sub_id, scores_data in submissions.items():
         if element in scores_data:
             scores.append(scores_data[element])
-    return np.median(scores) if scores else None
+    return np.mean(scores) if scores else None
 
 # Extract pre-test and post-test scores and handle multiple submissions for each user
 for user, submissions in pre_test_data.items():

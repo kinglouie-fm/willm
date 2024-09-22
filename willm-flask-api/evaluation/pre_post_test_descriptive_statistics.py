@@ -15,13 +15,13 @@ def convert_to_native_types(data):
         return [convert_to_native_types(item) for item in data]
     return data
 
-# Function to compute the median score across multiple submissions for a user
+# Function to compute the mean score across multiple submissions for a user
 def aggregate_scores(submissions, element):
     scores = []
     for sub_id, scores_data in submissions.items():
         if element in scores_data:
             scores.append(scores_data[element])
-    return np.median(scores) if scores else None
+    return np.mean(scores) if scores else None
 
 # Function to calculate descriptive statistics (mean, median, std deviation)
 def calculate_descriptive_stats(data, element):

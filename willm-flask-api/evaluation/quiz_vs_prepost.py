@@ -14,13 +14,13 @@ with open('/Users/benthillen/Downloads/mongo/evaluation/user_scores_preTest.json
 with open('/Users/benthillen/Downloads/mongo/evaluation/user_scores_postTest.json', 'r') as post_file:
     post_test_data = json.load(post_file)
 
-# Function to compute the median score across multiple submissions for a user
+# Function to compute the mean score across multiple submissions for a user
 def aggregate_scores(submissions, element):
     scores = []
     for sub_id, scores_data in submissions.items():
         if element in scores_data:
             scores.append(scores_data[element])
-    return np.median(scores) if scores else None
+    return np.mean(scores) if scores else None
 
 # Initialize variables to hold quiz counts and pre-post test differences for each writing element
 quiz_counts = []

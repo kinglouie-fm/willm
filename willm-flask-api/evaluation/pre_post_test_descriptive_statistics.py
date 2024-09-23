@@ -5,16 +5,6 @@ import matplotlib.pyplot as plt  # type: ignore
 import seaborn as sns  # type: ignore
 from scipy.stats import norm, probplot  # type: ignore
 
-# Function to convert NumPy types to Python native types
-def convert_to_native_types(data):
-    if isinstance(data, np.generic):
-        return data.item()
-    if isinstance(data, dict):
-        return {key: convert_to_native_types(value) for key, value in data.items()}
-    if isinstance(data, list):
-        return [convert_to_native_types(item) for item in data]
-    return data
-
 # Function to compute the mean score across multiple submissions for a user
 def aggregate_scores(submissions, element):
     scores = []
@@ -45,6 +35,7 @@ with open('/Users/benthillen/Downloads/mongo/evaluation/user_scores_postTest.jso
 # Initialize empty dictionaries for storing pre-test and post-test scores for each writing element
 pre_scores = {"grammar": [], "vocabulary": [], "organization": [], "coherence": [], "writing_style": []}
 post_scores = {"grammar": [], "vocabulary": [], "organization": [], "coherence": [], "writing_style": []}
+improvement_scores = {"grammar": [], "vocabulary": [], "organization": [], "coherence": [], "writing_style": []}
 
 # Extract pre-test and post-test scores and compute the differences for each user
 for user, submissions in pre_test_data.items():
@@ -55,6 +46,7 @@ for user, submissions in pre_test_data.items():
             if pre_aggregated_score is not None and post_aggregated_score is not None:
                 pre_scores[element].append(pre_aggregated_score)
                 post_scores[element].append(post_aggregated_score)
+                improvement_scores[element].append(post_aggregated_score - pre_aggregated_score)
 
 # Calculate descriptive statistics for pre-test and post-test scores for each element
 pre_test_stats = {}
@@ -68,6 +60,28 @@ for element in pre_scores:
     if len(post_scores[element]) > 0:
         print(f"\n{element.capitalize()} - Post-Test")
         post_test_stats[element] = calculate_descriptive_stats(post_scores[element], element)
+
+# Convert the improvement scores to a format suitable for plotting
+improvement_data = []
+rubric_elements = []
+
+for element in improvement_scores:
+    improvement_data.extend(improvement_scores[element])
+    rubric_elements.extend([element] * len(improvement_scores[element]))
+
+# Create a DataFrame for plotting
+import pandas as pd  # type: ignore
+df_improvement = pd.DataFrame({
+    'Improvement Score': improvement_data,
+    'Rubric Element': rubric_elements
+})
+
+# Create violin plots with improvement scores and rubric elements
+plt.figure(figsize=(10, 6))
+sns.violinplot(x="Rubric Element", y="Improvement Score", data=df_improvement, inner="quartile", scale="width")
+plt.title('Improvement Scores Across Rubric Elements (Post-Test - Pre-Test)')
+plt.tight_layout()
+plt.show()
 
 # Save descriptive statistics results to a JSON file (optional)
 with open('/Users/benthillen/Downloads/mongo/evaluation/descriptive_stats_pre_post.json', 'w') as outfile:

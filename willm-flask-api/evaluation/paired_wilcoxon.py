@@ -53,16 +53,22 @@ test_results = {}
 improvement_decline_summary = {}
 
 for element in score_differences:
+    differences = score_differences[element]
+    mean_diff = np.mean(differences)
+    sd_diff = np.std(differences, ddof=1)  # Sample standard deviation
+
     if normality_results[element]["normal"]:  # Use the normality results of the differences
         # Paired t-test
         t_stat, t_p = stats.ttest_rel(pre_scores[element], post_scores[element])
-        test_results[element] = {"test": "Paired t-test", "p_value": t_p}
-        print(f"{element.capitalize()} - Paired t-test p-value: {t_p}")
+        d = mean_diff / sd_diff if sd_diff != 0 else np.nan  # Cohen's d
+        test_results[element] = {"test": "Paired t-test", "p_value": t_p, "cohens_d": d}
+        print(f"{element.capitalize()} - Paired t-test p-value: {t_p}, Cohen's d: {d}")
     else:
         # Wilcoxon signed-rank test
         w_stat, w_p = stats.wilcoxon(pre_scores[element], post_scores[element])
-        test_results[element] = {"test": "Wilcoxon signed-rank test", "p_value": w_p}
-        print(f"{element.capitalize()} - Wilcoxon signed-rank test p-value: {w_p}")
+        d = mean_diff / sd_diff if sd_diff != 0 else np.nan  # Cohen's d
+        test_results[element] = {"test": "Wilcoxon signed-rank test", "p_value": w_p, "cohens_d": d}
+        print(f"{element.capitalize()} - Wilcoxon signed-rank test p-value: {w_p}, Cohen's d: {d}")
 
 # Save test results and improvement/decline summary to files
 with open('/Users/benthillen/Downloads/mongo/evaluation/test_results.json', 'w') as outfile:

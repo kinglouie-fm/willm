@@ -48,13 +48,6 @@ for review in review_data:
 # Get the review counts for all users
 review_counts = list(user_review_counts.values())
 
-# Plot the histogram of review counts
-# plt.hist(review_counts, bins=10, edgecolor='black')
-# plt.title('Review Count Distribution')
-# plt.xlabel('Review Count')
-# plt.ylabel('Number of Users')
-# plt.show()
-
 # Calculate quartiles to determine thresholds for splitting groups
 lower_quartile = np.percentile(review_counts, 25)
 median_review_count = np.median(review_counts)
@@ -122,14 +115,15 @@ def check_normality(data):
         return p_value > 0.05  # Return True if normal, False if not normal
     return False  # Not enough data to test normality
 
+# Function to calculate eta squared
+def eta_squared_between_groups(ss_between, ss_total):
+    return ss_between / ss_total
+
 # Perform ANOVA or Kruskal-Wallis H Test based on normality across groups
 for element in high_review_differences:
     high_group = high_review_differences[element]
     medium_group = medium_review_differences[element]
     low_group = low_review_differences[element]
-    # print(f"High group {element} count: {len(high_group)}")
-    # print(f"Medium group {element} count: {len(medium_group)}")
-    # print(f"Low group {element} count: {len(low_group)}")
 
     # Ensure all groups have sufficient data for the test
     if len(high_group) > 1 and len(medium_group) > 1 and len(low_group) > 1:
@@ -141,7 +135,28 @@ for element in high_review_differences:
         if high_group_normal and medium_group_normal and low_group_normal:
             # All groups are normal, use ANOVA
             f_stat, p_value = stats.f_oneway(high_group, medium_group, low_group)
+            
+            # Calculate sum of squares, degrees of freedom, and eta squared
+            ss_between = sum(
+                [len(group) * (np.mean(group) - np.mean(high_group + medium_group + low_group))**2
+                 for group in [high_group, medium_group, low_group]]
+            )
+            ss_within = sum([sum((score - np.mean(group))**2 for score in group)
+                             for group in [high_group, medium_group, low_group]])
+            ss_total = ss_between + ss_within
+            
+            df_between = 2  # 3 groups - 1
+            df_within = len(high_group + medium_group + low_group) - 3  # Total samples - number of groups
+            
+            ms_between = ss_between / df_between
+            ms_within = ss_within / df_within
+            
+            eta_sq = eta_squared_between_groups(ss_between, ss_total)
+            
             print(f"{element.capitalize()} - ANOVA F-statistic: {f_stat:.4f}, p-value: {p_value:.4f}")
+            print(f"SS_between: {ss_between:.4f}, SS_within: {ss_within:.4f}, df_between: {df_between}, df_within: {df_within}")
+            print(f"Mean Square Between: {ms_between:.4f}, Mean Square Within: {ms_within:.4f}, Eta Squared: {eta_sq:.4f}")
+        
         else:
             # Non-normal distribution, use Kruskal-Wallis H test
             h_stat, p_value = stats.kruskal(high_group, medium_group, low_group)

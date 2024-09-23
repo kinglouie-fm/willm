@@ -2,6 +2,7 @@ import json
 import numpy as np  # type: ignore
 import matplotlib.pyplot as plt  # type: ignore
 import scipy.stats as stats  # type: ignore
+from tabulate import tabulate # type: ignore
 
 # Define the list of excluded usernames
 excluded_usernames = [
@@ -129,6 +130,49 @@ def check_normality(data):
         return p_value > 0.05  # Return True if normal, False if not normal
     return False  # Not enough data to test normality
 
+# Function to compute ANOVA SS and df
+def calculate_anova(group1, group2, group3):
+    # Combine all data
+    all_data = np.array(group1 + group2 + group3)
+    
+    # Calculate means
+    grand_mean = np.mean(all_data)
+    group1_mean = np.mean(group1)
+    group2_mean = np.mean(group2)
+    group3_mean = np.mean(group3)
+    
+    # Sum of squares between (SSB)
+    SSB = len(group1) * (group1_mean - grand_mean) ** 2 + \
+          len(group2) * (group2_mean - grand_mean) ** 2 + \
+          len(group3) * (group3_mean - grand_mean) ** 2
+    
+    # Sum of squares within (SSW)
+    SSW = sum((x - group1_mean) ** 2 for x in group1) + \
+          sum((x - group2_mean) ** 2 for x in group2) + \
+          sum((x - group3_mean) ** 2 for x in group3)
+    
+    # Degrees of freedom
+    df_between = 2  # 3 groups, so df_between = 3 - 1 = 2
+    df_within = len(group1) + len(group2) + len(group3) - 3  # Total observations - number of groups
+    
+    # Mean squares
+    MSB = SSB / df_between
+    MSW = SSW / df_within
+    
+    # F-statistic
+    F = MSB / MSW
+
+    # Calculate Total Sum of Squares (SST)
+    SST = SSB + SSW
+    
+    # Eta squared (effect size)
+    eta_squared = SSB / SST
+    
+    return SSB, SSW, df_between, df_within, F, eta_squared
+
+# Store results to print in table format later
+results_table = []
+
 # Perform ANOVA or Kruskal-Wallis H Test based on normality across groups
 for element in high_completion_differences:
     high_group = high_completion_differences[element]
@@ -143,12 +187,18 @@ for element in high_completion_differences:
         low_group_normal = check_normality(low_group)
         
         if high_group_normal and medium_group_normal and low_group_normal:
-            # All groups are normal, use ANOVA
-            f_stat, p_value = stats.f_oneway(high_group, medium_group, low_group)
-            print(f"{element.capitalize()} - ANOVA F-statistic: {f_stat:.4f}, p-value: {p_value:.4f}")
+            # Perform ANOVA with SS and df
+            SSB, SSW, df_between, df_within, F_stat, eta_squared = calculate_anova(high_group, medium_group, low_group)
+            p_value = stats.f_oneway(high_group, medium_group, low_group)[1]
+            results_table.append([element.capitalize(), SSB, SSW, df_between, df_within, F_stat, p_value, eta_squared])
         else:
             # Non-normal distribution, use Kruskal-Wallis H test
             h_stat, p_value = stats.kruskal(high_group, medium_group, low_group)
-            print(f"{element.capitalize()} - Kruskal-Wallis H-test statistic: {h_stat:.4f}, p-value: {p_value:.4f}")
+            results_table.append([element.capitalize(), "-", "-", "-", "-", h_stat, p_value])
     else:
-        print(f"{element.capitalize()} - Not enough data for statistical test")
+        results_table.append([element.capitalize(), "Not enough data", "-", "-", "-", "-", "-"])
+
+# Print results in a table format using tabulate
+headers = ["Element", "SSB", "SSW", "df_between", "df_within", "F-statistic/H-stat", "p-value", "Eta squared"]
+print("\nANOVA/Kruskal-Wallis Results:")
+print(tabulate(results_table, headers, floatfmt=".4f"))

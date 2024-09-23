@@ -1,5 +1,8 @@
 import json
 from collections import defaultdict
+import matplotlib.pyplot as plt
+import seaborn as sns
+import pandas as pd
 
 # List of excluded usernames
 excluded_usernames = [
@@ -79,10 +82,25 @@ def calculate_average_issues(issues):
         return sum(issues) / len(issues)
     return None
 
-# Calculate the average feedback (number of issues) for each score (4, 5, 6, 7, 8, and 9)
-for score_value in range(4, 10):  # Scores from 4 to 9
+# Calculate the average feedback (number of issues) for each score
+for score_value in range(1, 11):
     print(f"\nAverage feedback (issues) for score {score_value}:")
     
     for element, issues in score_aggregates[score_value].items():
         avg_issues = calculate_average_issues(issues)
-        print(f"{element.capitalize()}: {avg_issues:.2f}" if avg_issues is not None else f"{element.capitalize()}: No data")
+        print(f"{element.capitalize()}: {avg_issues:.2f}, len: {len(issues)}" if avg_issues is not None else f"{element.capitalize()}: No data")
+
+        for num_issues in issues:
+            scores_data.append({'score': score_value, 'writing_element': element, 'num_issues': num_issues})
+
+# Convert to a pandas DataFrame for easy plotting
+scores_df = pd.DataFrame(scores_data)
+
+# Create a violin plot to show the distribution of scores for each writing element
+plt.figure(figsize=(12, 8))
+sns.violinplot(x='writing_element', y='score', data=scores_df, inner="quartile", density_norm="width")
+plt.title('Score Distribution for Each Writing Element')
+plt.xlabel('Writing Element')
+plt.ylabel('Score')
+plt.xticks(rotation=45)
+plt.show()

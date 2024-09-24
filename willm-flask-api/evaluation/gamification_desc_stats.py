@@ -16,6 +16,7 @@ with open('/Users/benthillen/Downloads/mongo/aggregated-data/users.json', 'r') a
 
 # Initialize lists to hold gamification data
 xp_list = []
+level_list = []
 daily_streaks_list = []
 weekly_streaks_list = []
 badges_count_list = []
@@ -32,8 +33,9 @@ for user in users_data:
     
     # Extract gamification metrics
     xp = user.get('xp', 0)
-    daily_streak = user.get('daily_streak', 0)
-    weekly_streak = user.get('weekly_streak', 0)
+    level = user.get('level', 0)
+    daily_streak = user.get('achievements', {}).get('max_consecutive_days', 0)
+    weekly_streak = user.get('achievements', {}).get('max_weekly_streaks', 0)
     
     badges = user.get('badges', [])
     quizzes_completed = user.get('achievements', {}).get('quizzes_completed', 0)
@@ -41,6 +43,7 @@ for user in users_data:
     
     # Append to respective lists
     xp_list.append(xp)
+    level_list.append(level)
     daily_streaks_list.append(daily_streak)
     weekly_streaks_list.append(weekly_streak)
     badges_count_list.append(len(badges))
@@ -72,6 +75,9 @@ print("Descriptive Statistics for Gamification Metrics:\n")
 print("XP:")
 print(calculate_statistics(xp_list))
 
+print("\nLevel:")
+print(calculate_statistics(level_list))
+
 print("\nDaily Streaks:")
 print(calculate_statistics(daily_streaks_list))
 
@@ -90,6 +96,7 @@ print(calculate_statistics(correct_answers_list))
 # Create a DataFrame for seaborn plotting
 df = pd.DataFrame({
     'XP': xp_list,
+    'Level': level_list,
     'Daily Streaks': daily_streaks_list,
     'Weekly Streaks': weekly_streaks_list,
     'Badges Count': badges_count_list,
@@ -103,6 +110,15 @@ sns.boxplot(y=xp_list, showfliers=False)
 sns.stripplot(y=xp_list, color='black', jitter=True, alpha=0.5)
 plt.title('XP Distribution')
 plt.ylabel('XP')
+plt.tight_layout()
+plt.show()
+
+# Plot Level Boxplot with Jitter
+plt.figure(figsize=(6, 4))
+sns.boxplot(y=level_list, showfliers=False)
+sns.stripplot(y=level_list, color='black', jitter=True, alpha=0.5)
+plt.title('Level Distribution')
+plt.ylabel('Level')
 plt.tight_layout()
 plt.show()
 
@@ -135,7 +151,7 @@ plt.tight_layout()
 plt.show()
 
 # Plot Correct Answers Boxplot with Jitter
-plt.figure(figsize=(6, 4))
+plt.figure(figsize=(4, 2))
 sns.boxplot(y=correct_answers_list, showfliers=False)
 sns.stripplot(y=correct_answers_list, color='black', jitter=True, alpha=0.5)
 plt.title('Correct Answers Distribution')

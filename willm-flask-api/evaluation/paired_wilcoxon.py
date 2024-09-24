@@ -62,13 +62,12 @@ for element in score_differences:
         t_stat, t_p = stats.ttest_rel(pre_scores[element], post_scores[element])
         d = mean_diff / sd_diff if sd_diff != 0 else np.nan  # Cohen's d
         test_results[element] = {"test": "Paired t-test", "p_value": t_p, "cohens_d": d}
-        print(f"{element.capitalize()} - Paired t-test p-value: {t_p}, Cohen's d: {d}")
+        print(f"{element.capitalize()} - Paired t-test t-value: {t_stat}, p-value: {t_p}, Cohen's d: {d}")
     else:
         # Wilcoxon signed-rank test
         w_stat, w_p = stats.wilcoxon(pre_scores[element], post_scores[element])
-        d = mean_diff / sd_diff if sd_diff != 0 else np.nan  # Cohen's d
-        test_results[element] = {"test": "Wilcoxon signed-rank test", "p_value": w_p, "cohens_d": d}
-        print(f"{element.capitalize()} - Wilcoxon signed-rank test p-value: {w_p}, Cohen's d: {d}")
+        test_results[element] = {"test": "Wilcoxon signed-rank test", "p_value": w_p}
+        print(f"{element.capitalize()} - Wilcoxon signed-rank test w-value: {w_stat}, p-value: {w_p}")
 
 # Save test results and improvement/decline summary to files
 with open('/Users/benthillen/Downloads/mongo/evaluation/test_results.json', 'w') as outfile:

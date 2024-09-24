@@ -2,6 +2,7 @@ import json
 import numpy as np # type: ignore
 from collections import defaultdict # type: ignore
 import scipy.stats as stats # type: ignore
+import matplotlib.pyplot as plt # type: ignore
 
 # List of excluded usernames
 excluded_usernames = [
@@ -87,12 +88,24 @@ def check_normality(data):
         return p_value > 0.05  # Return True if normal, False if not normal
     return False  # Not enough data to test normality
 
+def plot_scatter(review_counts, score_differences, element):
+    plt.figure(figsize=(8, 6))
+    plt.scatter(review_counts, score_differences, alpha=0.6)
+    plt.title(f'Scatter Plot: Review Counts vs {element.capitalize()} Score Differences')
+    plt.xlabel('Review Counts')
+    plt.ylabel(f'{element.capitalize()} Pre-Post Test Score Difference')
+    plt.grid(True)
+    plt.show()
+
 # Perform correlation analysis (Pearson or Kendall's Tau) based on normality of differences
 correlation_results = {}
 
 print(num_users_used)
 
 for element, differences in score_differences.items():
+    # Plot the scatter plot for linearity check
+    plot_scatter(review_counts, differences, element)
+
     # Check normality of score differences
     is_normal = check_normality(differences)
     

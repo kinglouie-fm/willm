@@ -1,6 +1,7 @@
 import json
 import numpy as np # type: ignore
 import scipy.stats as stats # type: ignore
+import matplotlib.pyplot as plt # type: ignore
 
 # Load the submission count data
 with open('/Users/benthillen/Downloads/mongo/evaluation/user_submission_counts.json', 'r') as submission_file:
@@ -69,11 +70,24 @@ for element, differences in zip(
         normality_results[element] = {"normal": None, "p_value": None}
         print(f"{element.capitalize()} - Not enough data for normality test")
 
+# Function to create scatter plots for linearity check
+def plot_scatter(submission_counts, score_differences, element):
+    plt.figure(figsize=(8, 6))
+    plt.scatter(submission_counts, score_differences, alpha=0.7)
+    plt.title(f'Submission Counts vs {element.capitalize()} Score Differences')
+    plt.xlabel('Submission Counts (Engagement)')
+    plt.ylabel(f'{element.capitalize()} Pre-Post Score Differences')
+    plt.grid(True)
+    plt.show()
+
 # Perform Pearson or Kendall's Tau based on the normality test result
 for element, differences in zip(
     ["grammar", "vocabulary", "organization", "coherence", "writing_style"], 
     [grammar_differences, vocabulary_differences, organization_differences, coherence_differences, writing_style_differences]
 ):
+    # Plot the scatter plot to check for linearity
+    plot_scatter(submission_counts_list, differences, element)
+    
     if normality_results[element]["normal"] == True:
         # Use Pearson correlation if the data is normally distributed
         pearson_corr, pearson_p = stats.pearsonr(submission_counts_array, differences)

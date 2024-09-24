@@ -1,62 +1,20 @@
 import json
 import numpy as np  # type: ignore
+import matplotlib.pyplot as plt  # type: ignore
 import scipy.stats as stats  # type: ignore
 from tabulate import tabulate # type: ignore
 
-# List of excluded usernames
-excluded_usernames = [
-    'thillen', 'thillen1', 'hengover', 'jamal76er', 'jonathaMCNEILL', 'gilles', 'Fateme',
-    'mou', 'hanbin.9797@gmail.com', 'shyshin', 'a', 'test4', 'test5', 'jonas'
-]
+# Load the submission count data
+with open('/Users/benthillen/Downloads/mongo/evaluation/user_submission_counts.json', 'r') as submission_file:
+    submission_counts = json.load(submission_file)
 
-# Function to map user_id to username and XP
-def extract_user_xp(users_data):
-    username_to_xp = {}
-    for user in users_data:
-        username = user.get('username')
-        xp = user.get('xp', 0)  # Get XP, default to 0 if not found
-        if username not in excluded_usernames:
-            username_to_xp[username] = xp
-    return username_to_xp
-
-# Load the users data from users.json
-with open('/Users/benthillen/Downloads/mongo/aggregated-data/users.json', 'r') as users_file:
-    users_data = json.load(users_file)
-
-# Map usernames to XP values
-username_to_xp = extract_user_xp(users_data)
-
-# Extract XP values and sort them
-xp_values = list(username_to_xp.values())
-
-# Calculate quartiles to determine thresholds for splitting groups
-lower_quartile = np.percentile(xp_values, 25)
-median_xp = np.median(xp_values)
-upper_quartile = np.percentile(xp_values, 75)
-
-print(f"25th percentile XP: {lower_quartile}")
-print(f"Median XP: {median_xp}")
-print(f"75th percentile XP: {upper_quartile}")
-
-# Split users into high, medium, and low engagement groups based on XP quartiles
-high_engagement_users = []
-medium_engagement_users = []
-low_engagement_users = []
-
-for username, xp in username_to_xp.items():
-    if xp >= upper_quartile:
-        high_engagement_users.append(username)
-    elif lower_quartile < xp < upper_quartile:
-        medium_engagement_users.append(username)
-    else:
-        low_engagement_users.append(username)
-
-# Load pre-test and post-test scores
+# Load the pre-test scores data
 with open('/Users/benthillen/Downloads/mongo/evaluation/user_scores_preTest.json', 'r') as pre_file:
-    pre_test_data = json.load(pre_file)
+    pre_test_scores = json.load(pre_file)
 
+# Load the post-test scores data
 with open('/Users/benthillen/Downloads/mongo/evaluation/user_scores_postTest.json', 'r') as post_file:
-    post_test_data = json.load(post_file)
+    post_test_scores = json.load(post_file)
 
 # Function to compute the mean score across multiple submissions for a user
 def aggregate_scores(submissions, element):
@@ -66,28 +24,46 @@ def aggregate_scores(submissions, element):
             scores.append(scores_data[element])
     return np.mean(scores) if scores else None
 
-# Initialize lists for storing the test score differences (post-test - pre-test) for each group
-high_engagement_differences = {"grammar": [], "vocabulary": [], "organization": [], "coherence": [], "writing_style": []}
-medium_engagement_differences = {"grammar": [], "vocabulary": [], "organization": [], "coherence": [], "writing_style": []}
-low_engagement_differences = {"grammar": [], "vocabulary": [], "organization": [], "coherence": [], "writing_style": []}
+# Extract submission counts and calculate quartiles to split into low, medium, high groups
+submission_counts_list = [v for k, v in submission_counts.items()]
+lower_quartile = np.percentile(submission_counts_list, 25)
+upper_quartile = np.percentile(submission_counts_list, 75)
+
+# Split users into low, medium, and high submission groups based on quartiles
+high_submission_users = []
+medium_submission_users = []
+low_submission_users = []
+
+for username, count in submission_counts.items():
+    if count >= upper_quartile:
+        high_submission_users.append(username)
+    elif lower_quartile <= count < upper_quartile:
+        medium_submission_users.append(username)
+    else:
+        low_submission_users.append(username)
+
+# Initialize lists for storing test score differences (post-test - pre-test) for each group
+high_submission_differences = {"grammar": [], "vocabulary": [], "organization": [], "coherence": [], "writing_style": []}
+medium_submission_differences = {"grammar": [], "vocabulary": [], "organization": [], "coherence": [], "writing_style": []}
+low_submission_differences = {"grammar": [], "vocabulary": [], "organization": [], "coherence": [], "writing_style": []}
 
 # Compute the test score differences for each user and assign them to the appropriate group
-for username in username_to_xp:
-    if username in pre_test_data and username in post_test_data:
-        for element in high_engagement_differences:
-            pre_aggregated_score = aggregate_scores(pre_test_data[username], element)
-            post_aggregated_score = aggregate_scores(post_test_data[username], element)
+for username in submission_counts:
+    if username in pre_test_scores and username in post_test_scores:
+        for element in high_submission_differences:
+            pre_aggregated_score = aggregate_scores(pre_test_scores[username], element)
+            post_aggregated_score = aggregate_scores(post_test_scores[username], element)
             
             if pre_aggregated_score is not None and post_aggregated_score is not None:
                 score_difference = post_aggregated_score - pre_aggregated_score
                 
-                # Assign to the appropriate engagement group
-                if username in high_engagement_users:
-                    high_engagement_differences[element].append(score_difference)
-                elif username in medium_engagement_users:
-                    medium_engagement_differences[element].append(score_difference)
+                # Assign to the appropriate group
+                if username in high_submission_users:
+                    high_submission_differences[element].append(score_difference)
+                elif username in medium_submission_users:
+                    medium_submission_differences[element].append(score_difference)
                 else:
-                    low_engagement_differences[element].append(score_difference)
+                    low_submission_differences[element].append(score_difference)
 
 # Function to check normality using Shapiro-Wilk Test
 def check_normality(data):
@@ -134,18 +110,14 @@ def check_homogeneity(group1, group2, group3):
     stat, p_value = stats.levene(group1, group2, group3)
     return p_value > 0.05
 
-def check_homogeneity(group1, group2, group3):
-    stat, p_value = stats.levene(group1, group2, group3)
-    return p_value > 0.05
-
 # Store results to print in table format later
 results_table = []
 
 # Perform ANOVA or Kruskal-Wallis H Test based on normality across groups
-for element in high_engagement_differences:
-    high_group = high_engagement_differences[element]
-    medium_group = medium_engagement_differences[element]
-    low_group = low_engagement_differences[element]
+for element in high_submission_differences:
+    high_group = high_submission_differences[element]
+    medium_group = medium_submission_differences[element]
+    low_group = low_submission_differences[element]
 
     # Ensure all groups have sufficient data for the test
     if len(high_group) > 1 and len(medium_group) > 1 and len(low_group) > 1:
@@ -165,6 +137,7 @@ for element in high_engagement_differences:
             results_table.append([element.capitalize(), SSB, SSW, df_between, df_within, F_stat, p_value])
         else:
             # Non-normal distribution, use Kruskal-Wallis H test
+            print(f"Performing Kruskal-Wallis H Test for {element.capitalize()}")
             h_stat, p_value = stats.kruskal(high_group, medium_group, low_group)
             results_table.append([element.capitalize(), "-", "-", "-", "-", h_stat, p_value])
     else:

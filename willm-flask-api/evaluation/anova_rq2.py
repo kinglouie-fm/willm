@@ -170,6 +170,10 @@ def calculate_anova(group1, group2, group3):
     
     return SSB, SSW, df_between, df_within, F, eta_squared
 
+def check_homogeneity(group1, group2, group3):
+    stat, p_value = stats.levene(group1, group2, group3)
+    return p_value > 0.05
+
 # Store results to print in table format later
 results_table = []
 
@@ -185,9 +189,13 @@ for element in high_completion_differences:
         high_group_normal = check_normality(high_group)
         medium_group_normal = check_normality(medium_group)
         low_group_normal = check_normality(low_group)
+
+        # Check for homogeneity of variances
+        homogeneity = check_homogeneity(high_group, medium_group, low_group)
         
-        if high_group_normal and medium_group_normal and low_group_normal:
+        if high_group_normal and medium_group_normal and low_group_normal and homogeneity:
             # Perform ANOVA with SS and df
+            print(f"Performing ANOVA for {element.capitalize()}")
             SSB, SSW, df_between, df_within, F_stat, eta_squared = calculate_anova(high_group, medium_group, low_group)
             p_value = stats.f_oneway(high_group, medium_group, low_group)[1]
             results_table.append([element.capitalize(), SSB, SSW, df_between, df_within, F_stat, p_value, eta_squared])

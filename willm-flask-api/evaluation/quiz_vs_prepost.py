@@ -1,6 +1,7 @@
 import json
 import numpy as np # type: ignore
 import scipy.stats as stats # type: ignore
+import matplotlib.pyplot as plt # type: ignore
 
 # Load the quiz counts data
 with open('/Users/benthillen/Downloads/mongo/evaluation/user_quiz_counts.json', 'r') as quiz_file:
@@ -57,10 +58,22 @@ def check_normality(scores):
     stat, p_value = stats.shapiro(scores)
     return p_value > alpha  # True if normally distributed
 
+def plot_scatter(quiz_counts, score_differences, element):
+    plt.figure(figsize=(8, 6))
+    plt.scatter(quiz_counts, score_differences, alpha=0.6)
+    plt.title(f'Scatter Plot: Quiz Counts vs {element.capitalize()} Score Differences')
+    plt.xlabel('Quiz Counts')
+    plt.ylabel(f'{element.capitalize()} Pre-Post Test Score Difference')
+    plt.grid(True)
+    plt.show()
+
 # Perform correlation analysis for each writing element
 correlation_results = {}
 
 for element, differences in score_differences.items():
+    # Plot the scatter plot for linearity check
+    plot_scatter(quiz_counts, differences, element)
+
     # Check if the pre-post differences are normally distributed
     is_normal = check_normality(differences)
     

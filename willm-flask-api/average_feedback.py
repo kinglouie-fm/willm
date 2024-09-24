@@ -1,8 +1,8 @@
 import json
 from collections import defaultdict
-import matplotlib.pyplot as plt
-import seaborn as sns
-import pandas as pd
+import matplotlib.pyplot as plt # type: ignore
+import seaborn as sns # type: ignore
+import pandas as pd # type: ignore
 
 # List of excluded usernames
 excluded_usernames = [

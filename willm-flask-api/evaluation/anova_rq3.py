@@ -119,6 +119,10 @@ def check_normality(data):
 def eta_squared_between_groups(ss_between, ss_total):
     return ss_between / ss_total
 
+def check_homogeneity(group1, group2, group3):
+    stat, p_value = stats.levene(group1, group2, group3)
+    return p_value > 0.05
+
 # Perform ANOVA or Kruskal-Wallis H Test based on normality across groups
 for element in high_review_differences:
     high_group = high_review_differences[element]
@@ -131,8 +135,12 @@ for element in high_review_differences:
         high_group_normal = check_normality(high_group)
         medium_group_normal = check_normality(medium_group)
         low_group_normal = check_normality(low_group)
+
+        # Check for homogeneity of variances
+        homogeneity = check_homogeneity(high_group, medium_group, low_group)
         
-        if high_group_normal and medium_group_normal and low_group_normal:
+        if high_group_normal and medium_group_normal and low_group_normal and homogeneity:
+            print(f"Performing ANOVA for {element.capitalize()}")
             # All groups are normal, use ANOVA
             f_stat, p_value = stats.f_oneway(high_group, medium_group, low_group)
             
@@ -159,6 +167,7 @@ for element in high_review_differences:
         
         else:
             # Non-normal distribution, use Kruskal-Wallis H test
+            print(f"Performing KRUSKAL-WALLIS for {element.capitalize()}")
             h_stat, p_value = stats.kruskal(high_group, medium_group, low_group)
             print(f"{element.capitalize()} - Kruskal-Wallis H-test statistic: {h_stat:.4f}, p-value: {p_value:.4f}")
     else:

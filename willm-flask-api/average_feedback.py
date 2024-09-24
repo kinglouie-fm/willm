@@ -33,7 +33,7 @@ with open('/Users/benthillen/Downloads/mongo/aggregated-data/scores.json', 'r') 
 # Map user IDs to usernames
 user_id_to_username = map_user_ids_to_usernames(users_data)
 
-# Dictionary to store the total issues for each score value (4, 5, 6, 7, 8, 9) per writing element
+# Dictionary to store the total issues for each score value (3, 4, 5, 6, 7, 8, 9) per writing element
 score_aggregates = defaultdict(lambda: defaultdict(list))
 
 # Process scores and map them to texts and users
@@ -51,11 +51,26 @@ for score in scores_data:
     if not matching_text:
         continue
 
-    # Find issues related to the text
+    # Find issues related to the text and count the number of issues by type
     matching_issues = [issue for issue in issues_data if issue['text']['$oid'] == text_id]
+    
+    # Initialize counters for each writing element
+    grammar_vocab_issues = 0
+    organization_issues = 0
+    coherence_issues = 0
+    writing_style_issues = 0
 
-    # Count the number of issues as feedback
-    num_issues = len(matching_issues)
+    # Categorize issues based on their 'type'
+    for issue in matching_issues:
+        issue_type = issue['type']
+        if issue_type == 'grammar_vocab':
+            grammar_vocab_issues += 1
+        elif issue_type == 'organization':
+            organization_issues += 1
+        elif issue_type == 'coherence':
+            coherence_issues += 1
+        elif issue_type == 'writingStyle':
+            writing_style_issues += 1
 
     # Extract scores for each writing element (handle missing data gracefully)
     grammar_score = int(score['grammar']['$numberInt']) if 'grammar' in score else None
@@ -64,17 +79,18 @@ for score in scores_data:
     coherence_score = int(score['coherence']['$numberInt']) if 'coherence' in score else None
     writing_style_score = int(score['writing_style']['$numberInt']) if 'writing_style' in score else None
 
+    # Combine grammar and vocabulary scores into one 'grammar_vocab' score
+    if grammar_score is not None or vocabulary_score is not None:
+        grammar_vocab_score = grammar_score or vocabulary_score  # Use whichever score is available
+        score_aggregates[grammar_vocab_score]['grammar_vocab'].append(grammar_vocab_issues)
+
     # Store the number of issues for each writing element by score, if score exists
-    if grammar_score is not None:
-        score_aggregates[grammar_score]['grammar'].append(num_issues)
-    if vocabulary_score is not None:
-        score_aggregates[vocabulary_score]['vocabulary'].append(num_issues)
     if organization_score is not None:
-        score_aggregates[organization_score]['organization'].append(num_issues)
+        score_aggregates[organization_score]['organization'].append(organization_issues)
     if coherence_score is not None:
-        score_aggregates[coherence_score]['coherence'].append(num_issues)
+        score_aggregates[coherence_score]['coherence'].append(coherence_issues)
     if writing_style_score is not None:
-        score_aggregates[writing_style_score]['writing_style'].append(num_issues)
+        score_aggregates[writing_style_score]['writing_style'].append(writing_style_issues)
 
 # Function to calculate the average number of issues for each score
 def calculate_average_issues(issues):
@@ -82,16 +98,21 @@ def calculate_average_issues(issues):
         return sum(issues) / len(issues)
     return None
 
+# Define the order in which writing elements should appear
+writing_elements_order = ['grammar_vocab', 'organization', 'coherence', 'writing_style']
+
 # Calculate the average feedback (number of issues) for each score
 for score_value in range(1, 11):
     print(f"\nAverage feedback (issues) for score {score_value}:")
     
-    for element, issues in score_aggregates[score_value].items():
+    # Ensure the writing elements are printed in the specified order
+    for element in writing_elements_order:
+        issues = score_aggregates[score_value].get(element, [])
         avg_issues = calculate_average_issues(issues)
-        print(f"{element.capitalize()}: {avg_issues:.2f}, len: {len(issues)}" if avg_issues is not None else f"{element.capitalize()}: No data")
-
-        for num_issues in issues:
-            scores_data.append({'score': score_value, 'writing_element': element, 'num_issues': num_issues})
+        if avg_issues is not None:
+            print(f"{element.replace('_', ' ').capitalize()}: {avg_issues:.2f}, len: {len(issues)}")
+        else:
+            print(f"{element.replace('_', ' ').capitalize()}: No data")
 
 # Convert to a pandas DataFrame for easy plotting
 scores_df = pd.DataFrame(scores_data)

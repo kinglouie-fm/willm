@@ -19,7 +19,8 @@ for entry in texts_data:
         "language": entry["language"],
         "correctionModel": entry["correctionModel"],
         "furtherCorrectionModel": entry["furtherCorrectionModel"],
-        "scoreModel": entry["scoreModel"]
+        "scoreModel": entry["scoreModel"],
+        "createdAt": entry["createdAt"]["$date"]["$numberLong"]
     }
 
     # If the user already exists in the dictionary, append the submission

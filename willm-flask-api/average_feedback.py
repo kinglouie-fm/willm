@@ -51,20 +51,27 @@ for score in scores_data:
     if not matching_text:
         continue
 
-    # Find issues related to the text and count the number of issues by type
-    matching_issues = [issue for issue in issues_data if issue['text']['$oid'] == text_id]
-    
-    # Initialize counters for each writing element
-    grammar_vocab_issues = 0
+    # Find issues related to the text and count the number of issues by type and category
+    grammar_issues = 0
+    vocabulary_issues = 0
     organization_issues = 0
     coherence_issues = 0
     writing_style_issues = 0
 
-    # Categorize issues based on their 'type'
+    # Find issues related to the text and count the number of issues by type
+    matching_issues = [issue for issue in issues_data if issue['text']['$oid'] == text_id]
+
+    # Categorize issues based on their 'type' and 'category'
     for issue in matching_issues:
         issue_type = issue['type']
+        issue_category = issue['category'].lower()  # normalize the case
+
         if issue_type == 'grammar_vocab':
-            grammar_vocab_issues += 1
+            # Check if it's a vocabulary issue (inappropriate word choice or redundancy)
+            if issue_category in ['inappropriate word choice', 'redundancy']:
+                vocabulary_issues += 1
+            else:
+                grammar_issues += 1
         elif issue_type == 'organization':
             organization_issues += 1
         elif issue_type == 'coherence':
@@ -79,10 +86,11 @@ for score in scores_data:
     coherence_score = int(score['coherence']['$numberInt']) if 'coherence' in score else None
     writing_style_score = int(score['writing_style']['$numberInt']) if 'writing_style' in score else None
 
-    # Combine grammar and vocabulary scores into one 'grammar_vocab' score
-    if grammar_score is not None or vocabulary_score is not None:
-        grammar_vocab_score = grammar_score or vocabulary_score  # Use whichever score is available
-        score_aggregates[grammar_vocab_score]['grammar_vocab'].append(grammar_vocab_issues)
+    # Store the number of issues for grammar and vocabulary separately
+    if grammar_score is not None:
+        score_aggregates[grammar_score]['grammar'].append(grammar_issues)
+    if vocabulary_score is not None:
+        score_aggregates[vocabulary_score]['vocabulary'].append(vocabulary_issues)
 
     # Store the number of issues for each writing element by score, if score exists
     if organization_score is not None:
@@ -99,7 +107,7 @@ def calculate_average_issues(issues):
     return None
 
 # Define the order in which writing elements should appear
-writing_elements_order = ['grammar_vocab', 'organization', 'coherence', 'writing_style']
+writing_elements_order = ['grammar', 'vocabulary', 'organization', 'coherence', 'writing_style']
 
 # Calculate the average feedback (number of issues) for each score
 for score_value in range(1, 11):
@@ -113,15 +121,3 @@ for score_value in range(1, 11):
             print(f"{element.replace('_', ' ').capitalize()}: {avg_issues:.2f}, len: {len(issues)}")
         else:
             print(f"{element.replace('_', ' ').capitalize()}: No data")
-
-# Convert to a pandas DataFrame for easy plotting
-scores_df = pd.DataFrame(scores_data)
-
-# Create a violin plot to show the distribution of scores for each writing element
-plt.figure(figsize=(12, 8))
-sns.violinplot(x='writing_element', y='score', data=scores_df, inner="quartile", density_norm="width")
-plt.title('Score Distribution for Each Writing Element')
-plt.xlabel('Writing Element')
-plt.ylabel('Score')
-plt.xticks(rotation=45)
-plt.show()

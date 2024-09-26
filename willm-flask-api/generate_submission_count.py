@@ -1,4 +1,7 @@
 import json
+from datetime import datetime
+from collections import defaultdict
+import numpy as np  # type: ignore
 
 # Load the exclusion list
 excluded_usernames = [
@@ -17,8 +20,8 @@ user_id_to_username = {user['_id']: user['username'] for user in users_data}
 with open('/Users/benthillen/Downloads/mongo/aggregated-data/user_texts.json', 'r') as user_texts_file:
     user_texts_data = json.load(user_texts_file)
 
-# Create a dictionary to store the number of submissions per username (excluding specific users)
-user_submission_counts = {}
+# Dictionary to store submission counts and timestamps per user
+user_submission_data = defaultdict(list)
 
 # Loop through each user in the user_texts data
 for user in user_texts_data:
@@ -33,15 +36,52 @@ for user in user_texts_data:
             print(f"Skipping user: {username}")
             continue
     
-        # Count the number of submissions for the user if not excluded
-        num_submissions = len(user["submissions"])
-        
-        # Store the count of submissions for the user (use username as key)
-        user_submission_counts[username] = num_submissions
+        # Store submission counts and timestamps
+        for submission in user["submissions"]:
+            created_at_timestamp = int(submission["createdAt"]) / 1000  # Convert from ms to seconds
+            created_at_date = datetime.fromtimestamp(created_at_timestamp)
+            user_submission_data[username].append(created_at_date)
 
-# Print or save the result
-print(user_submission_counts)
+# Now, let's calculate the overall submission statistics
+overall_submission_counts = [len(submissions) for submissions in user_submission_data.values()]
 
-# Optionally, save the submission counts to a file
-with open('/Users/benthillen/Downloads/mongo/evaluation/user_submission_counts.json', 'w') as outfile:
-    json.dump(user_submission_counts, outfile, indent=4)
+# Calculate overall statistics
+mean_overall = np.mean(overall_submission_counts)
+median_overall = np.median(overall_submission_counts)
+min_overall = np.min(overall_submission_counts)
+max_overall = np.max(overall_submission_counts)
+stddev_overall = np.std(overall_submission_counts)
+
+# Print the overall submission stats
+print(f"Overall Submissions - Mean: {mean_overall}, Median: {median_overall}, Min: {min_overall}, Max: {max_overall}, Std Dev: {stddev_overall}")
+
+# Function to calculate weekly submissions
+def calculate_submissions_per_week(submission_dates):
+    if not submission_dates:
+        return 0
+
+    first_submission = min(submission_dates)
+    last_submission = max(submission_dates)
+    
+    # Calculate total weeks between first and last submission
+    total_weeks = (last_submission - first_submission).days / 7.0
+
+    # Avoid division by zero in case of single submission (0 weeks difference)
+    if total_weeks == 0:
+        total_weeks = 1
+
+    # Return average submissions per week
+    return len(submission_dates) / total_weeks
+
+# Calculate submission rates per week for each user
+weekly_submission_rates = [calculate_submissions_per_week(submissions) for submissions in user_submission_data.values()]
+
+# Calculate weekly statistics
+mean_weekly = np.mean(weekly_submission_rates)
+median_weekly = np.median(weekly_submission_rates)
+min_weekly = np.min(weekly_submission_rates)
+max_weekly = np.max(weekly_submission_rates)
+stddev_weekly = np.std(weekly_submission_rates)
+
+# Print weekly submission stats
+print(f"Weekly Submissions - Mean: {mean_weekly}, Median: {median_weekly}, Min: {min_weekly}, Max: {max_weekly}, Std Dev: {stddev_weekly}")

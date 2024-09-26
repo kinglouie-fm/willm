@@ -86,7 +86,7 @@ for element, differences in zip(
     [grammar_differences, vocabulary_differences, organization_differences, coherence_differences, writing_style_differences]
 ):
     # Plot the scatter plot to check for linearity
-    plot_scatter(submission_counts_list, differences, element)
+    # plot_scatter(submission_counts_list, differences, element)
     
     if normality_results[element]["normal"] == True:
         # Use Pearson correlation if the data is normally distributed

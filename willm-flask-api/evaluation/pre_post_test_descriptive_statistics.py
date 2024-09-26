@@ -77,11 +77,11 @@ df_improvement = pd.DataFrame({
 })
 
 # Create violin plots with improvement scores and rubric elements
-plt.figure(figsize=(10, 6))
-sns.violinplot(x="Rubric Element", y="Improvement Score", data=df_improvement, inner="quartile", scale="width")
-plt.title('Improvement Scores Across Rubric Elements (Post-Test - Pre-Test)')
-plt.tight_layout()
-plt.show()
+# plt.figure(figsize=(10, 6))
+# sns.violinplot(x="Rubric Element", y="Improvement Score", data=df_improvement, inner="quartile", density_norm='width')
+# plt.title('Improvement Scores Across Rubric Elements (Post-Test - Pre-Test)')
+# plt.tight_layout()
+# plt.show()
 
 # Save descriptive statistics results to a JSON file (optional)
 with open('/Users/benthillen/Downloads/mongo/evaluation/descriptive_stats_pre_post.json', 'w') as outfile:

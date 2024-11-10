@@ -106,11 +106,17 @@ def calculate_average_issues(issues):
         return sum(issues) / len(issues)
     return None
 
+plot_data = {
+    'score': [],
+    'average_issues': [],
+    'writing_element': []
+}
+
 # Define the order in which writing elements should appear
 writing_elements_order = ['grammar', 'vocabulary', 'organization', 'coherence', 'writing_style']
 
 # Calculate the average feedback (number of issues) for each score
-for score_value in range(1, 11):
+for score_value in range(2, 10):
     print(f"\nAverage feedback (issues) for score {score_value}:")
     
     # Ensure the writing elements are printed in the specified order
@@ -119,5 +125,31 @@ for score_value in range(1, 11):
         avg_issues = calculate_average_issues(issues)
         if avg_issues is not None:
             print(f"{element.replace('_', ' ').capitalize()}: {avg_issues:.2f}, len: {len(issues)}")
+            plot_data['score'].append(score_value)
+            plot_data['average_issues'].append(avg_issues)
+            plot_data['writing_element'].append(element)
         else:
             print(f"{element.replace('_', ' ').capitalize()}: No data")
+
+# Convert plot_data to a pandas DataFrame
+df = pd.DataFrame(plot_data)
+sns.set_palette('Set2')
+
+plt.rcParams.update({'font.size': 16})  # 12px font size
+
+# Plotting the data using seaborn
+plt.figure(figsize=(10, 6))
+sns.lineplot(x='score', y='average_issues', hue='writing_element', marker='o', data=df, linewidth=3)
+
+# Set 12px font sizes for specific elements
+plt.title('Average Number of Identified Issues by Score')
+plt.xlabel('Score')
+plt.ylabel('Average Number of Issues')
+plt.legend(title='Writing Element')
+
+# Enable grid and adjust layout
+plt.grid(True)
+plt.tight_layout()
+
+# Show the plot
+plt.show()

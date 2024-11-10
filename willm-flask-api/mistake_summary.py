@@ -2,6 +2,7 @@ import json
 import matplotlib.pyplot as plt # type: ignore
 from collections import Counter
 import numpy as np # type: ignore
+import seaborn as sns
 
 # Load data from user_mistakes_prePostTest.json
 input_json_file = '/Users/benthillen/Downloads/mongo/evaluation/user_mistakes_prePostTest.json'
@@ -64,13 +65,20 @@ print_statistics("Post-test Vocabulary Mistakes", post_vocab_list)
 # Create side-by-side bar chart for pre-test and post-test grammar and vocabulary mistakes
 def plot_side_by_side_barchart(pre_grammar, post_grammar, pre_vocab, post_vocab):
     labels = ['Grammar', 'Vocabulary']
+
+    # Set font size globally to 16px
+    plt.rcParams.update({'font.size': 16})
+    
+    # Use the 'Set2' color palette
+    sns.set_palette('Set2')
+    
     pre_means = [np.mean(pre_grammar), np.mean(pre_vocab)]
     post_means = [np.mean(post_grammar), np.mean(post_vocab)]
 
     x = np.arange(len(labels))  # label locations
-    width = 0.35  # width of the bars
+    width = 0.25  # width of the bars
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(9, 7))  # Increased figure size for better spacing
     rects1 = ax.bar(x - width/2, pre_means, width, label='Pre-test')
     rects2 = ax.bar(x + width/2, post_means, width, label='Post-test')
 
@@ -86,13 +94,15 @@ def plot_side_by_side_barchart(pre_grammar, post_grammar, pre_vocab, post_vocab)
     def add_labels(rects):
         for rect in rects:
             height = rect.get_height()
-            ax.annotate(f'{height:.2f}', xy=(rect.get_x() + rect.get_width() / 2, height),
-                        xytext=(0, 3),  # 3 points vertical offset
+            ax.annotate(f'{height:.2f}', 
+                        xy=(rect.get_x() + rect.get_width() / 2, height),
+                        xytext=(0, 0),  # Increased vertical offset (5 points instead of 3)
                         textcoords="offset points", ha='center', va='bottom')
 
     add_labels(rects1)
     add_labels(rects2)
 
+    # Use tight layout to avoid overlapping elements
     plt.tight_layout()
     plt.show()
 

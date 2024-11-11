@@ -32,14 +32,14 @@ print(azure_openai_api_key, azure_openai_endpoint, deployment_gpt35, deployment_
 # Initialize the asynchronous Azure OpenAI client
 async_client = AsyncAzureOpenAI(
     api_key=azure_openai_api_key,  
-    api_version="2024-02-01",
+    api_version="2024-02-15-preview",
     azure_endpoint = azure_openai_endpoint
 )
 
 # Initialize synchronous the Azure OpenAI client
 client = AzureOpenAI(
     api_key=azure_openai_api_key,
-    api_version="2024-02-01",
+    api_version="2024-02-15-preview",
     azure_endpoint = azure_openai_endpoint
 )
 

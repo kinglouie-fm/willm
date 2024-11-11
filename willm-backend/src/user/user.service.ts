@@ -4,15 +4,19 @@ import { Model, Types } from 'mongoose';
 import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
 import { User } from './schema/user.schema';
+import { ConfigService } from '@nestjs/config';
 
-// TODO: Set this
-const JWT_SECRET = 'your_jwt_secret';
+const JWT_SECRET = process.env.JWT_SECRET;
 
 @Injectable()
 export class UserService {
+  private readonly jwtSecret: string;
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
-  ) {}
+    private configService: ConfigService,
+  ) {
+    this.jwtSecret = this.configService.get<string>('JWT_SECRET');
+  }
 
   // Check if a user with the given username exists
   async userExists(username: string): Promise<boolean> {
@@ -51,13 +55,13 @@ export class UserService {
 
   // Generate a JWT token for a user
   generateJwtToken(username: string): string {
-    return jwt.sign({ username }, JWT_SECRET, { expiresIn: '1h' });
+    return jwt.sign({ username }, this.jwtSecret, { expiresIn: '1h' });
   }
 
   // Verify a JWT token
   verifyJwtToken(token: string): any {
     try {
-      return jwt.verify(token, JWT_SECRET);
+      return jwt.verify(token, this.jwtSecret);
     } catch (e) {
       return null;
     }

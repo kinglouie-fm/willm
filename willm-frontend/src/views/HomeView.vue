@@ -141,7 +141,7 @@ const handleCorrect = async () => {
   const hideLoading = message.loading("Evaluating text...", 0);
   try {
     // Request correction from the backend
-    const correctionResponse = await axios.post('https://willm.corinth.informatik.rwth-aachen.de/correct', {
+    const correctionResponse = await axios.post('http://willm.corinth.informatik.rwth-aachen.de/correct', {
       text: textToCorrect,
       section: textareaSmall.value,
       mode: mode.value,
@@ -222,7 +222,7 @@ const handleCorrect = async () => {
 
   try {
     // Trigger question generation
-    await axios.post('https://willm.corinth.informatik.rwth-aachen.de/question/generate');
+    await axios.post('http://willm.corinth.informatik.rwth-aachen.de/question/generate');
   } catch (error) {
     message.error('Error generating questions. Please contact the administrator.', 3);
   }
@@ -234,7 +234,7 @@ const generateReview = async () => {
   const hideLoading = message.loading("Generating review...", 0);
   try {
     // Request review generation from the backend
-    const response = await axios.post('https://willm.corinth.informatik.rwth-aachen.de/review/generate', { reviewModel: authStore.getLLM('reviewModel') });
+    const response = await axios.post('http://willm.corinth.informatik.rwth-aachen.de/review/generate', { reviewModel: authStore.getLLM('reviewModel') });
     if (response.data.reviewData === 'No text available.') {
       message.info('Not enough texts to generate the review');
     } else if (response.data.reviewData === '<2') {
@@ -261,7 +261,7 @@ const generateReview = async () => {
 // Get recent review
 const getRecentReview = async () => {
   try {
-    const response = await axios.get('https://willm.corinth.informatik.rwth-aachen.de/review/recent');
+    const response = await axios.get('http://willm.corinth.informatik.rwth-aachen.de/review/recent');
     reviewData.value = response.data.reviewData || 'No recent review available. Click on "Review" to generate one. Remember that you need to have at least 2 sessions to generate a review.';
     selectedComponent.value = 'Review';
   } catch (error) {
@@ -490,7 +490,7 @@ const validatePreTestTextLength = (text) => {
 const completePreTestProcess = async () => {
   try {
     if (preTestCount.value >= 1) {
-      await axios.post('https://willm.corinth.informatik.rwth-aachen.de/user/complete-pre-test');
+      await axios.post('http://willm.corinth.informatik.rwth-aachen.de/user/complete-pre-test');
       authStore.preTestsCompleted = true;
       const preTestModal = bootstrap.Modal.getInstance(document.getElementById('preTestModal'));
       preTestModal.hide();
@@ -507,7 +507,7 @@ const completePreTestProcess = async () => {
 // Check the pre-test status (if the user has completed the pre-tests)
 const checkPreTestStatus = async () => {
   try {
-    const response = await axios.get('https://willm.corinth.informatik.rwth-aachen.de/user/pre-test-status');
+    const response = await axios.get('http://willm.corinth.informatik.rwth-aachen.de/user/pre-test-status');
     if (response.data.preTestsCompleted) {
       authStore.preTestsCompleted = true;
     } else {
@@ -538,7 +538,7 @@ const submitPreTest = async () => {
   }
 
   try {
-    await axios.post('https://willm.corinth.informatik.rwth-aachen.de/user/pre-test', { text: preTestText.value, section: preTestSection.value });
+    await axios.post('http://willm.corinth.informatik.rwth-aachen.de/user/pre-test', { text: preTestText.value, section: preTestSection.value });
     preTestCount.value++;
     preTestText.value = '';
     preTestSection.value = '';
@@ -585,7 +585,7 @@ const submitPostTest = async () => {
   }
 
   try {
-    const response = await axios.post('https://willm.corinth.informatik.rwth-aachen.de/user/post-test', { text: postTestText.value, section: postTestSection.value });
+    const response = await axios.post('http://willm.corinth.informatik.rwth-aachen.de/user/post-test', { text: postTestText.value, section: postTestSection.value });
 
     if (response.data.postTestsCompleted) {
       message.success('Post-test submitted successfully. You have completed the post-tests and will be logged out.');
@@ -612,10 +612,10 @@ const fetchPreTestSections = async () => {
   const enableDate = new Date('2024-09-07');
   if (isAfter(currentDate, enableDate)) {
     try {
-      const preTestResponse = await axios.get('https://willm.corinth.informatik.rwth-aachen.de/user/pre-test-sections');
+      const preTestResponse = await axios.get('http://willm.corinth.informatik.rwth-aachen.de/user/pre-test-sections');
       preTestSections.value = preTestResponse.data.sections;
 
-      const postTestResponse = await axios.get('https://willm.corinth.informatik.rwth-aachen.de/user/post-test-sections');
+      const postTestResponse = await axios.get('http://willm.corinth.informatik.rwth-aachen.de/user/post-test-sections');
       postTestSections.value = postTestResponse.data.sections;
     } catch (error) {
       if (error.response && error.response.status === 401) {

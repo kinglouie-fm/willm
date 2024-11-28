@@ -2,6 +2,7 @@
 import { computed, ref, onMounted } from 'vue';
 
 const feedbackDiv = ref(null);
+const isTipSelected = ref(true);
 
 // Define props
 const props = defineProps({

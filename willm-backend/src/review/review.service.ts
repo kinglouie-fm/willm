@@ -149,8 +149,18 @@ export class ReviewService {
       organization_tip = response.data.organization_tip;
     }
 
-    reviewData.coherence.tips.push(coherence_tip);
-    reviewData.organization.tips.push(organization_tip);
+    // Assign tips or fallback to the most frequent category for coherence and organization
+    reviewData.coherence.tips.push(
+      coherence_tip !== 'coherence_tip not generated'
+        ? coherence_tip
+        : this.getTopCategories(recentOrgCohWritingFrequency, 'coherence')
+    );
+
+    reviewData.organization.tips.push(
+      organization_tip !== 'organization_tip not generated'
+        ? organization_tip
+        : this.getTopCategories(recentOrgCohWritingFrequency, 'organization')
+    );
 
     // Save the review to the database
     const newReview = new this.reviewModel({
@@ -174,8 +184,12 @@ export class ReviewService {
   }
 
   // Get the top categories by frequency
-  getTopCategories(frequency) {
-    return Object.keys(frequency).sort((a, b) => frequency[b] - frequency[a])[0];
+  getTopCategories(frequency, type = null) {
+    const filteredKeys = type
+      ? Object.keys(frequency).filter(key => key === type)
+      : Object.keys(frequency);
+
+    return filteredKeys.sort((a, b) => frequency[b] - frequency[a])[0];
   }
 
   // Map categories to their respective types

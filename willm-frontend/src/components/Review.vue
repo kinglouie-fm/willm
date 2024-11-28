@@ -175,7 +175,7 @@ onMounted(async () => {
                     <div class="card-body">
                         <h6 class="card-title">{{ entry.title }}</h6>
                         <ul class="card-text">
-                            <li v-for="(item, idx) in entry.items" :key="idx">{{ item }}</li>
+                            <li v-for="(item, idx) in entry.items" :key="idx">{{ item.charAt(0).toUpperCase() }}</li>
                         </ul>
                     </div>
                 </div>

@@ -30,39 +30,39 @@ const displayData = computed(() => {
     })).filter(entry => entry.items && entry.items.length);
 });
 
-// Add shadow to bottom of feedback div if overflow to indicate that there is more content
-const handleScroll = () => {
-    const element = feedbackDiv.value;
-    if (!element) return;
+// // Add shadow to bottom of feedback div if overflow to indicate that there is more content
+// const handleScroll = () => {
+//     const element = feedbackDiv.value;
+//     if (!element) return;
 
-    const isAtBottom = element.scrollHeight - element.scrollTop === element.clientHeight;
+//     const isAtBottom = element.scrollHeight - element.scrollTop === element.clientHeight;
 
-    if (isAtBottom) {
-        element.classList.remove('has-shadow-bottom');
-    } else {
-        element.classList.add('has-shadow-bottom');
-    }
-};
+//     if (isAtBottom) {
+//         element.classList.remove('has-shadow-bottom');
+//     } else {
+//         element.classList.add('has-shadow-bottom');
+//     }
+// };
 
-// Check if feedback div has overflow and add shadow to bottom if it does
-const checkInitialOverflow = () => {
-    const element = feedbackDiv.value;
-    if (!element) return;
+// // Check if feedback div has overflow and add shadow to bottom if it does
+// const checkInitialOverflow = () => {
+//     const element = feedbackDiv.value;
+//     if (!element) return;
 
-    if (element.scrollHeight > element.clientHeight - 1) {
-        element.classList.add('has-shadow-bottom');
-    } else {
-        element.classList.remove('has-shadow-bottom');
-    }
-};
+//     if (element.scrollHeight > element.clientHeight - 1) {
+//         element.classList.add('has-shadow-bottom');
+//     } else {
+//         element.classList.remove('has-shadow-bottom');
+//     }
+// };
 
-// Get right display key
-const getDisplayKey = (key) => {
-    if (key === 'grammar_vocab') {
-        return 'Grammar and Vocabulary';
-    }
-    return key.charAt(0).toUpperCase() + key.slice(1);
-};
+// // Get right display key
+// const getDisplayKey = (key) => {
+//     if (key === 'grammar_vocab') {
+//         return 'Grammar and Vocabulary';
+//     }
+//     return key.charAt(0).toUpperCase() + key.slice(1);
+// };
 
 // Filter out keys with empty improvements and tips arrays
 const filteredReviewData = computed(() => {
@@ -152,10 +152,12 @@ onMounted(async () => {
             <h2 class="mb-0">Review</h2>
         </div>
         <div class="d-flex align-items-center justify-content-center mb-3">
-            <label class="form-check-label me-2" for="reviewSwitch">Tip</label>
-            <input class="form-check-input" type="checkbox" role="switch" id="reviewSwitch" @change="toggleSwitch"
-                :checked="!isTipSelected" />
-            <label class="form-check-label ms-2" for="reviewSwitch">Recent Improvements</label>
+            <div class="form-check form-switch">
+                <label class="form-check-label me-2" for="reviewSwitch">Tips</label>
+                <input class="form-check-input" type="checkbox" role="switch" id="reviewSwitch" @change="toggleSwitch"
+                    :checked="!isTipSelected" />
+                <label class="form-check-label ms-2" for="reviewSwitch">Recent Improvements</label>
+            </div>
         </div>
         <div class="feedback" ref="feedbackDiv">
             <div v-if="typeof props.reviewData === 'string'">
@@ -164,7 +166,7 @@ onMounted(async () => {
             <div v-else-if="displayData.length">
                 <div v-for="(entry, index) in displayData" :key="index" class="card mb-3">
                     <div class="card-body">
-                        <h5 class="card-title">{{ entry.title }}</h5>
+                        <h6 class="card-title">{{ entry.title }}</h6>
                         <ul class="card-text">
                             <li v-for="(item, idx) in entry.items" :key="idx">{{ item }}</li>
                         </ul>
@@ -192,14 +194,14 @@ onMounted(async () => {
     transition: box-shadow 0.3s ease-in-out;
 }
 
-.feedback.has-shadow-bottom {
+/* .feedback.has-shadow-bottom {
     box-shadow: inset 0 -6px 6px -6px rgba(0, 0, 0, 0.3);
 }
 
 .scrollable {
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
     transition: box-shadow 0.3s ease-in-out;
-}
+} */
 
 .card {
     border: 1px solid #ddd;
@@ -212,8 +214,14 @@ onMounted(async () => {
 }
 
 .card-text li {
-    list-style-type: disc;
+    list-style: none;
     margin-left: 20px;
+}
+
+.card-text ul {
+    list-style: none;
+    padding-left: 0;
+    margin-left: 0;
 }
 
 .form-check-input {

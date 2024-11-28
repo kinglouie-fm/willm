@@ -604,6 +604,13 @@ def generate_review():
 
     deployment = deployment_gpt4o if model == '4o' else deployment_gpt35
 
+    # Function to clean the tip text
+    def clean_tip(tip):
+        """Remove unwanted prefixes like 'Tip:' and trailing spaces."""
+        if not tip:
+            return tip
+        return re.sub(r'^Tip[:\-]?\s*', '', tip, flags=re.IGNORECASE).strip()
+
     # Construct the prompt and generate the response
     if coherence_text:
         coherence_prompt = COHERENCE_TIP_PROMPT.format(text=coherence_text)
@@ -615,7 +622,7 @@ def generate_review():
             ],
             max_tokens=1000
         )
-        coherence_tip = coherence_response.choices[0].message.content.strip()
+        coherence_tip = clean_tip(coherence_response.choices[0].message.content.strip())
     elif organization_text:
         organization_prompt = ORGANIZATION_TIP_PROMPT.format(text=organization_text)
         organization_response = client.chat.completions.create(
@@ -626,7 +633,7 @@ def generate_review():
             ],
             max_tokens=1000
         )
-        organization_tip = organization_response.choices[0].message.content.strip()
+        organization_tip = clean_tip(organization_response.choices[0].message.content.strip())
     else:
         return jsonify({"error": "No coherence/organization text provided"}), 400
 

@@ -25,7 +25,11 @@ const displayData = computed(() => {
 
     return Object.entries(props.reviewData).map(([key, value]) => ({
         key,
-        title: key === 'grammar_vocab' ? 'Grammar and Vocabulary' : key.charAt(0).toUpperCase() + key.slice(1),
+        title: key === 'grammar_vocab'
+            ? 'Grammar and Vocabulary'
+            : key === 'writingStyle'
+                ? 'Writing Style'
+                : key.charAt(0).toUpperCase() + key.slice(1),
         items: isTipSelected.value ? value.tips : value.improvements,
     })).filter(entry => entry.items && entry.items.length);
 });
@@ -56,13 +60,16 @@ const displayData = computed(() => {
 //     }
 // };
 
-// // Get right display key
-// const getDisplayKey = (key) => {
-//     if (key === 'grammar_vocab') {
-//         return 'Grammar and Vocabulary';
-//     }
-//     return key.charAt(0).toUpperCase() + key.slice(1);
-// };
+// Get right display key
+const getDisplayKey = (key) => {
+    if (key === 'grammar_vocab') {
+        return 'Grammar and Vocabulary';
+    }
+    if (key === 'writingStyle') {
+        return 'Writing Style';
+    }
+    return key.charAt(0).toUpperCase() + key.slice(1);
+};
 
 // Filter out keys with empty improvements and tips arrays
 const filteredReviewData = computed(() => {

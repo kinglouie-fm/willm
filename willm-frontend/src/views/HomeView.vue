@@ -678,9 +678,10 @@ onMounted(async () => {
                 ' />
                 <h5 class="mb-0 me-auto">How to use the tool?</h5>
                 <div class="form-check form-switch d-flex align-items-center ms-auto" v-if="authStore.isAuthenticated">
+                  <label class="form-check-label me-2" for="flexSwitchCheckDefault">Productive</label>
                   <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault"
                     @change="handleSwitchChange">
-                  <label class="form-check-label ms-2" for="flexSwitchCheckDefault">{{ mode }}</label>
+                  <label class="form-check-label ms-2" for="flexSwitchCheckDefault">Learning</label>
                 </div>
               </div>
               <textarea v-model="textareaSmall" class="form-control textarea-small" placeholder="Enter section..."

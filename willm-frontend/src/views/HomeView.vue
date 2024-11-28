@@ -670,8 +670,8 @@ onMounted(async () => {
                   <li>Click <b>"Review"</b> to get tips and see recent improvements.</li>
                   <li>Use the switch to change the learning mode:
                     <ul>
-                      <li>productive: you only need to click the correction to apply it.</li>
-                      <li>learning: you need to type the correction on your own. This enhances the learning process</li>
+                      <li>Productive: you only need to click the correction to apply it.</li>
+                      <li>Learning: you need to type the correction on your own. This enhances the learning process.</li>
                     </ul>
                   </li>
                 </ul>

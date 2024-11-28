@@ -143,7 +143,7 @@ onMounted(async () => {
                 <ul>
                     <li>Reviews serve as reminders of your current writing challenges.</li>
                     <ul>
-                        <li>Tips: A recap of your most frequent mistakes in each category.</li>
+                        <li>Tips: A recap of your most frequent mistake in each writing element.</li>
                         <li>Improvements: Areas where you improved your writing.</li>
                     </ul>
                     <li>If there is no recent review available:</li>

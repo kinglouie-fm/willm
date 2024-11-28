@@ -299,6 +299,7 @@ def process_initial_result(result, model):
         explanations = [format_text_for_json(e.strip()) for e in explanations_match]
     if categories_match:
         categories = [normalize_text(t.strip()) for t in categories_match]
+        categories = [t.lower() for t in categories]
     if contexts_match:
         contexts = [normalize_text(x.strip()) for x in contexts_match]
     if corrected_text_match:
@@ -343,7 +344,7 @@ def process_further_result(result):
                 feedback[section]["mistakes"] = [clean_text(m) for m in mistakes_match]
                 feedback[section]["corrections"] = [clean_text(c) for c in corrections_match]
                 feedback[section]["explanations"] = [clean_text(e) for e in explanations_match]
-                feedback[section]["categories"] = [clean_text(t) for t in categories_match]
+                feedback[section]["categories"] = [clean_text(t).lower() for t in categories_match]
 
     # Converting section names to camel case
     feedback = {

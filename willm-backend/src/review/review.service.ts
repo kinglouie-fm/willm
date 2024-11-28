@@ -52,10 +52,6 @@ export class ReviewService {
     const recentGrammarVocabFrequency = this.getCategoryFrequency(recentGrammarVocabIssues);
     const recentOrgCohWritingFrequency = this.getCategoryFrequency(recentOrgCohWritingIssues);
 
-    // Get top categories for tips
-    const topGrammarVocabCategories = this.getTopCategories(recentGrammarVocabFrequency);
-    const topOrgCohWritingCategories = this.getTopCategories(recentOrgCohWritingFrequency);
-
     let reviewData = {
       grammar_vocab: { improvements: [], tips: [], frequencies: [] },
       organization: { improvements: [], tips: [], frequencies: [] },
@@ -63,18 +59,23 @@ export class ReviewService {
       writingStyle: { improvements: [], tips: [], frequencies: [] },
     };
 
-    // Assign frequencies to grammar_vocab based on topGrammarVocabCategories
-    topGrammarVocabCategories.forEach(category => {
-      reviewData.grammar_vocab.frequencies.push(recentGrammarVocabFrequency[category]);
-      reviewData.grammar_vocab.tips.push(category);
-    });
+    // Assign the highest frequency tip to grammar_vocab
+    const topGrammarVocabCategory = this.getTopCategories(recentGrammarVocabFrequency);
+    if (topGrammarVocabCategory) {
+      reviewData.grammar_vocab.frequencies.push(recentGrammarVocabFrequency[topGrammarVocabCategory]);
+      reviewData.grammar_vocab.tips.push(topGrammarVocabCategory);
+    }
 
-    // Map frequencies to their respective types in orgCohWritingCategories
-    topOrgCohWritingCategories.forEach(category => {
-      const type = recentOrgCohWritingIssues.find(issue => issue.category === category)?.type;
-      if (type) {
-        reviewData[type].frequencies.push(recentOrgCohWritingFrequency[category]);
-        reviewData[type].tips.push(category);
+    // Assign the highest frequency tip to each type in orgCohWritingCategories
+    ['organization', 'coherence', 'writingStyle'].forEach(type => {
+      const relevantIssues = recentOrgCohWritingIssues.filter(issue => issue.type === type);
+      if (relevantIssues.length > 0) {
+        const categoryFrequency = this.getCategoryFrequency(relevantIssues);
+        const topCategory = this.getTopCategories(categoryFrequency);
+        if (topCategory) {
+          reviewData[type].frequencies.push(categoryFrequency[topCategory]);
+          reviewData[type].tips.push(topCategory);
+        }
       }
     });
 
@@ -172,9 +173,9 @@ export class ReviewService {
     }, {});
   }
 
-  // Get the top 3 categories by frequency
+  // Get the top categories by frequency
   getTopCategories(frequency) {
-    return Object.keys(frequency).sort((a, b) => frequency[b] - frequency[a]).slice(0, 3);
+    return Object.keys(frequency).sort((a, b) => frequency[b] - frequency[a])[0];
   }
 
   // Map categories to their respective types
@@ -192,24 +193,38 @@ export class ReviewService {
     const grammarVocabTypeMap = this.getCategoryTypeMap(recentGrammarVocabIssues);
     const orgCohWritingTypeMap = this.getCategoryTypeMap(recentOrgCohWritingIssues);
 
-    // Compare frequencies and add improvements to reviewData
-    const compareFrequencies = (recentFreq, previousFreq, typeMap) => {
+    // Compare frequencies and find the top improvement (highest frequency difference)
+    const getTopImprovement = (recentFreq, previousFreq, typeMap) => {
+      let topImprovement = null;
+      let maxDifference = 0;
+
       Object.keys(previousFreq).forEach(category => {
         const prevFreq = previousFreq[category];
         const currFreq = recentFreq[category] || 0;
-        if (currFreq < prevFreq) {
-          const type = typeMap[category];
-          if (type && reviewData[type]) {
-            reviewData[type].improvements.push(category);
-          }
+        const difference = prevFreq - currFreq;
+
+        if (difference > maxDifference) {
+          maxDifference = difference;
+          topImprovement = { category, type: typeMap[category] };
         }
       });
+
+      return topImprovement;
     };
 
-    // Compare frequencies for grammar_vocab and orgCohWriting
-    compareFrequencies(recentGrammarVocabFrequency, previousGrammarVocabFrequency, grammarVocabTypeMap);
-    compareFrequencies(recentOrgCohWritingFrequency, previousOrgCohWritingFrequency, orgCohWritingTypeMap);
+    // Find the top improvement for grammar_vocab
+    const topGrammarVocabImprovement = getTopImprovement(recentGrammarVocabFrequency, previousGrammarVocabFrequency, grammarVocabTypeMap);
+    if (topGrammarVocabImprovement && reviewData[topGrammarVocabImprovement.type]) {
+      reviewData[topGrammarVocabImprovement.type].improvements.push(topGrammarVocabImprovement.category);
+    }
+
+    // Find the top improvement for orgCohWriting categories
+    const topOrgCohWritingImprovement = getTopImprovement(recentOrgCohWritingFrequency, previousOrgCohWritingFrequency, orgCohWritingTypeMap);
+    if (topOrgCohWritingImprovement && reviewData[topOrgCohWritingImprovement.type]) {
+      reviewData[topOrgCohWritingImprovement.type].improvements.push(topOrgCohWritingImprovement.category);
+    }
   }
+
 
   // Get the most recent review for a user
   async getRecentReview(userId: Types.ObjectId): Promise<any> {

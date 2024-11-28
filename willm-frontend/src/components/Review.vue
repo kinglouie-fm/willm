@@ -11,6 +11,24 @@ const props = defineProps({
     }
 });
 
+// Handle switch toggle
+const toggleSwitch = () => {
+    isTipSelected.value = !isTipSelected.value;
+};
+
+// Get the data to display (tips or improvements based on the switch state)
+const displayData = computed(() => {
+    if (typeof props.reviewData === 'string' || !props.reviewData) {
+        return [];
+    }
+
+    return Object.entries(props.reviewData).map(([key, value]) => ({
+        key,
+        title: key === 'grammar_vocab' ? 'Grammar and Vocabulary' : key.charAt(0).toUpperCase() + key.slice(1),
+        items: isTipSelected.value ? value.tips : value.improvements,
+    })).filter(entry => entry.items && entry.items.length);
+});
+
 // Add shadow to bottom of feedback div if overflow to indicate that there is more content
 const handleScroll = () => {
     const element = feedbackDiv.value;
@@ -132,52 +150,28 @@ onMounted(async () => {
                 </ul>' />
             <h2 class="mb-0">Review</h2>
         </div>
+        <div class="d-flex align-items-center justify-content-center mb-3">
+            <label class="form-check-label me-2" for="reviewSwitch">Tip</label>
+            <input class="form-check-input" type="checkbox" role="switch" id="reviewSwitch" @change="toggleSwitch"
+                :checked="!isTipSelected" />
+            <label class="form-check-label ms-2" for="reviewSwitch">Recent Improvements</label>
+        </div>
         <div class="feedback" ref="feedbackDiv">
             <div v-if="typeof props.reviewData === 'string'">
                 <p>{{ props.reviewData }}</p>
             </div>
-            <div v-else-if="Object.keys(filteredReviewData).length">
-                <div v-if="Object.values(filteredReviewData).some(data => data.tips.length)">
-                    <h5>Tips</h5>
-                    <ul>
-                        <li>Regarding your last 5 submissions, your most frequent errors are:</li>
-                        <ul>
-                            <li v-for="(categoryData, key) in filteredReviewData" :key="key">
-                                <template v-if="categoryData.tips.length">
-                                    {{ getDisplayKey(key) }}
-                                    <ul>
-                                        <li v-for="(tip, index) in categoryData.tips" :key="index">
-                                            {{ tip }} <span v-if="categoryData.frequencies[index]"> (Frequency: {{
-                                                categoryData.frequencies[index] }})</span>
-                                        </li>
-                                    </ul>
-                                </template>
-                            </li>
+            <div v-else-if="displayData.length">
+                <div v-for="(entry, index) in displayData" :key="index" class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ entry.title }}</h5>
+                        <ul class="card-text">
+                            <li v-for="(item, idx) in entry.items" :key="idx">{{ item }}</li>
                         </ul>
-                    </ul>
-                </div>
-                <div v-if="Object.values(filteredReviewData).some(data => data.improvements.length)">
-                    <h5>Improvements</h5>
-                    <ul>
-                        <li>Regarding your last 10 submissions, you improved yourself by reducing the following types of
-                            mistakes:</li>
-                        <ul>
-                            <li v-for="(categoryData, key) in filteredReviewData" :key="key">
-                                <template v-if="categoryData.improvements.length">
-                                    {{ getDisplayKey(key) }}
-                                    <ul>
-                                        <li v-for="(improvement, index) in categoryData.improvements" :key="index">
-                                            {{ improvement }}
-                                        </li>
-                                    </ul>
-                                </template>
-                            </li>
-                        </ul>
-                    </ul>
+                    </div>
                 </div>
             </div>
             <div v-else>
-                <p>No review data available.</p>
+                <p>No data available.</p>
             </div>
         </div>
     </div>
@@ -204,5 +198,24 @@ onMounted(async () => {
 .scrollable {
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
     transition: box-shadow 0.3s ease-in-out;
+}
+
+.card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.card-title {
+    font-weight: bold;
+}
+
+.card-text li {
+    list-style-type: disc;
+    margin-left: 20px;
+}
+
+.form-check-input {
+    cursor: pointer;
 }
 </style>

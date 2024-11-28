@@ -159,11 +159,11 @@ onMounted(async () => {
             <h2 class="mb-0">Review</h2>
         </div>
         <div class="d-flex align-items-center justify-content-center mb-3">
-            <div class="form-check form-switch">
-                <label class="form-check-label me-2" for="reviewSwitch">Tips</label>
-                <input class="form-check-input" type="checkbox" role="switch" id="reviewSwitch" @change="toggleSwitch"
-                    :checked="!isTipSelected" />
-                <label class="form-check-label ms-2" for="reviewSwitch">Recent Improvements</label>
+            <div class="form-check form-switch d-flex align-items-center">
+                <label class="form-check-label me-auto" for="reviewSwitch">Tips</label>
+                <input class="form-check-input mx-2" type="checkbox" role="switch" id="reviewSwitch"
+                    @change="toggleSwitch" :checked="!isTipSelected" />
+                <label class="form-check-label ms-auto" for="reviewSwitch">Recent Improvements</label>
             </div>
         </div>
         <div class="feedback" ref="feedbackDiv">

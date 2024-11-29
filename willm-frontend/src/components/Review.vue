@@ -183,6 +183,42 @@ const getExample = (category) => {
 
 .form-check-input {
     cursor: pointer;
+    /* background-color: #ffffff;
+    border-color: #eabc7c;
+    box-shadow: none; */
+    /* color: #eabc7c; */
+}
+
+/* .form-check-input:checked {
+    background-color: #eabc7c;
+    border-color: #eabc7c;
+}
+
+.form-check-input:focus {
+    box-shadow: none;
+}
+
+.form-check-input:active {
+    background-color: #eabc7c;
+    border-color: #eabc7c;
+    box-shadow: none;
     color: #eabc7c;
 }
+
+.form-check-input:not(:checked) {
+    background-color: #ffffff;
+    border-color: #eabc7c;
+}
+
+.form-range::-webkit-slider-thumb {
+    background-color: #eabc7c !important;
+}
+
+.form-range::-moz-range-thumb {
+    background-color: #eabc7c !important;
+}
+
+.form-range::-ms-thumb {
+    background-color: #eabc7c !important;
+} */
 </style>

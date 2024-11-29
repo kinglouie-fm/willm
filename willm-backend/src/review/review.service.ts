@@ -113,10 +113,10 @@ export class ReviewService {
       // For generating coherence/organization tips, use the first 2 sections for coherence and the first 3 sections for organization
       const sections = Object.keys(sectionTexts);
       if (sections.length >= 2) {
-        coherenceSections.push(...sections.slice(0, 2).map((section, i) => `Section ${i + 1}\n${sectionTexts[section].join(' ')}`));
+        coherenceSections.push(...sections.slice(0, 2).map((section, i) => `${section}\n${sectionTexts[section].join(' ')}`));
       }
       if (sections.length >= 3) {
-        organizationSections.push(...sections.slice(0, 3).map((section, i) => `Section ${i + 1}\n${sectionTexts[section].join(' ')}`));
+        organizationSections.push(...sections.slice(0, 3).map((section, i) => `${section}\n${sectionTexts[section].join(' ')}`));
       }
     }
 

@@ -149,18 +149,25 @@ export class ReviewService {
       organization_tip = response.data.organization_tip;
     }
 
-    // Assign tips or fallback to the most frequent category for coherence and organization
-    reviewData.coherence.tips.push(
-      coherence_tip !== 'coherence_tip not generated'
-        ? coherence_tip
-        : this.getTopCategories(recentOrgCohWritingFrequency, 'coherence')
-    );
+    // Replace or add coherence_tip
+    if (coherence_tip !== 'coherence_tip not generated') {
+      reviewData.coherence.tips = [coherence_tip]; // Replace any existing tips with LLM-generated tip
+    } else {
+      const topCoherenceCategory = this.getTopCategories(recentOrgCohWritingFrequency, 'coherence');
+      if (topCoherenceCategory) {
+        reviewData.coherence.tips = [topCoherenceCategory]; // Ensure only one tip exists
+      }
+    }
 
-    reviewData.organization.tips.push(
-      organization_tip !== 'organization_tip not generated'
-        ? organization_tip
-        : this.getTopCategories(recentOrgCohWritingFrequency, 'organization')
-    );
+    // Replace or add organization_tip
+    if (organization_tip !== 'organization_tip not generated') {
+      reviewData.organization.tips = [organization_tip]; // Replace any existing tips with LLM-generated tip
+    } else {
+      const topOrganizationCategory = this.getTopCategories(recentOrgCohWritingFrequency, 'organization');
+      if (topOrganizationCategory) {
+        reviewData.organization.tips = [topOrganizationCategory]; // Ensure only one tip exists
+      }
+    }
 
     // Save the review to the database
     const newReview = new this.reviewModel({

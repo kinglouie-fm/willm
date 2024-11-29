@@ -151,7 +151,7 @@ const handleCorrect = async () => {
       scoreModel: authStore.getLLM('scoreModel'),
     });
 
-    console.log(correctionResponse)
+    // console.log(correctionResponse)
 
     // Process response data (explanations/categories)
     explanations.value = correctionResponse.data.explanations.map(explanation => {
@@ -235,8 +235,8 @@ const generateReview = async () => {
   try {
     // Request review generation from the backend
     const response = await axios.post('http://willm.corinth.informatik.rwth-aachen.de/review/generate', { reviewModel: authStore.getLLM('reviewModel') });
-    if (response.data.reviewData === 'No text available.') {
-      message.info('Not enough texts to generate the review');
+    if (response.data.reviewData === 'Not enough texts available to generate a review.') {
+      message.info('Not enough texts to generate the review.');
     } else if (response.data.reviewData === '<2') {
       message.info('Not enough sessions to generate the review');
     } else {

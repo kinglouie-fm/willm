@@ -93,7 +93,7 @@ onMounted(async () => {
 <template>
     <div class="feedback" ref="feedbackDiv">
         <h3 class="text-center">Evaluation</h3>
-        <div v-if="props.unhighlightedMistakes.length > 0">
+        <!-- <div v-if="props.unhighlightedMistakes.length > 0">
             <h5 @click="toggleSection('unhighlightedMistakes')" class="expandable-header">
                 <span :class="sectionIcon('unhighlightedMistakes')"></span>
                 Mistakes that were not highlighted
@@ -107,7 +107,7 @@ onMounted(async () => {
                     </li>
                 </ul>
             </div>
-        </div>
+        </div> -->
         <div>
             <h5 @click="toggleSection('organization')" class="expandable-header">
                 <span :class="sectionIcon('organization')"></span>
@@ -121,7 +121,7 @@ onMounted(async () => {
                     <div v-for="(mistake, index) in props.furtherCorrectionData.organization.mistakes" :key="index">
                         <h6><strong>Feedback {{ index + 1 }}</strong></h6>
                         <ul class="mt-2">
-                            <li><strong>Mistake:</strong> {{ mistake }} </li>
+                            <!-- <li><strong>Mistake:</strong> {{ mistake }} </li> -->
                             <li><strong>Correction:</strong> {{
                                 props.furtherCorrectionData.organization.corrections[index] }}</li>
                             <li><strong>Explanation:</strong> {{
@@ -147,7 +147,7 @@ onMounted(async () => {
                     <div v-for="(mistake, index) in props.furtherCorrectionData.coherence.mistakes" :key="index">
                         <h6><strong>Feedback {{ index + 1 }}</strong></h6>
                         <ul class="mt-2">
-                            <li><strong>Mistake:</strong> {{ mistake }}</li>
+                            <!-- <li><strong>Mistake:</strong> {{ mistake }}</li> -->
                             <li><strong>Correction:</strong> {{ props.furtherCorrectionData.coherence.corrections[index]
                                 }}</li>
                             <li><strong>Explanation:</strong> {{
@@ -173,7 +173,7 @@ onMounted(async () => {
                     <div v-for="(mistake, index) in props.furtherCorrectionData.writingStyle.mistakes" :key="index">
                         <h6><strong>Feedback {{ index + 1 }}</strong></h6>
                         <ul class="mt-2">
-                            <li><strong>Mistake:</strong> {{ mistake }}</li>
+                            <!-- <li><strong>Mistake:</strong> {{ mistake }}</li> -->
                             <li><strong>Correction:</strong> {{
                                 props.furtherCorrectionData.writingStyle.corrections[index] }}</li>
                             <li><strong>Explanation:</strong> {{

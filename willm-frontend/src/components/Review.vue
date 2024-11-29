@@ -59,7 +59,6 @@ const displayData = computed(() => {
 
 // Get the example for a specific category
 const getExample = (category) => {
-    console.log("Received category:", category);
     if (!category) {
         return '';
     }
@@ -120,7 +119,8 @@ const getExample = (category) => {
                         <div v-if="hoveredCardIndex !== index" class="fade-transition">
                             <ul class="list-unstyled m-0">
                                 <li v-for="(item, idx) in entry.items" :key="idx">
-                                    {{ item.charAt(0).toUpperCase() + item.slice(1) }}
+                                    {{ item }}
+                                    <!-- {{ item.charAt(0).toUpperCase() + item.slice(1) }} -->
                                 </li>
                             </ul>
                         </div>

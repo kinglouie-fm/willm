@@ -1,8 +1,9 @@
 <script setup>
-import { computed, ref, onMounted } from 'vue';
+import { computed, ref } from 'vue';
 
 const feedbackDiv = ref(null);
 const isTipSelected = ref(true);
+const hoveredCardIndex = ref(null);
 
 // Define props
 const props = defineProps({
@@ -11,6 +12,28 @@ const props = defineProps({
         default: () => null
     }
 });
+
+// Define examples for each category
+const examples = {
+    "misspelling": "The researcher ~~recieved~~ received funding for the study.",
+    "subject-verb agreement": "The results of the experiment ~~demonstrates~~ demonstrate a clear trend.",
+    "tense consistency": "The paper discusses the findings and ~~concluded~~ concludes with recommendations.",
+    "pronoun agreement": "Each participant was asked to provide ~~their~~ his/her response anonymously.",
+    "incorrect use of articles": "The study focused on ~~a~~ an impact of climate change on agriculture.",
+    "incorrect prepositions": "This phenomenon is explained ~~with~~ by the theory of relativity.",
+    "inappropriate word choice": "The paper states a very ~~bad~~ weak correlation between the variables.",
+    "redundancy": "The study's results ~~clearly show and demonstrate~~ clearly show a significant correlation.",
+    "punctuation": "~~The data supports this claim however further research is needed~~ The data supports this claim; however, further research is needed.",
+    "irrelevant content": "The methodology section describes the history of the field, which does not directly contribute to explaining the methods used in this study.",
+    "poor logical flow": "The results section mentions the implications of the findings before presenting the actual data and analysis.",
+    "poor transitions": "~~The experiment was successful. There were some challenges.~~ Although the experiment was successful, there were some challenges.",
+    "repetitive information": "The introduction states the hypothesis. The hypothesis is restated in the same words later in the introduction.",
+    "disorganized ideas": "The first paragraph introduces the topic, the second investigates the results, and the third explains the methods.",
+    "poor paragraph structure": "The paragraph begins with a minor detail, includes an unrelated statistic in the middle, and ends with the main idea.",
+    "formal tone missing": "~~The data was kind of hard to analyze~~ The data was somewhat challenging to analyze.",
+    "missing precision and clarity": "~~The results were good~~ The results showed significant improvement.",
+    "passive voice overuse": "~~The experiment was conducted by the students~~ The students conducted the experiment."
+};
 
 // Handle switch toggle
 const toggleSwitch = () => {
@@ -34,104 +57,11 @@ const displayData = computed(() => {
     })).filter(entry => entry.items && entry.items.length);
 });
 
-// // Add shadow to bottom of feedback div if overflow to indicate that there is more content
-// const handleScroll = () => {
-//     const element = feedbackDiv.value;
-//     if (!element) return;
-
-//     const isAtBottom = element.scrollHeight - element.scrollTop === element.clientHeight;
-
-//     if (isAtBottom) {
-//         element.classList.remove('has-shadow-bottom');
-//     } else {
-//         element.classList.add('has-shadow-bottom');
-//     }
-// };
-
-// // Check if feedback div has overflow and add shadow to bottom if it does
-// const checkInitialOverflow = () => {
-//     const element = feedbackDiv.value;
-//     if (!element) return;
-
-//     if (element.scrollHeight > element.clientHeight - 1) {
-//         element.classList.add('has-shadow-bottom');
-//     } else {
-//         element.classList.remove('has-shadow-bottom');
-//     }
-// };
-
-// Get right display key
-const getDisplayKey = (key) => {
-    if (key === 'grammar_vocab') {
-        return 'Grammar and Vocabulary';
-    }
-    if (key === 'writingStyle') {
-        return 'Writing Style';
-    }
-    return key.charAt(0).toUpperCase() + key.slice(1);
+// Get the example for a specific category
+const getExample = (category) => {
+    const lowerCategory = category.toLowerCase();
+    return examples[lowerCategory] || "No example available.";
 };
-
-// Filter out keys with empty improvements and tips arrays
-const filteredReviewData = computed(() => {
-    if (typeof props.reviewData === 'string' || !props.reviewData) {
-        return {};
-    }
-
-    let filtered = Object.fromEntries(
-        Object.entries(props.reviewData).map(([key, value]) => {
-            // If tips array is empty, add "everything's fine"
-            if (value.tips && value.tips.length === 0) {
-                value.tips.push("everything's fine");
-            }
-
-            // If improvements array is empty, add "everything's fine"
-            if (value.improvements && value.improvements.length === 0) {
-                value.improvements.push("everything's fine");
-            }
-
-            if (value.tips) {
-                // Check if tips contain any generated tips (i.e., real tips) aside from the "not generated" ones
-                const hasGeneratedTips = value.tips.some(tip =>
-                    tip !== 'organization_tip not generated' && tip !== 'coherence_tip not generated'
-                );
-
-                // If there are valid tips, remove "organization_tip not generated" and "coherence_tip not generated"
-                if (hasGeneratedTips) {
-                    value.tips = value.tips.filter(tip =>
-                        tip !== 'organization_tip not generated' && tip !== 'coherence_tip not generated'
-                    );
-                } else {
-                    // If there are no other tips besides the "not generated" ones, replace with "everything's fine"
-                    const hasOnlyNotGeneratedTips = value.tips.every(tip =>
-                        tip === 'organization_tip not generated' || tip === 'coherence_tip not generated'
-                    );
-
-                    if (hasOnlyNotGeneratedTips && value.tips.length > 0) {
-                        value.tips = ["everything's fine"];
-                    }
-                }
-            }
-
-            return [key, value];
-        }).filter(([key, value]) => {
-            return (
-                (value.improvements && value.improvements.length) ||
-                (value.tips && value.tips.length) ||
-                (value.frequencies && value.frequencies.length)
-            );
-        })
-    );
-
-    return filtered;
-});
-
-onMounted(async () => {
-    const element = feedbackDiv.value;
-    if (element) {
-        element.addEventListener('scroll', handleScroll);
-        checkInitialOverflow();
-    }
-});
 </script>
 
 <template>
@@ -143,7 +73,7 @@ onMounted(async () => {
                 <ul>
                     <li>Reviews serve as reminders of your current writing challenges.</li>
                     <ul>
-                        <li>Tips: A recap of your most frequent mistake in each writing element.</li>
+                        <li>Tips: Shows most frequent mistake in each writing element.</li>
                         <li>Improvements: Areas where you improved your writing.</li>
                     </ul>
                     <li>If there is no recent review available:</li>
@@ -166,22 +96,31 @@ onMounted(async () => {
                 <label class="form-check-label ms-auto" for="reviewSwitch">Recent Improvements</label>
             </div>
         </div>
-        <div class="feedback" ref="feedbackDiv">
-            <div v-if="typeof props.reviewData === 'string'">
+        <div class="feedback overflow-auto" ref="feedbackDiv">
+            <div v-if="typeof props.reviewData === 'string'" class="text-center">
                 <p>{{ props.reviewData }}</p>
             </div>
             <div v-else-if="displayData.length">
-                <div v-for="(entry, index) in displayData" :key="index" class="card mb-3">
-                    <div class="card-body">
-                        <h6 class="card-title">{{ entry.title }}</h6>
-                        <ul class="card-text">
-                            <li v-for="(item, idx) in entry.items" :key="idx">{{ item.charAt(0).toUpperCase() +
-                                item.slice(1) }}</li>
-                        </ul>
+                <div v-for="(entry, index) in displayData" :key="index"
+                    class="card mb-3 p-3 position-relative transition-all" @mouseenter="hoveredCardIndex = index"
+                    @mouseleave="hoveredCardIndex = null">
+                    <div
+                        class="card-body text-center d-flex flex-column align-items-center justify-content-center h-100">
+                        <h6 class="card-title fw-bold">{{ entry.title }}</h6>
+                        <div v-if="hoveredCardIndex !== index" class="fade-transition">
+                            <ul class="list-unstyled m-0">
+                                <li v-for="(item, idx) in entry.items" :key="idx">
+                                    {{ item.charAt(0).toUpperCase() + item.slice(1) }}
+                                </li>
+                            </ul>
+                        </div>
+                        <div v-else class="fade-transition">
+                            <p class="m-0">{{ getExample(entry.key) }}</p>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div v-else>
+            <div v-else class="text-center">
                 <p>No data available.</p>
             </div>
         </div>
@@ -202,23 +141,29 @@ onMounted(async () => {
     transition: box-shadow 0.3s ease-in-out;
 }
 
-/* .feedback.has-shadow-bottom {
-    box-shadow: inset 0 -6px 6px -6px rgba(0, 0, 0, 0.3);
-}
-
-.scrollable {
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-    transition: box-shadow 0.3s ease-in-out;
-} */
-
 .card {
     border: 1px solid #ddd;
     border-radius: 8px;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
+
+.card:hover {
+    transform: scale(1.02);
+    opacity: 0.9;
+}
+
+.fade-transition {
+    transition: opacity 0.3s ease-in-out;
 }
 
 .card-title {
     font-weight: bold;
+}
+
+.card:hover {
+    transform: scale(1.02);
+    opacity: 0.9;
 }
 
 .card-text li {

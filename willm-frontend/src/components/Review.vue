@@ -15,24 +15,24 @@ const props = defineProps({
 
 // Define examples for each category
 const examples = {
-    "misspelling": "The researcher ~~recieved~~ received funding for the study.",
-    "subject-verb agreement": "The results of the experiment ~~demonstrates~~ demonstrate a clear trend.",
-    "tense consistency": "The paper discusses the findings and ~~concluded~~ concludes with recommendations.",
-    "pronoun agreement": "Each participant was asked to provide ~~their~~ his/her response anonymously.",
-    "incorrect use of articles": "The study focused on ~~a~~ an impact of climate change on agriculture.",
-    "incorrect prepositions": "This phenomenon is explained ~~with~~ by the theory of relativity.",
-    "inappropriate word choice": "The paper states a very ~~bad~~ weak correlation between the variables.",
-    "redundancy": "The study's results ~~clearly show and demonstrate~~ clearly show a significant correlation.",
-    "punctuation": "~~The data supports this claim however further research is needed~~ The data supports this claim; however, further research is needed.",
+    "misspelling": "The researcher <s>recieved</s> received funding for the study.",
+    "subject-verb agreement": "The results of the experiment <s>demonstrates</s> demonstrate a clear trend.",
+    "tense consistency": "The paper discusses the findings and <s>concluded</s> concludes with recommendations.",
+    "pronoun agreement": "Each participant was asked to provide <s>their</s> his/her response anonymously.",
+    "incorrect use of articles": "The study focused on <s>a</s> an impact of climate change on agriculture.",
+    "incorrect prepositions": "This phenomenon is explained <s>with</s> by the theory of relativity.",
+    "inappropriate word choice": "The paper states a very <s>bad</s> weak correlation between the variables.",
+    "redundancy": "The study's results <s>clearly show and demonstrate</s> clearly show a significant correlation.",
+    "punctuation": "<s>The data supports this claim however further research is needed</s> The data supports this claim; however, further research is needed.",
     "irrelevant content": "The methodology section describes the history of the field, which does not directly contribute to explaining the methods used in this study.",
     "poor logical flow": "The results section mentions the implications of the findings before presenting the actual data and analysis.",
-    "poor transitions": "~~The experiment was successful. There were some challenges.~~ Although the experiment was successful, there were some challenges.",
+    "poor transitions": "<s>The experiment was successful. There were some challenges.</s> Although the experiment was successful, there were some challenges.",
     "repetitive information": "The introduction states the hypothesis. The hypothesis is restated in the same words later in the introduction.",
     "disorganized ideas": "The first paragraph introduces the topic, the second investigates the results, and the third explains the methods.",
     "poor paragraph structure": "The paragraph begins with a minor detail, includes an unrelated statistic in the middle, and ends with the main idea.",
-    "formal tone missing": "~~The data was kind of hard to analyze~~ The data was somewhat challenging to analyze.",
-    "missing precision and clarity": "~~The results were good~~ The results showed significant improvement.",
-    "passive voice overuse": "~~The experiment was conducted by the students~~ The students conducted the experiment."
+    "formal tone missing": "<s>The data was kind of hard to analyze</s> The data was somewhat challenging to analyze.",
+    "missing precision and clarity": "<s>The results were good</s> The results showed significant improvement.",
+    "passive voice overuse": "<s>The experiment was conducted by the students</s> The students conducted the experiment."
 };
 
 // Handle switch toggle
@@ -59,8 +59,18 @@ const displayData = computed(() => {
 
 // Get the example for a specific category
 const getExample = (category) => {
+    console.log("Received category:", category);
+    if (!category) {
+        return '';
+    }
+
     const lowerCategory = category.toLowerCase();
-    return examples[lowerCategory] || "No example available.";
+    const example = examples[lowerCategory];
+    if (example) {
+        return "Example: " + example;
+    }
+
+    return "No example available";
 };
 </script>
 
@@ -102,7 +112,7 @@ const getExample = (category) => {
             </div>
             <div v-else-if="displayData.length">
                 <div v-for="(entry, index) in displayData" :key="index"
-                    class="card mb-3 p-3 position-relative transition-all" @mouseenter="hoveredCardIndex = index"
+                    class="card mb-3 p-1 position-relative transition-all" @mouseenter="hoveredCardIndex = index"
                     @mouseleave="hoveredCardIndex = null">
                     <div
                         class="card-body text-center d-flex flex-column align-items-center justify-content-center h-100">
@@ -115,7 +125,11 @@ const getExample = (category) => {
                             </ul>
                         </div>
                         <div v-else class="fade-transition">
-                            <p class="m-0">{{ getExample(entry.key) }}</p>
+                            <ul class="list-unstyled m-0">
+                                <li v-for="(item, idx) in entry.items" :key="idx">
+                                    <span v-html="getExample(item)"></span>
+                                </li>
+                            </ul>
                         </div>
                     </div>
                 </div>
@@ -148,22 +162,12 @@ const getExample = (category) => {
     transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
 }
 
-.card:hover {
-    transform: scale(1.02);
-    opacity: 0.9;
-}
-
 .fade-transition {
     transition: opacity 0.3s ease-in-out;
 }
 
 .card-title {
     font-weight: bold;
-}
-
-.card:hover {
-    transform: scale(1.02);
-    opacity: 0.9;
 }
 
 .card-text li {
@@ -179,5 +183,6 @@ const getExample = (category) => {
 
 .form-check-input {
     cursor: pointer;
+    color: #eabc7c;
 }
 </style>

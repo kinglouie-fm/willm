@@ -609,7 +609,7 @@ const submitPostTest = async () => {
 // Fetch pre-test sections for displaying them in the post-test modal
 const fetchPreTestSections = async () => {
   const currentDate = new Date();
-  const enableDate = new Date('2024-09-07');
+  const enableDate = new Date('2025-01-12');
   if (isAfter(currentDate, enableDate)) {
     try {
       const preTestResponse = await axios.get('http://willm.corinth.informatik.rwth-aachen.de/user/pre-test-sections');

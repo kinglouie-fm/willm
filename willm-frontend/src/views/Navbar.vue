@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import { message } from 'ant-design-vue';
@@ -38,7 +38,7 @@ const updateLLM = async (modelKey, value) => {
     const newValue = value === '3.5-turbo-1106' ? '3.5-turbo-1106' : '4o';
 
     try {
-        await axios.patch('https://willm.corinth.informatik.rwth-aachen.de/user/updateModel', {
+        await axios.patch('http://willm.corinth.informatik.rwth-aachen.de/user/updateModel', {
             [modelKey]: newValue,
         });
         authStore.setLLM(modelKey, newValue);
@@ -55,7 +55,7 @@ const updateLLM = async (modelKey, value) => {
 // Update explanation language in the store and backend
 const updateLanguage = async () => {
     try {
-        await axios.patch('https://willm.corinth.informatik.rwth-aachen.de/user/updateLanguage', {
+        await axios.patch('http://willm.corinth.informatik.rwth-aachen.de/user/updateLanguage', {
             language: authStore.language,
         });
         authStore.setLanguage(authStore.language);
@@ -95,7 +95,7 @@ const navigateTo = (path) => {
 // Check quiz availability
 const checkQuiz = async () => {
     try {
-        const response = await axios.get('https://willm.corinth.informatik.rwth-aachen.de/quiz/check-quiz');
+        const response = await axios.get('http://willm.corinth.informatik.rwth-aachen.de/quiz/check-quiz');
         if (response.data.quizDueToday) {
             message.info('Quiz is due today. Redirecting...');
             router.push('/quiz');
@@ -108,7 +108,7 @@ const checkQuiz = async () => {
 };
 
 // Determine if the post-test is enabled
-const isPostTestEnabled = ref(isAfter(new Date(), new Date('2024-09-07')));
+const isPostTestEnabled = ref(isAfter(new Date(), new Date('2025-01-12')));
 
 // Show post-test modal if enabled
 const showPostTestModal = () => {
@@ -155,6 +155,28 @@ const fetchData = () => {
     scoreModel.value = authStore.getLLM('scoreModel');
     reviewModel.value = authStore.getLLM('reviewModel');
 }
+
+watch(
+    () => authStore.showQuizModal,
+    (newVal) => {
+        if (newVal) {
+            const quizModal = new bootstrap.Modal(document.getElementById('quizModal'));
+            quizModal.show();
+        }
+    }
+);
+
+const startQuiz = () => {
+    // Close the modal
+    const quizModal = bootstrap.Modal.getInstance(document.getElementById('quizModal'));
+    if (quizModal) {
+        quizModal.hide();
+    }
+
+    // Redirect to the quiz page
+    authStore.toggleQuizModal(false);
+    router.push('/quiz');
+};
 </script>
 
 <template>
@@ -250,6 +272,23 @@ const fetchData = () => {
                 </div>
             </div>
         </div>
+        <div class="modal fade" id="quizModal" tabindex="-1" aria-labelledby="quizModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="quizModalLabel">Quiz Reminder</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Your quiz is due today. Would you like to start it now?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Not Now</button>
+                        <button type="button" class="btn btn-primary" @click="startQuiz">Start Quiz</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </nav>
 </template>
 
@@ -307,5 +346,20 @@ a:active {
 .marker-icon {
     width: 15px;
     height: 15px;
+}
+
+.modal-footer .btn-primary {
+    background-color: #eabc7c;
+    border-color: #eabc7c;
+}
+
+.modal-footer .btn-primary:hover {
+    background-color: #e6b065;
+    border-color: #e6b065;
+}
+
+.modal-footer .btn-secondary:hover {
+    background-color: rgb(161, 165, 170);
+    border-color: rgb(161, 165, 170);
 }
 </style>

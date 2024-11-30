@@ -21,13 +21,14 @@ export const useAuthStore = defineStore('auth', {
     reviewModel: '',
     dailyRequestsLeft: 0,
     gamificationData: null,
+    showQuizModal: false,
   }),
   // Define actions
   actions: {
     // Define action to register a new user
     async register(username, password) {
       try {
-        const response = await axios.post('https://willm.corinth.informatik.rwth-aachen.de/user/register', { username, password, dataPrivacyConsent });
+        const response = await axios.post('http://willm.corinth.informatik.rwth-aachen.de/user/register', { username, password, dataPrivacyConsent });
         if (response.status === 201) {
           message.info('Registration successful. Please login.');
           router.push({ name: 'login' });
@@ -49,7 +50,7 @@ export const useAuthStore = defineStore('auth', {
       const hideLoading = message.info('Logging in...', 0);
       let hideLoading2;
       try {
-        const response = await axios.post('https://willm.corinth.informatik.rwth-aachen.de/user/login', { username, password });
+        const response = await axios.post('http://willm.corinth.informatik.rwth-aachen.de/user/login', { username, password });
         if (response.status === 200 && response.data.message === 'Login successful') {
           this.isAuthenticated = true;
           this.preTestsCompleted = response.data.preTestsCompleted;
@@ -63,13 +64,14 @@ export const useAuthStore = defineStore('auth', {
             // Check quiz status
             // Show loading spinner while checking quiz status
             hideLoading2 = message.info('Generating quiz if necessary...', 0);
-            const quizResponse = await axios.get('https://willm.corinth.informatik.rwth-aachen.de/quiz/check-quiz');
+            const quizResponse = await axios.get('http://willm.corinth.informatik.rwth-aachen.de/quiz/check-quiz');
             this.quizDueToday = quizResponse.data.quizDueToday;
             this.nextQuizDate = quizResponse.data.nextQuizDate ? quizResponse.data.nextQuizDate.split('T')[0].split('-').reverse().join('.') : null;
 
             // Notify user about quiz status
             if (this.quizDueToday) {
-              message.info('Quiz is due today.', 5);
+              // message.info('Quiz is due today.', 5);
+              this.toggleQuizModal(true);
             } else if(this.nextQuizDate) {
               message.info(`Next quiz date: ${this.nextQuizDate}`, 7);
             } else {
@@ -101,7 +103,7 @@ export const useAuthStore = defineStore('auth', {
     // Define action to logout a user
     async logout() {
       try {
-        await axios.post('https://willm.corinth.informatik.rwth-aachen.de/user/logout');
+        await axios.post('http://willm.corinth.informatik.rwth-aachen.de/user/logout');
         this.isAuthenticated = false;
         this.preTestsCompleted = false;
         this.postTestsCompleted = false;
@@ -110,10 +112,13 @@ export const useAuthStore = defineStore('auth', {
         message.error('An error occurred. Please try again.');
       }
     },
+    toggleQuizModal(show) {
+      this.showQuizModal = show;
+    },
     // Define action to check if user is authenticated
     async checkAuthStatus() {
       try {
-        const response = await axios.get('https://willm.corinth.informatik.rwth-aachen.de/user/pre-test-status');
+        const response = await axios.get('http://willm.corinth.informatik.rwth-aachen.de/user/pre-test-status');
         this.preTestsCompleted = response.data.preTestsCompleted;
       } catch (error) {
         console.error('Error checking auth status');

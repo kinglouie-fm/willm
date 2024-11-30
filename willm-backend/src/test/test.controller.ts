@@ -15,12 +15,13 @@ export class TestController {
   }
 
   // Submit answers and complete a test
-  @Post(':userId/:testId/complete')
+  @Post(':userId/:testId/:testType/complete')
   async completeTest(
     @Param('userId') userId: string,
     @Param('testId') testId: string,
-    @Body() answers: Record<string, string[]>,
+    @Param('testType') testType: 'pre-test' | 'post-test',
+    @Body() answers: Record<string, string[]>
   ) {
-    return this.testService.completeTest(userId, testId, answers);
+    return this.testService.completeTest(userId, testId, answers, testType);
   }
 }

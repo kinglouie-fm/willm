@@ -92,10 +92,17 @@ export class TestService {
     return newTest.save();
   }
 
+  private getTestModel(testType: 'pre-test' | 'post-test'): Model<PreTest | PostTest> {
+    return testType === 'pre-test' ? this.preTestModel : this.postTestModel;
+  }
 
   // Complete a test and save the results
-  async completeTest(userId: string, testId: string, answers: Record<string, string[]>): Promise<PreTest> {
-    const test = await this.preTestModel.findById(testId).exec();
+  async completeTest(userId: string, testId: string, answers: Record<string, string[]>, testType: 'pre-test' | 'post-test'): Promise<PreTest | PostTest> {
+    // Dynamically select the model based on test type
+    const TestModel = this.getTestModel(testType);
+
+    // Find the test
+    const test = await TestModel.findById(testId).exec();
 
     if (!test || test.userId.toString() !== userId || test.completedAt) {
       throw new NotFoundException('Invalid or already completed test.');
@@ -113,6 +120,7 @@ export class TestService {
       };
     });
 
+    // Mark the test as completed
     test.completedAt = new Date();
     return test.save();
   }

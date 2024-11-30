@@ -265,7 +265,7 @@ Answer: [The correct text]
 """
 
 NEW_REVISION_PROMPT = """
-I will provide you with a json object of errors that a user made. Your task is to generate a short text (maximum 20 words) that includes these errors. If the json object of errors is empty, generate a random text with three grammatical errors instead.
+I will provide you with a json object of errors that a user made. Your task is to generate a short text (maximum 50 words) that makes sense and includes these errors. If the json object of errors is empty, generate a random text with three grammatical errors instead.
 
 Provide both the generated text with errors and its corresponding corrected version.
 

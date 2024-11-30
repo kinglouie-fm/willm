@@ -710,8 +710,8 @@ onMounted(async () => {
         <!-- Lower Left -->
         <div class="col-6">
           <div class="mx-5">
-            <button type="button" class="btn btn-md me-2" @click="handleCorrect">AI Evaluation</button>
-            <button type="button" class="btn btn-md" @click="generateReview">Review</button>
+            <button type="button" class="btn btn-custom btn-md me-2" @click="handleCorrect">AI Evaluation</button>
+            <button type="button" class="btn btn-custom btn-md" @click="generateReview">Review</button>
           </div>
         </div>
       </div>
@@ -850,6 +850,16 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+.btn-custom {
+  border: 1px solid #c5c5c5;
+  color: #838383;
+}
+
+.btn-custom:hover {
+  background-color: #eabc7c;
+  color: white;
+}
+
 .info-icon {
   width: 25px;
   height: 25px;

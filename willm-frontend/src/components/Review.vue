@@ -1,5 +1,6 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted } from 'vue';
+import * as bootstrap from 'bootstrap';
 
 const feedbackDiv = ref(null);
 const isTipSelected = ref(true);
@@ -71,6 +72,30 @@ const getExample = (category) => {
 
     return "No example available";
 };
+
+// Initialize the popover for info icons
+const initPopover = () => {
+    const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+    popoverTriggerList.forEach((popoverTriggerEl) => {
+        const popover = new bootstrap.Popover(popoverTriggerEl, {
+            trigger: 'hover',
+            html: true,
+            template: '<div class="popover wide-popover" role="tooltip"><div class="popover-arrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+        });
+
+        popoverTriggerEl.addEventListener('inserted.bs.popover', () => {
+            const popoverElement = document.querySelector('.popover.wide-popover');
+            if (popoverElement) {
+                popoverElement.style.maxWidth = '600px';
+                popoverElement.style.fontSize = '16px';
+            }
+        });
+    });
+};
+
+onMounted(() => {
+    initPopover();
+});
 </script>
 
 <template>

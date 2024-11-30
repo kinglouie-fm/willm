@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue';
+import * as bootstrap from 'bootstrap';
 
 // Define props
 const props = defineProps({
@@ -81,7 +82,28 @@ const checkInitialOverflow = () => {
     }
 };
 
+// Initialize the popover for info icons
+const initPopover = () => {
+    const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+    popoverTriggerList.forEach((popoverTriggerEl) => {
+        const popover = new bootstrap.Popover(popoverTriggerEl, {
+            trigger: 'hover',
+            html: true,
+            template: '<div class="popover wide-popover" role="tooltip"><div class="popover-arrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+        });
+
+        popoverTriggerEl.addEventListener('inserted.bs.popover', () => {
+            const popoverElement = document.querySelector('.popover.wide-popover');
+            if (popoverElement) {
+                popoverElement.style.maxWidth = '600px';
+                popoverElement.style.fontSize = '16px';
+            }
+        });
+    });
+};
+
 onMounted(async () => {
+    initPopover();
     const element = feedbackDiv.value;
     if (element) {
         element.addEventListener('scroll', handleScroll);
@@ -92,22 +114,48 @@ onMounted(async () => {
 
 <template>
     <div class="feedback" ref="feedbackDiv">
-        <h3 class="text-center">Evaluation</h3>
-        <!-- <div v-if="props.unhighlightedMistakes.length > 0">
-            <h5 @click="toggleSection('unhighlightedMistakes')" class="expandable-header">
-                <span :class="sectionIcon('unhighlightedMistakes')"></span>
-                Mistakes that were not highlighted
-            </h5>
-            <div v-show="unhighlightedMistakesOpen">
-                <ul class="mt-2">
-                    <li v-for="(mistake, index) in props.unhighlightedMistakes" :key="index">
-                        <strong>Mistake:</strong> {{ mistake }}<br>
-                        <strong>Correction:</strong> {{ props.unhighlightedCorrections[index] }}<br>
-                        <strong>Explanation:</strong> {{ props.unhighlightedExplanations[index] }}
+        <div class="d-flex align-items-center justify-content-center mb-3">
+            <img class="info-icon me-2" src="/icons/icon-info-01.svg" data-bs-toggle="popover"
+                data-bs-placement="bottom" data-bs-content='
+                <h5>Understanding Writing Elements</h5>
+                <ul>
+                    <li><b>Coherence:</b> The logical connection and smooth flow of ideas throughout your text.
+                        <ul>
+                            <li>Ensure each sentence transitions smoothly to the next.</li>
+                            <li>Avoid irrelevant content that disrupts the main argument.</li>
+                        </ul>
+                    </li>
+                    <li><b>Organization:</b> The structural arrangement of ideas within paragraphs and the text as a whole.
+                        <ul>
+                            <li>Maintain a clear introduction, body, and conclusion.</li>
+                            <li>Ensure paragraphs focus on one main idea with supporting evidence.</li>
+                        </ul>
+                    </li>
+                    <li><b>Writing Style:</b> The tone, clarity, and formality of your text, adapted to the academic context.
+                        <ul>
+                            <li>Use precise and formal language appropriate for academic writing.</li>
+                            <li>Avoid overly complex sentences that reduce clarity.</li>
+                        </ul>
                     </li>
                 </ul>
-            </div>
-        </div> -->
+            ' />
+            <h3 class="text-center">Evaluation</h3>
+        </div>
+        <!-- <div v-if="props.unhighlightedMistakes.length > 0">
+            <h5 @click="toggleSection(' unhighlightedMistakes')" class="expandable-header">
+        <span :class="sectionIcon('unhighlightedMistakes')"></span>
+        Mistakes that were not highlighted
+        </h5>
+        <div v-show="unhighlightedMistakesOpen">
+            <ul class="mt-2">
+                <li v-for="(mistake, index) in props.unhighlightedMistakes" :key="index">
+                    <strong>Mistake:</strong> {{ mistake }}<br>
+                    <strong>Correction:</strong> {{ props.unhighlightedCorrections[index] }}<br>
+                    <strong>Explanation:</strong> {{ props.unhighlightedExplanations[index] }}
+                </li>
+            </ul>
+        </div>
+    </div> -->
         <div>
             <h5 @click="toggleSection('organization')" class="expandable-header">
                 <span :class="sectionIcon('organization')"></span>
@@ -126,8 +174,9 @@ onMounted(async () => {
                                 props.furtherCorrectionData.organization.corrections[index] }}</li>
                             <li><strong>Explanation:</strong> {{
                                 props.furtherCorrectionData.organization.explanations[index] }}</li>
-                            <li><strong>Category:</strong> {{ props.furtherCorrectionData.organization.categories[index]
-                                }}</li>
+                            <li><strong>Category:</strong> {{
+                                props.furtherCorrectionData.organization.categories[index]
+                            }}</li>
                         </ul>
                     </div>
                 </div>
@@ -148,11 +197,13 @@ onMounted(async () => {
                         <h6><strong>Feedback {{ index + 1 }}</strong></h6>
                         <ul class="mt-2">
                             <!-- <li><strong>Mistake:</strong> {{ mistake }}</li> -->
-                            <li><strong>Correction:</strong> {{ props.furtherCorrectionData.coherence.corrections[index]
-                                }}</li>
+                            <li><strong>Correction:</strong> {{
+                                props.furtherCorrectionData.coherence.corrections[index]
+                            }}</li>
                             <li><strong>Explanation:</strong> {{
                                 props.furtherCorrectionData.coherence.explanations[index] }}</li>
-                            <li><strong>Category:</strong> {{ props.furtherCorrectionData.coherence.categories[index] }}
+                            <li><strong>Category:</strong> {{
+                                props.furtherCorrectionData.coherence.categories[index] }}
                             </li>
                         </ul>
                     </div>
@@ -178,8 +229,9 @@ onMounted(async () => {
                                 props.furtherCorrectionData.writingStyle.corrections[index] }}</li>
                             <li><strong>Explanation:</strong> {{
                                 props.furtherCorrectionData.writingStyle.explanations[index] }}</li>
-                            <li><strong>Category:</strong> {{ props.furtherCorrectionData.writingStyle.categories[index]
-                                }}</li>
+                            <li><strong>Category:</strong> {{
+                                props.furtherCorrectionData.writingStyle.categories[index]
+                            }}</li>
                         </ul>
                     </div>
                 </div>
@@ -193,6 +245,12 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+.info-icon {
+    width: 25px;
+    height: 25px;
+    cursor: pointer;
+}
+
 h3 {
     color: #eabc7c;
 }

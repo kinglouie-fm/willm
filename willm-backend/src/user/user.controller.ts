@@ -5,6 +5,7 @@ import { isAfter, parseISO } from 'date-fns';
 import { QuizService } from '../quiz/quiz.service';
 import { GamificationService } from '../gamification/gamification.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { AllowedUsersGuard } from '../auth/allowed-users.guard';
 import { Types } from 'mongoose';
 
 @Controller('user')
@@ -276,6 +277,7 @@ export class UserController {
   }
 
   // Get all users and their pre-test status
+  @UseGuards(AllowedUsersGuard)
   @Get('pre-test-status/all')
   async getAllPreTestStatus(@Res() res: Response): Promise<any> {
     try {
@@ -292,6 +294,7 @@ export class UserController {
   }
 
   // Get all users and their post-test status
+  @UseGuards(AllowedUsersGuard)
   @Get('post-test-status/all')
   async getAllPostTestStatus(@Res() res: Response): Promise<any> {
     try {

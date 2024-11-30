@@ -264,6 +264,21 @@ Text: [The text with errors]
 Answer: [The correct text]
 """
 
+NEW_REVISION_PROMPT = """
+I will provide you with a json object of errors that a user made. Your task is to generate a short text (maximum 20 words) that includes these errors. If the json object of errors is empty, generate a random text with three grammatical errors instead.
+
+Provide both the generated text with errors and its corresponding corrected version.
+
+Input:
+Errors: {errors}
+
+Output format:
+Type: revision
+Question: Revise the text to correct the grammatical errors.
+Text: [The generated text containing the errors]
+Answer: [The corrected version of the text]
+"""
+
 SYNONYMS_PROMPT = """
 I will provide you with a text that includes a submission from a user. Identify a word in the submission that could be replaced with an academic synonym and generate a multiple choice question for identifying academic synonyms. Provide the word and five options, with only one correct synonym. The difficulty should be medium.
 

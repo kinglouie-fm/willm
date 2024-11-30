@@ -32,6 +32,20 @@ export class QuestionService {
   async generateQuestions(userId: Types.ObjectId) {
     const submissions = await this.textService.findLastSubmissions(userId, 5);
 
+    // Retrieve the last three errors of type grammar_vocab
+    const issues = await this.issueService.getLastIssuesByType(userId, 20);
+    const grammarVocabIssues = issues
+        .filter(issue => issue.type === 'grammar_vocab')
+        .slice(0, 3);
+
+    // Create a JSON string for grammar_vocab errors
+    const errorsJson = JSON.stringify(
+        grammarVocabIssues.map(issue => ({
+            error: issue.original_text,
+            category: issue.category,
+        }))
+    );
+
     // Store the text content for each section
     const sectionTexts = submissions.reduce((acc, sub) => {
         if (!acc[sub.section]) {
@@ -55,17 +69,11 @@ export class QuestionService {
 
     // Logic for different question types
     if (questionType === 'revision') {
-        const revisionText = await this.findTextWithIssues(userId);
-        if (revisionText) {
-          textForQuestion = revisionText;
-        } else {
-          const firstSubmission = await this.textService.findLastSubmissions(userId, 1);
-          textForQuestion = firstSubmission[0].content
-        }
+      textForQuestion = errorsJson;
     } else if (['academic_sentence', 'synonyms', 'argument_strengthening'].includes(questionType)) {
-        // Use only the last submission's text
-        const lastSubmission = submissions[0];
-        textForQuestion = `Section ${lastSubmission.section}\n${lastSubmission.content}`;
+      // Use only the last submission's text
+      const lastSubmission = submissions[0];
+      textForQuestion = `Section ${lastSubmission.section}\n${lastSubmission.content}`;
     } else if (['coherence', 'organization'].includes(questionType)) {
       if (sections.length >= 2) {
         // Use only the first text in each of two sections

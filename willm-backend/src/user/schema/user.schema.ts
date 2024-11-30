@@ -70,13 +70,13 @@ export class User extends Document {
   @Prop({ default: '4o' })
   correctionModel: string;
 
-  @Prop({ default: '3.5-turbo-1106' })
+  @Prop({ default: '4o-mini' })
   furtherCorrectionModel: string;
 
-  @Prop({ default: '3.5-turbo-1106' })
+  @Prop({ default: '4o-mini' })
   scoreModel: string;
 
-  @Prop({ default: '3.5-turbo-1106' })
+  @Prop({ default: '4o-mini' })
   reviewModel: string;
 
   @Prop({ default: 15 })

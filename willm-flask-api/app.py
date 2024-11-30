@@ -23,11 +23,11 @@ logger = logging.getLogger(__name__)
 # Load environment variables
 azure_openai_api_key = os.getenv("AZURE_OPENAI_API_KEY")
 azure_openai_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
-deployment_gpt35 = os.getenv("DEPLOYMENT_NAME_GPT4o-mini")
+deployment_gpt4o_mini = os.getenv("DEPLOYMENT_NAME_GPT4o-mini")
 deployment_gpt4o = os.getenv("DEPLOYMENT_NAME_GPT4o")
 
 # Print environment variables for debugging
-print(azure_openai_api_key, azure_openai_endpoint, deployment_gpt35, deployment_gpt4o)
+print(azure_openai_api_key, azure_openai_endpoint, deployment_gpt4o_mini, deployment_gpt4o)
 
 # Initialize the asynchronous Azure OpenAI client
 async_client = AsyncAzureOpenAI(
@@ -49,13 +49,13 @@ def split_into_sentences(text):
     return sentences
 
 # Format prompt and fetch asynchronous response from Azure OpenAI
-async def fetch_openai_response_async(system_prompt_template, prompt_template, data, section=None, language='English', model='3.5-turbo-1106'):
+async def fetch_openai_response_async(system_prompt_template, prompt_template, data, section=None, language='English', model='4o-mini'):
     system_prompt = system_prompt_template.format(language=language)
     prompt = prompt_template.format(text=data, section=section, language=language)
     logging.info(f"Received language: {language}")
     logging.info(f"Received model: {model}")
 
-    deployment = deployment_gpt35 if model == '3.5-turbo-1106' else deployment_gpt4o
+    deployment = deployment_gpt4o_mini if model == '4o-mini' else deployment_gpt4o
 
     # Call the asynchronous function to fetch the response
     response = await async_client.chat.completions.create(
@@ -70,13 +70,13 @@ async def fetch_openai_response_async(system_prompt_template, prompt_template, d
     return response.choices[0].message.content
 
 # Format prompt and fetch synchronous response from Azure OpenAI
-def fetch_openai_response_sync(system_prompt_template, prompt_template, data, section=None, language='English', model='3.5-turbo-1106'):
+def fetch_openai_response_sync(system_prompt_template, prompt_template, data, section=None, language='English', model='4o-mini'):
     system_prompt = system_prompt_template.format(language=language)
     prompt = prompt_template.format(text=data, section=section, language=language)
     logging.info(f"Received language: {language}")
     logging.info(f"Received model: {model}")
 
-    deployment = deployment_gpt35 if model == '3.5-turbo-1106' else deployment_gpt4o
+    deployment = deployment_gpt4o_mini if model == '4o-mini' else deployment_gpt4o
 
     # Call the synchronous function to fetch the response
     response = client.chat.completions.create(
@@ -116,15 +116,15 @@ async def handle_correction():
     if not data:
         return jsonify({"error": "No text provided"}), 400
 
-    if model not in ['3.5-turbo-1106', '4o']:
+    if model not in ['4o-mini', '4o']:
         return jsonify({"error": "Invalid model"}), 400
 
     # For the 4o model, the text is processed as a whole
     if model == '4o':
         unified_result = await handle_unified(data, language, model)
         mistakes, corrections, explanations, categories, contexts, corrected_text = process_initial_result(unified_result, model)
-    # For the 3.5-turbo-1106 model, the text is split into sentences and processed individually
-    elif model == '3.5-turbo-1106':
+    # For the 4o-mini model, the text is split into sentences and processed individually
+    elif model == '4o-mini':
         sentences = split_into_sentences(data)
         tasks = [process_sentence(sentence, language, model) for sentence in sentences]
         results = await asyncio.gather(*tasks)
@@ -153,7 +153,7 @@ def handle_further_correction():
     if not data:
         return jsonify({"error": "No text provided"}), 400
     
-    if model not in ['3.5-turbo-1106', '4o']:
+    if model not in ['4o-mini', '4o']:
         return jsonify({"error": "Invalid model"}), 400
 
     unified_result = handle_unified_2(data, section, language, model)
@@ -173,7 +173,7 @@ def generate_scores():
     if not data:
         return jsonify({"error": "No text provided"}), 400
     
-    if model not in ['3.5-turbo-1106', '4o']:
+    if model not in ['4o-mini', '4o']:
         return jsonify({"error": "Invalid model"}), 400
 
     try:
@@ -279,7 +279,7 @@ def process_initial_result(result, model):
     contexts_match = re.findall(r'X: (.*?)\n', result, re.DOTALL)
 
     # Extract the corrected text based on the model
-    if model == '3.5-turbo-1106':
+    if model == '4o-mini':
         corrected_text_match = re.findall(r'Correction:\s*(.*?[\.\!\?])(?:\s|$)', result, re.DOTALL)
     elif model == '4o':
         corrected_text_match = re.findall(r'Correction:\s*(.*)', result, re.DOTALL)
@@ -371,10 +371,10 @@ def suggest_question_type():
     data = request.json
     text = data['lastThreeSubmissions']
 
-    # Model is strictly 3.5-turbo-1106
-    model = '3.5-turbo-1106'
+    # Model is strictly 4o-mini
+    model = '4o-mini'
 
-    deployment = deployment_gpt35 if model == '3.5-turbo-1106' else deployment_gpt4o
+    deployment = deployment_gpt4o_mini if model == '4o-mini' else deployment_gpt4o
 
     response = client.chat.completions.create(
         model=deployment,
@@ -412,7 +412,7 @@ def generate_question():
     # Model is strictly 4o
     model = '4o'
     
-    deployment = deployment_gpt35 if model == '3.5-turbo-1106' else deployment_gpt4o
+    deployment = deployment_gpt4o_mini if model == '4o-mini' else deployment_gpt4o
 
     if question_type not in question_prompts:
         return jsonify({"error": "Invalid question type"}), 400
@@ -498,7 +498,7 @@ def academic_sentence_correction():
     # Model is strictly 4o
     model = '4o'
     
-    deployment = deployment_gpt35 if model == '3.5-turbo-1106' else deployment_gpt4o
+    deployment = deployment_gpt4o_mini if model == '4o-mini' else deployment_gpt4o
 
     prompt = ACADEMIC_SENTENCE_CORRECTING_PROMPT.format(
         original_sentence=original_sentence,
@@ -545,7 +545,7 @@ def explain_answer():
     # Model is strictly 4o
     model = '4o'
     
-    deployment = deployment_gpt4o if model == '4o' else deployment_gpt35
+    deployment = deployment_gpt4o if model == '4o' else deployment_gpt4o_mini
 
     options_str = '\n'.join(options)
     scenario_str = '\n'.join(scenario)
@@ -590,7 +590,7 @@ def explain_answer():
 # Route for generating a tip for improving coherence or organization
 @app.route('/review/generate', methods=['POST'])
 def generate_review():
-    model = request.json.get('model', '3.5-turbo-1106')
+    model = request.json.get('model', '4o-mini')
     coherence_text = request.json.get('coherence_text', '')
     organization_text = request.json.get('organization_text', '')
 
@@ -599,10 +599,10 @@ def generate_review():
     coherence_tip = ''
     organization_tip = ''
 
-    if model not in ['3.5-turbo-1106', '4o']:
+    if model not in ['4o-mini', '4o']:
         return jsonify({"error": "Invalid model"}), 400
 
-    deployment = deployment_gpt4o if model == '4o' else deployment_gpt35
+    deployment = deployment_gpt4o if model == '4o' else deployment_gpt4o_mini
 
     # Function to clean the tip text
     def clean_tip(tip):
@@ -770,7 +770,7 @@ def llm_decide_questions(new_questions, quiz_history):
     prompt = DECIDE_QUESTIONS.format(new_questions=new_questions, quiz_history=quiz_history)
     model = '4o'
 
-    deployment = deployment_gpt4o if model == '4o' else deployment_gpt35
+    deployment = deployment_gpt4o if model == '4o' else deployment_gpt4o_mini
 
     # Generate the response based on the prompt
     response = client.chat.completions.create(

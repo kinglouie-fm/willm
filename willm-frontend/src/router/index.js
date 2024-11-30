@@ -48,8 +48,8 @@ router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
   if (to.matched.some(record => record.meta.requiresAuth)) {
     try {
-      const profileResponse = await axios.get('https://willm.corinth.informatik.rwth-aachen.de/user/profile', { withCredentials: true });
-      const gamificationResponse = await axios.get('https://willm.corinth.informatik.rwth-aachen.de/user/gamification', { withCredentials: true });
+      const profileResponse = await axios.get('http://willm.corinth.informatik.rwth-aachen.de/user/profile', { withCredentials: true });
+      const gamificationResponse = await axios.get('http://willm.corinth.informatik.rwth-aachen.de/user/gamification', { withCredentials: true });
       // Check if user is authenticated and set user data
       if (profileResponse.status === 200 && gamificationResponse.status === 200) {
         authStore.setIsAuthenticated(true);

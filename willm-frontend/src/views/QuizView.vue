@@ -16,7 +16,7 @@ const router = useRouter();
 // Fetch the quiz data from the API
 const fetchQuiz = async () => {
     try {
-        const response = await axios.get('https://willm.corinth.informatik.rwth-aachen.de/quiz/get-todays-quiz');
+        const response = await axios.get('http://willm.corinth.informatik.rwth-aachen.de/quiz/get-todays-quiz');
         quiz.value = response.data.quiz;
         if (!quiz.value) {
             message.info(response.data.message);
@@ -42,7 +42,7 @@ const submitAnswer = async (selectedAnswer = null, option) => {
         } else {
             answer = userAnswer.value;
         }
-        const response = await axios.post('https://willm.corinth.informatik.rwth-aachen.de/quiz/submit-answer', {
+        const response = await axios.post('http://willm.corinth.informatik.rwth-aachen.de/quiz/submit-answer', {
             quizId: quiz.value.quiz_id,
             questionId: currentQuestion.value.question_id,
             userAnswer: answer,
@@ -68,7 +68,7 @@ const submitAnswer = async (selectedAnswer = null, option) => {
 // Request an explanation for the current question. Only available after submitting an incorrect answer
 const requestExplanation = async () => {
     try {
-        const response = await axios.post('https://willm.corinth.informatik.rwth-aachen.de/quiz/explain-answer', {
+        const response = await axios.post('http://willm.corinth.informatik.rwth-aachen.de/quiz/explain-answer', {
             quizId: quiz.value.quiz_id,
             questionId: currentQuestion.value.question_id,
             userAnswer: userAnswer.value,
@@ -91,7 +91,7 @@ const nextQuestion = () => {
 // Complete the quiz and display the score
 const completeQuiz = async () => {
     try {
-        const response = await axios.post('https://willm.corinth.informatik.rwth-aachen.de/quiz/complete', {
+        const response = await axios.post('http://willm.corinth.informatik.rwth-aachen.de/quiz/complete', {
             quizId: quiz.value.quiz_id,
         });
         quizScore.value = response.data.score;

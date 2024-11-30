@@ -35,7 +35,7 @@ const isQuizDueToday = computed(() => authStore.quizDueToday);
 
 // Update LLM in the store and backend
 const updateLLM = async (modelKey, value) => {
-    const newValue = value === '3.5-turbo-1106' ? '3.5-turbo-1106' : '4o';
+    const newValue = value === '4o-mini' ? '4o-mini' : '4o';
 
     try {
         await axios.patch('http://willm.corinth.informatik.rwth-aachen.de/user/updateModel', {
@@ -242,7 +242,7 @@ const startQuiz = () => {
                             <span>{{ name }}:</span>
                             <select v-model="authStore[modelKey]" @change="updateLLM(modelKey, authStore[modelKey])"
                                 class="form-select-sm ms-3 text-center">
-                                <option value="3.5-turbo-1106">gpt-3.5-turbo</option>
+                                <option value="4o-mini">4o-mini</option>
                                 <option value="4o">gpt-4o</option>
                             </select>
                         </li>

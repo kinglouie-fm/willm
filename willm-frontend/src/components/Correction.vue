@@ -139,7 +139,7 @@ onMounted(async () => {
                     </li>
                 </ul>
             ' />
-            <h3 class="text-center">Evaluation</h3>
+            <h3 class="text-center mb-0">Evaluation</h3>
         </div>
         <!-- <div v-if="props.unhighlightedMistakes.length > 0">
             <h5 @click="toggleSection(' unhighlightedMistakes')" class="expandable-header">

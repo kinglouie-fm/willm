@@ -60,10 +60,13 @@ export class QuestionService {
 
     // Determine question type by requesting a suggestion from the Flask API
     const lastThreeSubmissions = submissions.slice(0, 3).map(sub => sub.content).join(' ');
-    const suggestedQuestionType = await this.suggestQuestionType(lastThreeSubmissions);
+    // const suggestedQuestionType = await this.suggestQuestionType(lastThreeSubmissions);
 
     // Check if the suggested question type is balanced and store it if it is
-    const questionType = await this.selectQuestionType(suggestedQuestionType, userId);
+    // const questionType = await this.selectQuestionType(suggestedQuestionType, userId);
+
+
+    const questionType = await this.getNextQuestionType(userId);
 
     let textForQuestion = '';
 
@@ -103,6 +106,27 @@ export class QuestionService {
     await this.updateQuestionCount(questionType);
 
     return response.data;
+  }
+
+  private async getNextQuestionType(userId: Types.ObjectId): Promise<string> {
+    // Retrieve the question count for the user
+    const counts = await this.questionCountModel.find({}).exec();
+
+    // If there are no counts, start with 'revision'
+    if (counts.length === 0) {
+        await this.questionCountModel.create({ questionType: 'revision', count: 1 });
+        return 'revision';
+    }
+
+    // Find the last generated question type
+    const lastGenerated = counts[counts.length - 1].questionType;
+
+    // Find the index of the last question type
+    const lastIndex = this.questionTypes.indexOf(lastGenerated);
+
+    // Determine the next question type
+    const nextIndex = (lastIndex + 1) % this.questionTypes.length;
+    return this.questionTypes[nextIndex];
   }
 
   // Suggest a question type based on the last three submissions
@@ -166,11 +190,18 @@ export class QuestionService {
 
   // Update the count of generated questions for a specific question type
   private async updateQuestionCount(questionType: string): Promise<void> {
-    await this.questionCountModel.findOneAndUpdate(
-      { questionType },
-      { $inc: { count: 1 } },
-      { upsert: true, new: true },
-    );
+    const existingCount = await this.questionCountModel.findOne({ questionType });
+
+    if (existingCount) {
+        // Increment the count for the question type
+        await this.questionCountModel.updateOne(
+            { questionType },
+            { $inc: { count: 1 } }
+        );
+    } else {
+        // Initialize the count for this question type
+        await this.questionCountModel.create({ questionType, count: 1 });
+    }
   }
 
   // Evaluate a user submitted academic sentence correction

@@ -739,8 +739,8 @@ onMounted(async () => {
           <p v-if="correctionError" class="text-danger">{{ correctionError }}</p>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn" @click="applyCorrection">Apply Correction</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" @click="applyCorrection">Apply Correction</button>
         </div>
       </div>
     </div>
@@ -784,10 +784,10 @@ onMounted(async () => {
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn" v-if="preTestCount > 0" @click="completePreTestProcess">Complete
+          <button type="button" class="btn btn-primary" v-if="preTestCount > 0" @click="completePreTestProcess">Complete
             Pre-Test</button>
           <!-- <button type="button" class="btn" data-bs-dismiss="modal">Close</button> -->
-          <button type="button" class="btn" @click="submitPreTest">Submit</button>
+          <button type="button" class="btn btn-primary" @click="submitPreTest">Submit</button>
         </div>
       </div>
     </div>
@@ -840,8 +840,8 @@ onMounted(async () => {
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn" @click="submitPostTest"
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" @click="submitPostTest"
             :disabled="preTestSections.length === 0">Submit</button>
         </div>
       </div>

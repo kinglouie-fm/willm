@@ -17,7 +17,6 @@ export class QuestionService {
     'coherence',
     'organization',
   ];
-  private currentQuestionIndex = 0;
 
   constructor(
     private readonly httpService: HttpService,
@@ -58,15 +57,8 @@ export class QuestionService {
     const sections = Object.keys(sectionTexts);
     let combinedText = '';
 
-    // Determine question type by requesting a suggestion from the Flask API
-    const lastThreeSubmissions = submissions.slice(0, 3).map(sub => sub.content).join(' ');
-    // const suggestedQuestionType = await this.suggestQuestionType(lastThreeSubmissions);
-
-    // Check if the suggested question type is balanced and store it if it is
-    // const questionType = await this.selectQuestionType(suggestedQuestionType, userId);
-
-
     const questionType = await this.getNextQuestionType(userId);
+    console.log(`Selected question type: ${questionType}`);
 
     let textForQuestion = '';
 
@@ -103,105 +95,36 @@ export class QuestionService {
         text: textForQuestion,
     }));
 
-    await this.updateQuestionCount(questionType);
-
     return response.data;
   }
 
   private async getNextQuestionType(userId: Types.ObjectId): Promise<string> {
     // Retrieve the question count for the user
-    const counts = await this.questionCountModel.find({}).exec();
+    const existingCount = await this.questionCountModel.findOne({}).exec();
 
-    // If there are no counts, start with 'revision'
-    if (counts.length === 0) {
-        await this.questionCountModel.create({ questionType: 'revision', count: 1 });
-        return 'revision';
+    // If no count exists, start with 'revision'
+    if (!existingCount) {
+      await this.questionCountModel.create({ questionType: 'revision', count: 1 });
+      return 'revision';
     }
 
-    // Find the last generated question type
-    const lastGenerated = counts[counts.length - 1].questionType;
+    // Get the last generated question type
+    const lastGenerated = existingCount.questionType;
 
-    // Find the index of the last question type
+    // Find the index of the last question type in the array
     const lastIndex = this.questionTypes.indexOf(lastGenerated);
 
     // Determine the next question type
     const nextIndex = (lastIndex + 1) % this.questionTypes.length;
+
+    // Update the document with the new question type
+    await this.questionCountModel.updateOne(
+      { _id: existingCount._id },
+      { $set: { questionType: this.questionTypes[nextIndex] } }
+    );
+
+    // Return the next question type
     return this.questionTypes[nextIndex];
-  }
-
-  // Suggest a question type based on the last three submissions
-  private async suggestQuestionType(lastThreeSubmissions: string): Promise<string> {
-    console.log("Making request to flask-api for question type suggestion");
-
-    // Make a request to the Flask API to suggest a question type
-    const response = await lastValueFrom(this.httpService.post('http://flask-api:8031/question/suggest-type', { lastThreeSubmissions }));
-    const questionType = response.data.type;
-    return this.questionTypes.includes(questionType) ? questionType : null;
-  }
-
-  // Select a question type based on the current round robin index
-  private async selectQuestionType(suggestedType: string, userId: Types.ObjectId): Promise<string> {
-    if (suggestedType && await this.isBalanced(suggestedType)) {
-        console.log(`Suggested question type ${suggestedType} is balanced`);
-        return suggestedType;
-    }
-    
-    // Round robin through the question types
-    while (true) {
-      let questionType = this.questionTypes[this.currentQuestionIndex];
-      this.currentQuestionIndex = (this.currentQuestionIndex + 1) % this.questionTypes.length;
-
-      // Check for coherence and organization specific conditions
-      if (questionType === 'coherence' || questionType === 'organization') {
-        const submissions = await this.textService.findLastSubmissions(userId, 5);
-        const sectionTexts = submissions.reduce((acc, sub) => {
-          if (!acc[sub.section]) {
-              acc[sub.section] = [];
-          }
-          acc[sub.section].push(sub.content);
-          return acc;
-        }, {});
-        const sections = Object.keys(sectionTexts);
-
-        // Skip coherence and organization if there are not enough sections
-        if (sections.length < 2) {
-          console.log(`Skipping ${questionType} due to insufficient sections`);
-
-          // Continue to the next question type without re-adding the current one
-          continue;
-        }
-      }
-
-      console.log(`Selected question type ${questionType} with round robin`);
-      return questionType;
-    }
-  }
-
-  // checks if question type's generation count is within a balanced range by comparing it to the average count 
-  // of all question types plus a threshold.
-  private async isBalanced(questionType: string): Promise<boolean> {
-    const counts = await this.questionCountModel.find().exec();
-    const totalGenerated = counts.reduce((a, b) => a + b.count, 0);
-    const average = totalGenerated / this.questionTypes.length;
-    const threshold = 1;
-    const typeCount = counts.find(count => count.questionType === questionType);
-    return typeCount ? typeCount.count <= average + threshold : true;
-  }
-
-  // Update the count of generated questions for a specific question type
-  private async updateQuestionCount(questionType: string): Promise<void> {
-    const existingCount = await this.questionCountModel.findOne({ questionType });
-
-    if (existingCount) {
-        // Increment the count for the question type
-        await this.questionCountModel.updateOne(
-            { questionType },
-            { $inc: { count: 1 } }
-        );
-    } else {
-        // Initialize the count for this question type
-        await this.questionCountModel.create({ questionType, count: 1 });
-    }
   }
 
   // Evaluate a user submitted academic sentence correction
@@ -212,24 +135,6 @@ export class QuestionService {
     }));
 
     return response.data;
-  }
-
-  // Find a text with at least 3 grammar/vocab issues
-  private async findTextWithIssues(userId: Types.ObjectId): Promise<string | null> {
-    const issues = await this.issueService.getLastIssuesByType(userId, 10);
-    const grammarVocabIssues = issues.filter(issue => issue.type === 'grammar_vocab');
-    const textsWithIssues = grammarVocabIssues.reduce((acc, issue) => {
-      const textId = issue.text.toString();
-      acc[textId] = (acc[textId] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-
-    const textId = Object.keys(textsWithIssues).find(key => textsWithIssues[key] >= 3);
-    if (textId) {
-      const text = await this.textService.findTextById(new Types.ObjectId(textId));
-      return text ? text.content : null;
-    }
-    return null;
   }
 
   // For testing purposes only

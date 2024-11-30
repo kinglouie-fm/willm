@@ -274,4 +274,36 @@ export class UserController {
 
     return res.status(200).json({ message: 'Language updated successfully' });
   }
+
+  // Get all users and their pre-test status
+  @Get('pre-test-status/all')
+  async getAllPreTestStatus(@Res() res: Response): Promise<any> {
+    try {
+      const users = await this.userService.getAllUsers();
+      const preTestStatuses = users.map(user => ({
+        username: user.username,
+        preTestsCompleted: user.preTestsCompleted,
+      }));
+      return res.status(200).json(preTestStatuses);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: 'Failed to retrieve pre-test statuses.' });
+    }
+  }
+
+  // Get all users and their post-test status
+  @Get('post-test-status/all')
+  async getAllPostTestStatus(@Res() res: Response): Promise<any> {
+    try {
+      const users = await this.userService.getAllUsers();
+      const postTestStatuses = users.map(user => ({
+        username: user.username,
+        postTestsCompleted: user.postTestsCompleted,
+      }));
+      return res.status(200).json(postTestStatuses);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: 'Failed to retrieve post-test statuses.' });
+    }
+  }
 }

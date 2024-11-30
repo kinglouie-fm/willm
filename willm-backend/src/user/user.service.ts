@@ -161,4 +161,9 @@ export class UserService {
       { $set: { language } }
     );
   }
+
+  // Get all users
+  async getAllUsers(): Promise<User[]> {
+    return this.userModel.find({}, 'username preTestsCompleted postTestsCompleted').exec();
+  }
 }

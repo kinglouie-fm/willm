@@ -6,6 +6,7 @@ import { QuestionCount } from './schema/question-count.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { lastValueFrom } from 'rxjs';
 import { IssueService } from '../issue/issue.service';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class QuestionService {
@@ -25,6 +26,8 @@ export class QuestionService {
     @InjectModel(QuestionCount.name) private questionCountModel: Model<QuestionCount>,
     @Inject(forwardRef(() => IssueService))
     private readonly issueService: IssueService,
+    @Inject(forwardRef(() => UserService))
+    private readonly userService: UserService,
   ) {}
 
   // Generate questions for a user
@@ -99,32 +102,37 @@ export class QuestionService {
   }
 
   private async getNextQuestionType(userId: Types.ObjectId): Promise<string> {
-    // Retrieve the question count for the user
-    const existingCount = await this.questionCountModel.findOne({}).exec();
-
-    // If no count exists, start with 'revision'
-    if (!existingCount) {
-      await this.questionCountModel.create({ questionType: 'revision', count: 1 });
-      return 'revision';
-    }
+    // Retrieve the user document
+    const user = await this.userService.findById(userId);
 
     // Get the last generated question type
-    const lastGenerated = existingCount.questionType;
+    const lastGenerated = user.lastQuestionType || 'revision';
 
     // Find the index of the last question type in the array
     const lastIndex = this.questionTypes.indexOf(lastGenerated);
 
     // Determine the next question type
-    const nextIndex = (lastIndex + 1) % this.questionTypes.length;
+    let nextIndex = (lastIndex + 1) % this.questionTypes.length;
+    let nextQuestionType = this.questionTypes[nextIndex];
 
-    // Update the document with the new question type
-    await this.questionCountModel.updateOne(
-      { _id: existingCount._id },
-      { $set: { questionType: this.questionTypes[nextIndex] } }
-    );
+    // Handle special conditions for 'coherence' and 'organization'
+    if (['coherence', 'organization'].includes(nextQuestionType)) {
+      const submissions = await this.textService.findLastSubmissions(userId, 5);
+      const sections = [...new Set(submissions.map(sub => sub.section))];
+
+      // If there are not enough sections, skip to the next question type
+      if (sections.length < 2) {
+        nextIndex = (nextIndex + 1) % this.questionTypes.length;
+        nextQuestionType = this.questionTypes[nextIndex];
+      }
+    }
+
+    // Update the user's lastQuestionType
+    user.lastQuestionType = nextQuestionType;
+    await user.save();
 
     // Return the next question type
-    return this.questionTypes[nextIndex];
+    return nextQuestionType;
   }
 
   // Evaluate a user submitted academic sentence correction

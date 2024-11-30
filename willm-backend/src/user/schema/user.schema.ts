@@ -84,6 +84,9 @@ export class User extends Document {
 
   @Prop({ default: 'English'})
   language: string;
+
+  @Prop({ default: 'organization' })
+  lastQuestionType: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

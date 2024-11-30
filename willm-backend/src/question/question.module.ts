@@ -15,6 +15,7 @@ import { IssueModule } from 'src/issue/issue.module';
     forwardRef(() => UserModule),
     forwardRef(() => TextModule),
     forwardRef(() => IssueModule),
+    forwardRef(() => UserModule),
     MongooseModule.forFeature([{ name: QuestionCount.name, schema: QuestionCountSchema }]),
   ],
   controllers: [QuestionController],

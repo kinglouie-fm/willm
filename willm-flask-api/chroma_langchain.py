@@ -2,7 +2,7 @@ import os
 import uuid
 from dotenv import load_dotenv
 from langchain_chroma import Chroma
-from langchain_openai import OpenAIEmbeddings
+from langchain_openai import AzureOpenAIEmbeddings
 import chromadb
 from chromadb.config import Settings
 import logging
@@ -16,7 +16,7 @@ class ChromaLangChainHandler:
     # Initialize the class with Chroma DB client and embedding function
     def __init__(self):
         self.chromadb_client = chromadb.HttpClient(host="chromaDB", port=8031, settings=Settings(allow_reset=True, anonymized_telemetry=False))
-        self.embedding_function = OpenAIEmbeddings(api_key=os.getenv('FLASK_API_KEY'))
+        self.embedding_function = AzureOpenAIEmbeddings(model="text-embedding-3-large", api_key=os.getenv("AZURE_OPENAI_API_KEY"))
 
     # Retrieve or create a Chroma collection for a specific user
     def get_user_collection(self, user_id):

@@ -23,8 +23,6 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8031:8031"
-    environment:
-      - FLASK_API_KEY=${FLASK_API_KEY}
     depends_on:
       chromadb:
         condition: service_healthy

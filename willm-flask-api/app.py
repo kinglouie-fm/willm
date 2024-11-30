@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 # Load environment variables
 azure_openai_api_key = os.getenv("AZURE_OPENAI_API_KEY")
 azure_openai_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
-deployment_gpt35 = os.getenv("DEPLOYMENT_NAME_GPT35")
+deployment_gpt35 = os.getenv("DEPLOYMENT_NAME_GPT4o-mini")
 deployment_gpt4o = os.getenv("DEPLOYMENT_NAME_GPT4o")
 
 # Print environment variables for debugging

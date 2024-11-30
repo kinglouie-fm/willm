@@ -4,12 +4,16 @@ import { Model } from 'mongoose';
 import * as fs from 'fs/promises';
 import { join } from 'path';
 import { PreTest } from './schema/pre-test.schema';
+import { PostTest } from './schema/post-test.schema';
 
 @Injectable()
 export class TestService {
   private questions: Record<string, any>; // Questions loaded from the JSON file
 
-  constructor(@InjectModel(PreTest.name) private readonly preTestModel: Model<PreTest>) {
+  constructor(
+    @InjectModel(PreTest.name) private readonly preTestModel: Model<PreTest>,
+    @InjectModel(PostTest.name) private readonly postTestModel: Model<PostTest>
+  ) {
     this.loadQuestions(); // Load questions at service initialization
   }
 
@@ -41,27 +45,44 @@ export class TestService {
     return false;
   }
 
-  // Always generate a new pre-test or post-test
-  async getOrGenerateTest(userId: string, testType: 'pre-test' | 'post-test'): Promise<PreTest> {
-    // Always remove existing incomplete test if any
-    await this.preTestModel.deleteMany({ userId, testType, completedAt: null }).exec();
+  // Check if the post-test is completed
+  async checkPostTestCompletion(userId: string): Promise<boolean> {
+    const postTest = await this.postTestModel.findOne({
+      userId,
+      testType: 'post-test',
+    }).exec();
 
-    // Generate new test
+    return !!(postTest && postTest.completedAt);
+  }
+
+  // Always generate a new pre-test or post-test
+  async getOrGenerateTest(userId: string, testType: 'pre-test' | 'post-test'): Promise<PreTest | PostTest> {
+    const TestModel: Model<PreTest | PostTest> = 
+      testType === 'pre-test' ? this.preTestModel : this.postTestModel;
+
+    const existingTest = await TestModel.findOne({ userId, testType, completedAt: null }).exec();
+    if (existingTest) {
+      return existingTest;
+    }
+
     const writingElements = Object.keys(this.questions);
     const randomizedOrder = [...writingElements].sort(() => Math.random() - 0.5);
 
-    const testQuestions = randomizedOrder.flatMap((element) => {
+    const testQuestions = [];
+    for (const element of randomizedOrder) {
       const exerciseTypes = Object.keys(this.questions[element]);
-      return exerciseTypes.flatMap((type) =>
-        this.questions[element][type].map((q: any) => ({
-          questionId: q.questionId,
-          writingElement: element,
-        }))
-      );
-    });
+      for (const type of exerciseTypes) {
+        const questions = this.questions[element][type];
+        questions.forEach((q: any) => {
+          testQuestions.push({
+            questionId: q.questionId,
+            writingElement: element,
+          });
+        });
+      }
+    }
 
-    // Create and save a new test
-    const newTest = new this.preTestModel({
+    const newTest = new TestModel({
       userId,
       testType,
       randomizedWritingElements: randomizedOrder,
@@ -70,6 +91,7 @@ export class TestService {
 
     return newTest.save();
   }
+
 
   // Complete a test and save the results
   async completeTest(userId: string, testId: string, answers: Record<string, string[]>): Promise<PreTest> {

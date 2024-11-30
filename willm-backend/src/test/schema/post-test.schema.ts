@@ -3,12 +3,12 @@ import { Document } from 'mongoose';
 import { Types } from 'mongoose';
 
 @Schema()
-export class PreTest extends Document {
+export class PostTest extends Document {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   userId: Types.ObjectId;
 
-  @Prop({ required: true, enum: ['pre-test'] })
-  testType: 'pre-test';
+  @Prop({ required: true, enum: ['post-test'] })
+  testType: 'post-test';
 
   @Prop({ required: true, default: Date.now })
   startedAt: Date;
@@ -38,4 +38,4 @@ export class PreTest extends Document {
   }>;
 }
 
-export const PreTestSchema = SchemaFactory.createForClass(PreTest);
+export const PostTestSchema = SchemaFactory.createForClass(PostTest);

@@ -69,6 +69,16 @@ export class UserController {
           preTest,
         });
       }
+
+      // Check post-test completion
+      const postTestCompleted = await this.testService.checkPostTestCompletion(user._id.toString());
+
+      // If post-test is completed, revoke access
+      if (postTestCompleted) {
+        return res.status(403).json({
+          message: 'Access revoked: You have completed the post-test and cannot access the tool.',
+        });
+      }
   
       await this.gamificationService.handleLogin(user._id as Types.ObjectId);
   

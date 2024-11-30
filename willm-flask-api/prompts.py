@@ -270,7 +270,7 @@ I will provide you with a json object of errors that a user made. Your task is t
 Provide both the generated text with errors and its corresponding corrected version.
 
 Input:
-Errors: {errors}
+Errors: {lastSubmission}
 
 Output format:
 Type: revision

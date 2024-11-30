@@ -850,16 +850,6 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.btn {
-  border: 1px solid #c5c5c5;
-  color: #838383;
-}
-
-.btn:hover {
-  background-color: #eabc7c;
-  color: white;
-}
-
 .info-icon {
   width: 25px;
   height: 25px;
@@ -895,5 +885,20 @@ a:hover {
 :deep(.popover.wide-popover) {
   max-width: none;
   font-size: 16px;
+}
+
+.modal-footer .btn-primary {
+  background-color: #eabc7c;
+  border-color: #eabc7c;
+}
+
+.modal-footer .btn-primary:hover {
+  background-color: #e6b065;
+  border-color: #e6b065;
+}
+
+.modal-footer .btn-secondary:hover {
+  background-color: rgb(161, 165, 170);
+  border-color: rgb(161, 165, 170);
 }
 </style>

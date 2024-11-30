@@ -6,8 +6,6 @@ import * as jwt from 'jsonwebtoken';
 import { User } from './schema/user.schema';
 import { ConfigService } from '@nestjs/config';
 
-const JWT_SECRET = process.env.JWT_SECRET;
-
 @Injectable()
 export class UserService {
   private readonly jwtSecret: string;
@@ -86,52 +84,6 @@ export class UserService {
     return this.userModel.findById(userId).exec();
   }
 
-  // Add a pre-test submission for a user
-  async addPreTestSubmission(userId: string, text: string, section: string): Promise<void> {
-    const user = await this.userModel.findById(userId);
-    user.preTestSubmissions.push({ text, section });
-    if (user.preTestSubmissions.length >= 3) {
-      user.preTestsCompleted = true;
-    }
-    await user.save();
-  }
-
-  // Mark a user's pre-tests as completed
-  async completePreTest(userId: string): Promise<void> {
-    const user = await this.userModel.findById(userId);
-    user.preTestsCompleted = true;
-    await user.save();
-  }
-
-  // Add a post-test submission for a user
-  async addPostTestSubmission(userId: string, text: string, section: string): Promise<User> {
-    const user = await this.userModel.findById(userId);
-    const preTestSections = user.preTestSubmissions.map(submission => submission.section.trim().toLowerCase());
-    const postTestSections = user.postTestSubmissions.map(submission => submission.section.trim().toLowerCase());
-
-    const normalizedSection = section.trim().toLowerCase();
-
-    // Ensure that the next section in post-test submissions matches the corresponding pre-test section
-    if (postTestSections.length >= preTestSections.length || preTestSections[postTestSections.length] !== normalizedSection) {
-      throw new Error('Section does not match the expected pre-test section order.');
-    }
-
-    user.postTestSubmissions.push({ text, section });
-
-    if (user.postTestSubmissions.length >= user.preTestSubmissions.length) {
-      user.postTestsCompleted = true;
-    }
-
-    await user.save();
-    return user;
-  }
-
-  // Get the sections for a user's pre-test submissions
-  async getPreTestSections(userId: string): Promise<string[]> {
-    const user = await this.userModel.findById(userId);
-    return user.preTestSubmissions.map(submission => submission.section);
-  }
-
   // Update a user's language learning model data
   async updateUserModels(userId: Types.ObjectId, updateLLMData: any): Promise<void> {
     await this.userModel.updateOne(
@@ -164,6 +116,6 @@ export class UserService {
 
   // Get all users
   async getAllUsers(): Promise<User[]> {
-    return this.userModel.find({}, 'username preTestsCompleted postTestsCompleted').exec();
+    return this.userModel.find({}, { username: 1, _id: 1 }).exec();
   }
 }

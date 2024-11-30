@@ -1,0 +1,210 @@
+{
+    "questions": [
+        {
+            "questionId": "grammar-adjectiveOrAdverb-001",
+            "writingElement": "grammar",
+            "exerciseType": "adjectiveOrAdverb",
+            "questionText": "Choose the correct item: The researcher conducted the experiment (accurate, accurately) and ensured the results were (accurately, accurate) recorded.",
+            "options": [
+                "accurate",
+                "accurately"
+            ],
+            "correctAnswer": [
+                "accurately",
+                "accurate"
+            ]
+        },
+        {
+            "questionId": "grammar-prepositions-001",
+            "writingElement": "grammar",
+            "exerciseType": "prepositions",
+            "questionText": "Complete the following sentence: The study was conducted ______ the laboratory to ensure controlled conditions.",
+            "options": [
+                "to",
+                "toward",
+                "on",
+                "onto",
+                "in",
+                "into"
+            ],
+            "correctAnswer": [
+                "in"
+            ]
+        },
+        {
+            "questionId": "grammar-prepositions-002",
+            "writingElement": "grammar",
+            "exerciseType": "prepositions",
+            "questionText": "Complete the following sentence: The data were entered ______ the statistical software for analysis.",
+            "options": [
+                "to",
+                "toward",
+                "on",
+                "onto",
+                "in",
+                "into"
+            ],
+            "correctAnswer": [
+                "into"
+            ]
+        },
+        {
+            "questionId": "grammar-prepositions-003",
+            "writingElement": "grammar",
+            "exerciseType": "prepositions",
+            "questionText": "Complete the following sentence: The data was transferred ______ the secure server to ensure confidentiality.",
+            "options": [
+                "to",
+                "toward",
+                "on",
+                "onto",
+                "in",
+                "into"
+            ],
+            "correctAnswer": [
+                "onto"
+            ]
+        },
+        {
+            "questionId": "grammar-tenseConsistency-001",
+            "writingElement": "grammar",
+            "exerciseType": "tenseConsistency",
+            "questionText": "Check for tense consistency: The researcher collected data from the participants and then analyzes it to determine patterns.",
+            "correctAnswer": [
+                "The researcher collected data from the participants and then analyzed it to determine patterns."
+            ]
+        },
+        {
+            "questionId": "grammar-tenseConsistency-002",
+            "writingElement": "grammar",
+            "exerciseType": "tenseConsistency",
+            "questionText": "Check for tense consistency: The professor explains the assignment in detail after the class ended.",
+            "correctAnswer": [
+                "The professor explained the assignment in detail after the class ended."
+            ]
+        },
+        {
+            "questionId": "grammar-tenseConsistency-003",
+            "writingElement": "grammar",
+            "exerciseType": "tenseConsistency",
+            "questionText": "Check for tense consistency: By the time the paper is published, several reviewers have raised concerns about its methodology.",
+            "correctAnswer": [
+                "By the time the paper was published, several reviewers had raised concerns about its methodology."
+            ]
+        },
+        {
+            "questionId": "vocabulary-replacement-001",
+            "writingElement": "vocabulary",
+            "exerciseType": "replacement",
+            "questionText": "Select all words that best replace the **bolded word**: The team **gave** a detailed explanation of the methodology used in the experiment.",
+            "options": [
+                "provided",
+                "offered",
+                "proposed",
+                "handed"
+            ],
+            "correctAnswer": [
+                "provided",
+                "offered"
+            ]
+        },
+        {
+            "questionId": "vocabulary-replacement-002",
+            "writingElement": "vocabulary",
+            "exerciseType": "replacement",
+            "questionText": "Select all words that best replace the **bolded word**: The report provided **very detailed** information about the experiment.",
+            "options": [
+                "thorough",
+                "concise",
+                "exhaustive",
+                "superficial"
+            ],
+            "correctAnswer": [
+                "thorough",
+                "exhaustive"
+            ]
+        },
+        {
+            "questionId": "vocabulary-replacement-003",
+            "writingElement": "vocabulary",
+            "exerciseType": "replacement",
+            "questionText": "Select all words that best replace the **bolded word**: The professor's explanation was **very clear and easy to understand**.",
+            "options": [
+                "explicit",
+                "vague",
+                "transparent",
+                "ambiguous"
+            ],
+            "correctAnswer": [
+                "explicit",
+                "transparent"
+            ]
+        },
+        {
+            "questionId": "organization-reorganizing-001",
+            "writingElement": "organization",
+            "exerciseType": "reorganizing",
+            "questionText": "Reorganize the sentences in the paragraph to ensure proper structure.",
+            "options": [
+                "This theory suggests that economic growth depends on investments in education and technology.",
+                "Many economists emphasize the role of human capital in driving innovation and productivity.",
+                "As a result, countries that prioritize education tend to experience sustained economic progress.",
+                "Human capital refers to the skills and knowledge possessed by the workforce."
+            ],
+            "correctAnswer": [
+                "4",
+                "2",
+                "1",
+                "3"
+            ]
+        },
+        {
+            "questionId": "coherence-insertion-001",
+            "writingElement": "coherence",
+            "exerciseType": "insertion",
+            "questionText": "Identify the best sentence to insert into the paragraph: 'The research highlights the importance of early childhood education in shaping future academic success. Studies show that children exposed to stimulating environments in their formative years perform better in later stages of education. ______. This correlation underscores the need for policy interventions aimed at increasing access to quality early childhood programs.'",
+            "options": [
+                "However, some studies argue against the universal application of such interventions.",
+                "Researchers also emphasize the role of parental involvement in enhancing these outcomes.",
+                "A comprehensive analysis of historical data revealed inconsistencies in outcomes across different regions."
+            ],
+            "correctAnswer": [
+                "Researchers also emphasize the role of parental involvement in enhancing these outcomes."
+            ]
+        },
+        {
+            "questionId": "coherence-transition-001",
+            "writingElement": "coherence",
+            "exerciseType": "transition",
+            "questionText": "Add appropriate transitions to improve coherence: 'The introduction of a new curriculum significantly improved student engagement. ___, many educators implemented project-based learning strategies in their classrooms. ___, students reported higher levels of interest in coursework. Teachers also observed improved collaboration among students.'",
+            "options": [
+                "Additionally",
+                "Despite this",
+                "Consequently",
+                "However"
+            ],
+            "correctAnswer": [
+                "Additionally",
+                "Consequently"
+            ]
+        },
+        {
+            "questionId": "writingStyle-paraphrasing-001",
+            "writingElement": "writingStyle",
+            "exerciseType": "paraphrasing",
+            "questionText": "Revise to state meaning in fewer words: 'The findings of the research study, which were derived from an extensive analysis of various data sources, showed that a significant relationship exists between socioeconomic status and academic achievement.'",
+            "correctAnswer": [
+                "The research found a significant link between socioeconomic status and academic achievement."
+            ]
+        },
+        {
+            "questionId": "writingStyle-paraphrasing-002",
+            "writingElement": "writingStyle",
+            "exerciseType": "paraphrasing",
+            "questionText": "Revise to state meaning in fewer words: 'It is very apparent that, based on the observations made during the experiment, the results suggest a potential need for further investigation into the effects of this phenomenon.'",
+            "correctAnswer": [
+                "The results suggest the need for further investigation into this phenomenon."
+            ]
+        }
+    ]
+}

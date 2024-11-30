@@ -3,6 +3,7 @@ import { Response, Request } from 'express';
 import { UserService } from './user.service';
 import { isAfter, parseISO } from 'date-fns';
 import { QuizService } from '../quiz/quiz.service';
+import { TestService } from '../test/test.service';
 import { GamificationService } from '../gamification/gamification.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AllowedUsersGuard } from '../auth/allowed-users.guard';
@@ -14,6 +15,7 @@ export class UserController {
     private readonly userService: UserService,
     private readonly quizService: QuizService,
     private readonly gamificationService: GamificationService,
+    private readonly testService: TestService
   ) {}
 
   // Register a new user
@@ -53,19 +55,26 @@ export class UserController {
 
       // Check if the user has completed the post-test and can no longer use the tool
       const user = await this.userService.findUserByUsername(username);
-      if (user.postTestsCompleted) {
-        return res.status(403).json({ message: 'You have completed the post-test and can no longer use the tool.' });
-      }
 
       // Generate a JWT token and set it as a cookie
       const token = this.userService.generateJwtToken(username);
       res.cookie('auth_token', token, { httpOnly: true, secure: false });
+
+      // Check if the user has completed the pre-test
+      const preTestCompleted = await this.testService.checkPreTestCompletion(user._id.toString());
+      if (!preTestCompleted) {
+        const preTest = await this.testService.getOrGenerateTest(user._id.toString(), 'pre-test');
+        return res.status(200).json({
+          message: 'Login successful, please complete the pre-test.',
+          preTest,
+        });
+      }
   
       await this.gamificationService.handleLogin(user._id as Types.ObjectId);
   
       // Trigger quiz generation on login
       const quizInfo = await this.quizService.handleLoginQuiz(user);
-      return res.status(200).json({ message: 'Login successful', preTestsCompleted: user.preTestsCompleted, postTestsCompleted: user.postTestsCompleted, quizInfo });
+      return res.status(200).json({ message: 'Login successful', quizInfo });
     } catch (error) {
       console.error(error);
     }
@@ -100,109 +109,6 @@ export class UserController {
       reviewModel: user.reviewModel,
       dailyRequestsLeft: user.dailyRequestsLeft
     });
-  }
-
-  // Get the users' pre-test status (completed or not, number of submissions)
-  @Get('pre-test-status')
-  async getPreTestStatus(@Req() req: Request, @Res() res: Response): Promise<any> {
-    const user = await this.userService.findUserByToken(req.cookies['auth_token']);
-    if (!user) {
-      return res.status(401).json({ message: 'Unauthorized' });
-    }
-    return res.status(200).json({ preTestsCompleted: user.preTestsCompleted, preTestCount: user.preTestSubmissions.length });
-  }
-
-  // Get the users' post-test status (completed or not, number of submissions)
-  @Post('complete-pre-test')
-  async completePreTest(@Req() req: Request, @Res() res: Response): Promise<any> {
-    const user = await this.userService.findUserByToken(req.cookies['auth_token']);
-    if (!user) {
-      return res.status(401).json({ message: 'Unauthorized' });
-    }
-    if (user.preTestSubmissions.length < 1) {
-      return res.status(400).json({ message: 'At least one pre-test submission is required to complete the process.' });
-    }
-    await this.userService.completePreTest(user._id.toString());
-    return res.status(200).json({ message: 'Pre-test process completed successfully', preTestsCompleted: true });
-  }
-
-  // Submit a pre-test
-  @Post('pre-test')
-  async submitPreTest(@Body('text') text: string, @Body('section') section: string, @Req() req: Request, @Res() res: Response): Promise<any> {
-    const MIN_WORD_COUNT = 270;
-    const MAX_WORD_COUNT = 330;
-    const wordCount = text.trim().split(/\s+/).length;
-
-    // Check if the text has the correct word count
-    if (wordCount < MIN_WORD_COUNT || wordCount > MAX_WORD_COUNT) {
-      throw new BadRequestException(`Text must be between ${MIN_WORD_COUNT} and ${MAX_WORD_COUNT} words.`);
-    }
-
-    // Check if the user is authorized
-    const user = await this.userService.findUserByToken(req.cookies['auth_token']);
-    if (!user) {
-      return res.status(401).json({ message: 'Unauthorized' });
-    }
-    await this.userService.addPreTestSubmission(user._id.toString(), text, section);
-    return res.status(200).json({ message: 'Pre-test submitted successfully' });
-  }
-
-  // Get the sections for a user's pre-test submissions
-  @Get('pre-test-sections')
-  async getPreTestSections(@Req() req: Request, @Res() res: Response): Promise<any> {
-    const user = await this.userService.findUserByToken(req.cookies['auth_token']);
-    if (!user) {
-      return res.status(401).json({ message: 'Unauthorized' });
-    }
-    const sections = await this.userService.getPreTestSections(user._id.toString());
-    return res.status(200).json({ sections });
-  }
-
-  // Get the sections for a user's post-test submissions
-  @Get('post-test-sections')
-  async getPostTestSections(@Req() req: Request, @Res() res: Response): Promise<any> {
-    const user = await this.userService.findUserByToken(req.cookies['auth_token']);
-    if (!user) {
-      return res.status(401).json({ message: 'Unauthorized' });
-    }
-    const sections = user.postTestSubmissions.map(submission => submission.section);
-    return res.status(200).json({ sections });
-  }
-
-  // Submit a post-test
-  @Post('post-test')
-  async submitPostTest(@Body('text') text: string, @Body('section') section: string, @Req() req: Request, @Res() res: Response): Promise<any> {
-    const MIN_WORD_COUNT = 270;
-    const MAX_WORD_COUNT = 330;
-    const wordCount = text.trim().split(/\s+/).length;
-    const currentDate = new Date();
-    const enableDate = parseISO('2025-01-12');
-
-    if (!isAfter(currentDate, enableDate)) {
-      return res.status(400).json({ message: 'Post-tests can only be submitted after August 28th.' });
-    }
-
-    // Check if the text has the correct word count
-    if (wordCount < MIN_WORD_COUNT || wordCount > MAX_WORD_COUNT) {
-      throw new BadRequestException(`Text must be between ${MIN_WORD_COUNT} and ${MAX_WORD_COUNT} words.`);
-    }
-
-    // Check if the user is authorized
-    const user = await this.userService.findUserByToken(req.cookies['auth_token']);
-    if (!user) {
-      return res.status(401).json({ message: 'Unauthorized' });
-    }
-
-    // Try to add the post-test submission
-    try {
-      const updatedUser = await this.userService.addPostTestSubmission(user._id.toString(), text, section);
-      if (updatedUser.postTestsCompleted) {
-        res.clearCookie('auth_token');
-      }
-      return res.status(200).json({ message: 'Post-test submitted successfully', postTestsCompleted: updatedUser.postTestsCompleted });
-    } catch (error) {
-      return res.status(400).json({ message: error.message });
-    }
   }
 
   // Get the user's gamification data
@@ -277,36 +183,44 @@ export class UserController {
   }
 
   // Get all users and their pre-test status
-  @UseGuards(AllowedUsersGuard)
   @Get('pre-test-status/all')
   async getAllPreTestStatus(@Res() res: Response): Promise<any> {
     try {
+      // Get all users
       const users = await this.userService.getAllUsers();
-      const preTestStatuses = users.map(user => ({
-        username: user.username,
-        preTestsCompleted: user.preTestsCompleted,
-      }));
+
+      // Map through each user and check pre-test status
+      const preTestStatuses = await Promise.all(
+        users.map(async (user) => {
+          const preTest = await this.testService.getOrGenerateTest(user._id.toString(), 'pre-test');
+          return {
+            username: user.username,
+            completedAt: preTest.completedAt, // Null if not completed
+          };
+        })
+      );
+
       return res.status(200).json(preTestStatuses);
     } catch (error) {
-      console.error(error);
+      console.error('Error fetching pre-test statuses:', error);
       return res.status(500).json({ message: 'Failed to retrieve pre-test statuses.' });
     }
   }
 
   // Get all users and their post-test status
-  @UseGuards(AllowedUsersGuard)
-  @Get('post-test-status/all')
-  async getAllPostTestStatus(@Res() res: Response): Promise<any> {
-    try {
-      const users = await this.userService.getAllUsers();
-      const postTestStatuses = users.map(user => ({
-        username: user.username,
-        postTestsCompleted: user.postTestsCompleted,
-      }));
-      return res.status(200).json(postTestStatuses);
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ message: 'Failed to retrieve post-test statuses.' });
-    }
-  }
+  // @UseGuards(AllowedUsersGuard)
+  // // @Get('post-test-status/all')
+  // // async getAllPostTestStatus(@Res() res: Response): Promise<any> {
+  // //   try {
+  // //     const users = await this.userService.getAllUsers();
+  // //     const postTestStatuses = users.map(user => ({
+  // //       username: user.username,
+  // //       postTestsCompleted: user.postTestsCompleted,
+  // //     }));
+  // //     return res.status(200).json(postTestStatuses);
+  // //   } catch (error) {
+  // //     console.error(error);
+  // //     return res.status(500).json({ message: 'Failed to retrieve post-test statuses.' });
+  // //   }
+  // // }
 }

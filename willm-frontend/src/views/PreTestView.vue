@@ -8,6 +8,9 @@ const answers = ref({});
 const currentIndex = ref(0);
 let loadingMessage = null;
 
+// Track already displayed exercise types
+const displayedTypes = ref(new Set());
+
 const currentElement = computed(() => {
     return test.value?.randomizedWritingElements[currentIndex.value];
 });
@@ -22,6 +25,46 @@ const isLastElement = computed(() => {
     return currentIndex.value === test.value?.randomizedWritingElements.length - 1;
 });
 
+function formatAdjectiveOrAdverb(text, options, questionId) {
+    const regex = /\(([^)]+)\)/g;
+    let index = 0;
+    return text.replace(regex, (match) => {
+        const optionsArray = match.slice(1, -1).split(',').map((o) => o.trim());
+        return `
+            <select v-model="answers['${questionId}'][${index++}]" class="form-select-inline">
+                <option value="" disabled>Select</option> <!-- Default unselected option -->
+                ${optionsArray.map((option) => `<option value="${option}">${option}</option>`).join("")}
+            </select>
+        `;
+    });
+}
+
+function formatPrepositions(text, options, questionId) {
+    const regex = /______/g;
+    let index = 0;
+    return text.replace(regex, () => {
+        return `
+            <select v-model="answers['${questionId}'][${index++}]" class="form-select-inline">
+                <option value="" disabled>Select</option> <!-- Default unselected option -->
+                ${options.map((option) => `<option value="${option}">${option}</option>`).join("")}
+            </select>
+        `;
+    });
+}
+
+function formatTransition(text, options, questionId) {
+    const regex = /___/g;
+    let index = 0;
+    return text.replace(regex, () => {
+        return `
+            <select v-model="answers['${questionId}'][${index++}]" class="form-select-inline">
+                <option value="" disabled>Select</option>
+                ${options.map((option) => `<option value="${option}">${option}</option>`).join("")}
+            </select>
+        `;
+    });
+}
+
 const loadTest = async () => {
     try {
         console.log("Loading Pre-Test...");
@@ -32,9 +75,19 @@ const loadTest = async () => {
         console.log("Pre-Test loaded:", response.data);
         test.value = response.data;
 
-        // Initialize answers object and progress
+        // Initialize answers object
         test.value.results.forEach((q) => {
-            answers.value[q.questionId] = q.options ? "" : [];
+            if (q.exerciseType === 'adjectiveOrAdverb') {
+                answers.value[q.questionId] = ["", ""]; // Initialize as empty array for multiple blanks
+            } else if (q.exerciseType === 'prepositions') {
+                answers.value[q.questionId] = new Array(q.options.length).fill(""); // Initialize for each blank
+            } else if (q.exerciseType === 'replacement') {
+                answers.value[q.questionId] = []; // Multiple choice, initialized empty
+            } else if (q.exerciseType === 'reorganizing') {
+                answers.value[q.questionId] = new Array(q.options.length).fill(""); // Initialize for reordering
+            } else {
+                answers.value[q.questionId] = ""; // Single-answer exercises
+            }
         });
 
         if (loadingMessage) loadingMessage(); // Dismiss loading message
@@ -47,12 +100,14 @@ const loadTest = async () => {
 
 const nextElement = () => {
     if (currentIndex.value < test.value.randomizedWritingElements.length - 1) {
+        displayedTypes.value.clear();
         currentIndex.value++;
     }
 };
 
 const prevElement = () => {
     if (currentIndex.value > 0) {
+        displayedTypes.value.clear();
         currentIndex.value--;
     }
 };
@@ -82,6 +137,7 @@ onMounted(loadTest);
             <div class="col-12">
                 <h2 class="text-center mb-4">Pre-Test</h2>
                 <div v-if="!test">
+                    <p>Loading...</p>
                 </div>
                 <div v-else>
                     <!-- Dynamic content for each writing element -->
@@ -89,36 +145,78 @@ onMounted(loadTest);
                         <h5 class="mb-3">
                             {{ currentElement.charAt(0).toUpperCase() + currentElement.slice(1) }} Questions
                         </h5>
+                        <!-- Track already displayed exercise types -->
                         <div v-for="(question, index) in currentQuestions" :key="index" class="mb-3">
-                            <!-- Display exercise type -->
-                            <p class="text-muted small">
-                                <strong>Exercise Type:</strong> {{ question.exerciseType }}
+                            <!-- Question text -->
+                            <p>
+                                <span v-html="question.exerciseType === 'adjectiveOrAdverb'
+                                    ? formatAdjectiveOrAdverb(question.questionText, question.options, question.questionId)
+                                    : question.exerciseType === 'prepositions'
+                                        ? formatPrepositions(question.questionText, question.options, question.questionId)
+                                        : question.exerciseType === 'transition'
+                                            ? formatTransition(question.questionText, question.options, question.questionId)
+                                            : question.questionText
+                                    ">
+                                </span>
                             </p>
 
-                            <!-- Split and display task and question -->
-                            <div>
-                                <p v-if="question.questionText.includes(':')">
-                                    <strong>{{ question.questionText.split(':')[0] }}</strong>
-                                    <br />
-                                    {{ question.questionText.split(':')[1].trim() }}
-                                </p>
-                                <p v-else>
-                                    {{ question.questionText }}
-                                </p>
-                            </div>
-
-                            <!-- Options or text area -->
-                            <div v-if="question.options">
-                                <div class="form-check" v-for="(option, idx) in question.options" :key="idx">
-                                    <input type="radio" class="form-check-input"
-                                        :id="'option-' + question.questionId + '-' + idx" :name="question.questionId"
+                            <!-- Coherence: Insertion -->
+                            <div v-if="question.exerciseType === 'insertion'">
+                                <div class="form-check" v-for="(option, idx) in question.options"
+                                    :key="'insertion-' + idx">
+                                    <input type="radio" :id="'insertion-' + question.questionId + '-' + idx"
                                         :value="option" v-model="answers[question.questionId]" />
-                                    <label class="form-check-label" :for="'option-' + question.questionId + '-' + idx">
+                                    <label :for="'insertion-' + question.questionId + '-' + idx">
                                         {{ option }}
                                     </label>
                                 </div>
                             </div>
-                            <textarea v-else class="form-control" :placeholder="'Write your answer here...'"
+
+                            <!-- Vocabulary: Multiple Choice -->
+                            <div v-else-if="question.exerciseType === 'replacement'">
+                                <div class="form-check" v-for="(option, idx) in question.options" :key="'multi-' + idx">
+                                    <input type="checkbox" :id="'multi-' + question.questionId + '-' + idx"
+                                        :value="option" v-model="answers[question.questionId]" />
+                                    <label :for="'multi-' + question.questionId + '-' + idx">
+                                        {{ option }}
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Organization: Reordering Sentences -->
+                            <div v-else-if="question.exerciseType === 'reorganizing'">
+                                <div v-for="(sentence, idx) in question.options" :key="idx"
+                                    class="d-flex mb-2 align-items-center">
+                                    <select class="form-select form-select-sm me-2 w-auto"
+                                        v-model="answers[question.questionId][idx]">
+                                        <option disabled value="">Select</option>
+                                        <option v-for="n in question.options.length" :key="n" :value="n">
+                                            {{ n }}
+                                        </option>
+                                    </select>
+                                    <span>{{ sentence }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Grammar: Adjective or Adverb -->
+                            <div v-else-if="question.exerciseType === 'adjectiveOrAdverb'">
+                                <p>
+                                    <span
+                                        v-html="formatAdjectiveOrAdverb(question.questionText, question.options, question.questionId)"></span>
+                                </p>
+                            </div>
+
+                            <!-- Grammar: Prepositions -->
+                            <div v-else-if="question.exerciseType === 'prepositions'">
+                                <p>
+                                    <span
+                                        v-html="formatPrepositions(question.questionText, question.options, question.questionId)"></span>
+                                </p>
+                            </div>
+
+                            <!-- Default: Textarea Input -->
+                            <textarea v-else-if="['tenseConsistency', 'paraphrasing'].includes(question.exerciseType)"
+                                class="form-control" :placeholder="'Write your answer here...'"
                                 v-model="answers[question.questionId]"></textarea>
                         </div>
                     </div>

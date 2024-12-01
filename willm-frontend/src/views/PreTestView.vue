@@ -2,9 +2,7 @@
 import { ref, computed, onMounted } from "vue";
 import axios from "axios";
 import { message } from "ant-design-vue";
-import { useAuthStore } from '../stores/auth';
 
-const authStore = useAuthStore();
 const test = ref(null);
 const answers = ref({});
 const currentIndex = ref(0);
@@ -15,7 +13,7 @@ const currentElement = computed(() => {
 });
 
 const currentQuestions = computed(() => {
-    return test.value?.questions.filter(
+    return test.value?.results.filter(
         (q) => q.writingElement === currentElement.value
     );
 });
@@ -28,12 +26,14 @@ const loadTest = async () => {
     try {
         console.log("Loading Pre-Test...");
         loadingMessage = message.info("Loading Pre-Test...", 0);
-        const response = await axios.get('http://willm.corinth.informatik.rwth-aachen.de/test/pre-test');
+        const response = await axios.get(
+            "http://willm.corinth.informatik.rwth-aachen.de/test/pre-test"
+        );
         console.log("Pre-Test loaded:", response.data);
         test.value = response.data;
 
-        // Initialize answers object
-        test.value.questions.forEach((q) => {
+        // Initialize answers object and progress
+        test.value.results.forEach((q) => {
             answers.value[q.questionId] = q.options ? "" : [];
         });
 
@@ -60,7 +60,10 @@ const prevElement = () => {
 const submitTest = async () => {
     try {
         loadingMessage = message.info("Submitting Pre-Test...", 0);
-        await axios.post(`http://willm.corinth.informatik.rwth-aachen.de/test/${testId}/pre-test/complete`, answers);
+        await axios.post(
+            `http://willm.corinth.informatik.rwth-aachen.de/test/${test.value._id}/pre-test/complete`,
+            answers.value
+        );
         if (loadingMessage) loadingMessage(); // Dismiss loading message
         message.success("Pre-Test submitted successfully!");
     } catch (error) {
@@ -83,9 +86,28 @@ onMounted(loadTest);
                 <div v-else>
                     <!-- Dynamic content for each writing element -->
                     <div id="test-content" class="mb-4">
-                        <h5 class="mb-3">{{ currentElement }} Questions</h5>
+                        <h5 class="mb-3">
+                            {{ currentElement.charAt(0).toUpperCase() + currentElement.slice(1) }} Questions
+                        </h5>
                         <div v-for="(question, index) in currentQuestions" :key="index" class="mb-3">
-                            <p>{{ question.text }}</p>
+                            <!-- Display exercise type -->
+                            <p class="text-muted small">
+                                <strong>Exercise Type:</strong> {{ question.exerciseType }}
+                            </p>
+
+                            <!-- Split and display task and question -->
+                            <div>
+                                <p v-if="question.questionText.includes(':')">
+                                    <strong>{{ question.questionText.split(':')[0] }}</strong>
+                                    <br />
+                                    {{ question.questionText.split(':')[1].trim() }}
+                                </p>
+                                <p v-else>
+                                    {{ question.questionText }}
+                                </p>
+                            </div>
+
+                            <!-- Options or text area -->
                             <div v-if="question.options">
                                 <div class="form-check" v-for="(option, idx) in question.options" :key="idx">
                                     <input type="radio" class="form-check-input"

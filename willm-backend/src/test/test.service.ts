@@ -8,7 +8,7 @@ import { PostTest } from './schema/post-test.schema';
 
 @Injectable()
 export class TestService {
-  private questions: Record<string, any>; // Questions loaded from the JSON file
+  private questions: Record<string, any>;
 
   constructor(
     @InjectModel(PreTest.name) private readonly preTestModel: Model<PreTest>,
@@ -28,7 +28,7 @@ export class TestService {
         throw new Error("Invalid JSON structure: 'questions' key not found or not an array.");
       }
 
-      this.questions = parsed; // Store the parsed JSON
+      this.questions = parsed;
     } catch (error) {
       console.error('Failed to load questions JSON file:', error);
       throw new Error('Could not load questions.');
@@ -75,15 +75,28 @@ export class TestService {
   }
 
   // Always generate a new pre-test or post-test
-  async getOrGenerateTest(userId: string, testType: 'pre-test' | 'post-test'): Promise<PreTest | PostTest> {
+  async getOrGenerateTest(userId: string, testType: 'pre-test' | 'post-test'): Promise<any> {
     const TestModel = this.getTestModel(testType);
 
     const existingTest = await TestModel.findOne({ userId, testType, completedAt: null }).exec();
     if (existingTest) {
-      return existingTest;
+      // Add question details to the response
+      const resultsWithDetails = existingTest.results.map(result => {
+        const questionDetails = this.findQuestionById(result.questionId); // Find question details
+        return {
+          ...result,
+          ...questionDetails,
+        };
+      });
+
+      // Return existing test with question details
+      return {
+        ...existingTest.toJSON(), 
+        results: resultsWithDetails, 
+      };
     }
 
-    // Extract unique writing elements
+    // Generate a new test if none exists
     const writingElements = Array.from(new Set(this.questions.questions.map(q => q.writingElement)));
     const randomizedOrder = [...writingElements].sort(() => Math.random() - 0.5);
 
@@ -94,6 +107,7 @@ export class TestService {
         testQuestions.push({
           questionId: q.questionId,
           writingElement: q.writingElement,
+          ...q, 
         });
       });
     }
@@ -105,9 +119,21 @@ export class TestService {
       results: testQuestions,
     });
 
-    console.log(newTest);
+    const savedTest = await newTest.save();
 
-    return newTest.save();
+    // Add question details before returning
+    const resultsWithDetails = savedTest.results.map(result => {
+      const questionDetails = this.findQuestionById(result.questionId);
+      return {
+        ...result,
+        ...questionDetails,
+      };
+    });
+
+    return {
+      ...savedTest.toJSON(),
+      results: resultsWithDetails,
+    };
   }
 
   // Complete a test and save the results

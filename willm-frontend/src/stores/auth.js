@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import axios from 'axios';
 import router from '../router';
 import { message } from 'ant-design-vue';
+import { isAfter } from 'date-fns';
 
 axios.defaults.withCredentials = true;
 
@@ -104,7 +105,6 @@ export const useAuthStore = defineStore('auth', {
       try {
         await axios.post('http://willm.corinth.informatik.rwth-aachen.de/user/logout');
         this.isAuthenticated = false;
-        this.postTestCompleted = false;
         router.push({ name: 'login' });
       } catch (error) {
         message.error('An error occurred. Please try again.');

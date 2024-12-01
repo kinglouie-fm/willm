@@ -5,7 +5,6 @@ import * as bootstrap from 'bootstrap';
 import { useAuthStore } from '../stores/auth';
 import Evaluation from '@/components/Evaluation.vue';
 import Review from '@/components/Review.vue';
-import { isAfter } from 'date-fns';
 import { message } from 'ant-design-vue';
 
 /* 

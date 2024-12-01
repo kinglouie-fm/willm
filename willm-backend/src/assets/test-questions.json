@@ -35,7 +35,7 @@
             "questionId": "grammar-prepositions-002",
             "writingElement": "grammar",
             "exerciseType": "prepositions",
-            "questionText": "The data were entered ______ the statistical software for analysis.",
+            "questionText": "The data were entered <select><option value=\"\">Select</option><option value=\"to\">to</option><option value=\"toward\">toward</option><option value=\"on\">on</option><option value=\"onto\">onto</option><option value=\"in\">in</option><option value=\"into\">into</option></select> the statistical software for analysis.",
             "options": [
                 "to",
                 "toward",
@@ -52,7 +52,7 @@
             "questionId": "grammar-prepositions-003",
             "writingElement": "grammar",
             "exerciseType": "prepositions",
-            "questionText": "The data was transferred ______ the secure server to ensure confidentiality.",
+            "questionText": "The data was transferred <select><option value=\"\">Select</option><option value=\"to\">to</option><option value=\"toward\">toward</option><option value=\"on\">on</option><option value=\"onto\">onto</option><option value=\"in\">in</option><option value=\"into\">into</option></select> the secure server to ensure confidentiality.",
             "options": [
                 "to",
                 "toward",
@@ -96,7 +96,7 @@
             "questionId": "vocabulary-replacement-001",
             "writingElement": "vocabulary",
             "exerciseType": "replacement",
-            "questionText": "The team <strong>gave</strong> a detailed explanation of the methodology used in the experiment.",
+            "questionText": "The team <b>gave</b> a detailed explanation of the methodology used in the experiment.",
             "options": [
                 "provided",
                 "offered",
@@ -112,7 +112,7 @@
             "questionId": "vocabulary-replacement-002",
             "writingElement": "vocabulary",
             "exerciseType": "replacement",
-            "questionText": "The report provided <strong>very detailed</strong> information about the experiment.",
+            "questionText": "The report provided <b>very detailed</b> information about the experiment.",
             "options": [
                 "thorough",
                 "concise",
@@ -128,7 +128,7 @@
             "questionId": "vocabulary-replacement-003",
             "writingElement": "vocabulary",
             "exerciseType": "replacement",
-            "questionText": "The professor's explanation was <strong>very clear and easy to understand</strong>.",
+            "questionText": "The professor's explanation was <b>very clear and easy to understand</b>.",
             "options": [
                 "explicit",
                 "vague",
@@ -176,7 +176,7 @@
             "questionId": "coherence-transition-001",
             "writingElement": "coherence",
             "exerciseType": "transition",
-            "questionText": "The introduction of a new curriculum significantly improved student engagement. ___, many educators implemented project-based learning strategies in their classrooms. ___, students reported higher levels of interest in coursework. Teachers also observed improved collaboration among students.",
+            "questionText": "The introduction of a new curriculum significantly improved student engagement. <select><option value=\"\">Select</option><option value=\"Additionally\">Additionally</option><option value=\"Despite this\">Despite this</option><option value=\"Consequently\">Consequently</option><option value=\"However\">However</option></select>, many educators implemented project-based learning strategies in their classrooms. ___, students reported higher levels of interest in coursework. Teachers also observed improved collaboration among students.",
             "options": [
                 "Additionally",
                 "Despite this",

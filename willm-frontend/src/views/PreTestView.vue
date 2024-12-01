@@ -102,44 +102,68 @@ onMounted(loadTest);
                 <div v-else>
                     <!-- Dynamic content for each writing element -->
                     <div id="test-content" class="mb-4">
-                        <h5 class="mb-3">
+                        <h4 class="mb-3">
                             {{ currentElement.charAt(0).toUpperCase() + currentElement.slice(1) }} Questions
-                        </h5>
-                        <div class="mb-3" v-if="currentElement">
-                            <p class="font-weight-bold">
-                                <span v-if="currentElement === 'adjectiveOrAdverb'">Task: Choose the correct
-                                    item.</span>
-                                <span v-else-if="currentElement === 'prepositions'">
-                                    Task: Complete the following sentences with the correct preposition:
-                                    <strong>to, toward, on, onto, in,</strong> or <strong>into</strong>. Remember that a
-                                    few verbs of motion take only "on" rather than "onto.”
+                        </h4>
+
+                        <!-- Task Description -->
+                        <div class="mb-3">
+                            <h5>
+                                <!-- Grammar Tasks -->
+                                <span v-if="currentElement === 'grammar'">
+                                    <span v-if="currentQuestions[0]?.exerciseType === 'adjectiveOrAdverb'">Task: Choose
+                                        the correct item.</span>
+                                    <span v-else-if="currentQuestions[0]?.exerciseType === 'prepositions'">
+                                        Task: Complete the following sentences with the correct preposition:
+                                        <strong>to, toward, on, onto, in,</strong> or <strong>into</strong>. Remember
+                                        that a few verbs of motion take only "on" rather than "onto.”
+                                    </span>
+                                    <span v-else-if="currentQuestions[0]?.exerciseType === 'tenseConsistency'">
+                                        Task: Check the following sentences for confusing shifts in tense. Write the
+                                        answer in the corresponding field. If there is no mistake, simply leave the
+                                        field empty. Reading the sentences aloud will help you recognize differences in
+                                        time.
+                                    </span>
                                 </span>
-                                <span v-else-if="currentElement === 'tenseConsistency'">
-                                    Task: Check the following sentences for confusing shifts in tense. Write the answer
-                                    in the corresponding field. If there is no mistake, simply leave the field empty.
-                                    Reading the sentences aloud will help you recognize differences in time.
+
+                                <!-- Vocabulary Tasks -->
+                                <span v-else-if="currentElement === 'vocabulary'">
+                                    <span v-if="currentQuestions[0]?.exerciseType === 'replacement'">
+                                        Task: Select all the words that best replace the bolded word in
+                                        the sentence to make it more formal and academic. There may be more than one
+                                        correct answer.
+                                    </span>
                                 </span>
-                                <span v-else-if="currentElement === 'replacement'">
-                                    Task: Select all the words that best replace the <strong>bolded word</strong> in the
-                                    sentence to make it more formal and academic. There may be more than one correct
-                                    answer.
+
+                                <!-- Organization Tasks -->
+                                <span v-else-if="currentElement === 'organization'">
+                                    <span v-if="currentQuestions[0]?.exerciseType === 'reorganizing'">
+                                        Task: Reorganize the sentences in the paragraph to ensure proper structure.
+                                    </span>
                                 </span>
-                                <span v-else-if="currentElement === 'reorganizing'">
-                                    Task: Reorganize the sentences in the paragraph to ensure proper structure.
+
+                                <!-- Coherence Tasks -->
+                                <span v-else-if="currentElement === 'coherence'">
+                                    <span v-if="currentQuestions[0]?.exerciseType === 'insertion'">
+                                        Task: Identify the best sentence to insert into the paragraph to improve
+                                        coherence.
+                                    </span>
+                                    <span v-else-if="currentQuestions[0]?.exerciseType === 'transition'">
+                                        Task: Add appropriate transitions to improve the coherence of the paragraph.
+                                    </span>
                                 </span>
-                                <span v-else-if="currentElement === 'insertion'">
-                                    Task: Identify the best sentence to insert into the paragraph to improve coherence.
-                                </span>
-                                <span v-else-if="currentElement === 'transition'">
-                                    Task: Add appropriate transitions to improve the coherence of the paragraph.
-                                </span>
+
+                                <!-- Writing Style Tasks -->
                                 <span v-else-if="currentElement === 'writingStyle'">
-                                    Task: Revise these sentences to state their meaning in fewer words. Avoid passive
-                                    voice, needless repetition, and wordy phrases and clauses.
+                                    <span v-if="currentQuestions[0]?.exerciseType === 'paraphrasing'">
+                                        Task: Revise these sentences to state their meaning in fewer words. Avoid
+                                        passive voice, needless repetition, and wordy phrases and clauses.
+                                    </span>
                                 </span>
-                            </p>
+                            </h5>
                         </div>
 
+                        <!-- Questions -->
                         <div v-for="(question, index) in currentQuestions" :key="index" class="mb-3">
                             <!-- Render questionText directly if it contains embedded HTML (e.g., for prepositions, adjectives, etc.) -->
                             <div
@@ -162,7 +186,7 @@ onMounted(loadTest);
 
                             <!-- Handle Vocabulary: Multiple Choice -->
                             <div v-else-if="question.exerciseType === 'replacement'">
-                                <p>{{ question.questionText }}</p>
+                                <p v-html="question.questionText"></p>
                                 <div class="form-check" v-for="(option, idx) in question.options" :key="'multi-' + idx">
                                     <input type="checkbox" :id="'multi-' + question.questionId + '-' + idx"
                                         :value="option" v-model="answers[question.questionId]" />

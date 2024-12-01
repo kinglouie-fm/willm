@@ -137,27 +137,45 @@ export class TestService {
   }
 
   // Complete a test and save the results
-  async completeTest(userId: string, testId: string, answers: Record<string, string[]>, testType: 'pre-test' | 'post-test'): Promise<PreTest | PostTest> {
+  async completeTest(userId: string, testId: string, answers: Record<string, string | string[]>, testType: 'pre-test' | 'post-test'): Promise<PreTest | PostTest> {
     // Dynamically select the model based on test type
     const TestModel = this.getTestModel(testType);
 
     // Find the test
     const test = await TestModel.findById(testId).exec();
 
-    if (!test || test.userId.toString() !== userId || test.completedAt) {
-      throw new NotFoundException('Invalid or already completed test.');
+    // Check if the test exists and is valid
+    if (!test) {
+        throw new NotFoundException('Test not found.');
+    }
+
+    if (test.userId.toString() !== userId) {
+        throw new NotFoundException('You are not authorized to complete this test.');
+    }
+
+    if (test.completedAt) {
+        throw new NotFoundException('Test has already been completed.');
     }
 
     // Evaluate answers
     test.results = test.results.map((result) => {
-      const userAnswer = answers[result.questionId] || [];
-      const question = this.findQuestionById(result.questionId);
+        let userAnswer = answers[result.questionId];
 
-      return {
-        ...result,
-        userAnswer,
-        isCorrect: JSON.stringify(userAnswer.sort()) === JSON.stringify(question.correctAnswer.sort()),
-      };
+        // Normalize userAnswer to an array
+        if (typeof userAnswer === 'string') {
+            userAnswer = [userAnswer];
+        } else if (!Array.isArray(userAnswer)) {
+            userAnswer = [];
+        }
+
+        const question = this.findQuestionById(result.questionId);
+
+        // Ensure answers are sorted and compared
+        return {
+            ...result,
+            userAnswer: userAnswer.filter(Boolean), // Remove empty or null values
+            isCorrect: JSON.stringify(userAnswer.sort()) === JSON.stringify(question.correctAnswer.sort()),
+        };
     });
 
     // Mark the test as completed

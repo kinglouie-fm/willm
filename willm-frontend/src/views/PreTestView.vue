@@ -133,9 +133,13 @@ const submitTest = async () => {
         if (loadingMessage) loadingMessage();
         message.success("Pre-Test submitted successfully!");
     } catch (error) {
-        console.error("Error submitting Pre-Test:", error);
+        if (error.response && error.response.data.message === 'Test has already been completed.') {
+            message.error("You have already submitted this test. Progress cannot be saved again.");
+        } else {
+            console.error("Error submitting Pre-Test:", error);
+            message.error("Failed to submit Pre-Test. Please try again.");
+        }
         if (loadingMessage) loadingMessage();
-        message.error("Failed to submit Pre-Test. Please try again.");
     }
 };
 

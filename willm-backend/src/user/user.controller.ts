@@ -211,6 +211,7 @@ export class UserController {
   }
 
   // Get all users and their pre-test status
+  @UseGuards(JwtAuthGuard, AllowedUsersGuard)
   @Get('pre-test-status/all')
   async getAllPreTestStatus(@Res() res: Response): Promise<any> {
     try {
@@ -236,19 +237,28 @@ export class UserController {
   }
 
   // Get all users and their post-test status
-  // @UseGuards(AllowedUsersGuard)
-  // // @Get('post-test-status/all')
-  // // async getAllPostTestStatus(@Res() res: Response): Promise<any> {
-  // //   try {
-  // //     const users = await this.userService.getAllUsers();
-  // //     const postTestStatuses = users.map(user => ({
-  // //       username: user.username,
-  // //       postTestsCompleted: user.postTestsCompleted,
-  // //     }));
-  // //     return res.status(200).json(postTestStatuses);
-  // //   } catch (error) {
-  // //     console.error(error);
-  // //     return res.status(500).json({ message: 'Failed to retrieve post-test statuses.' });
-  // //   }
-  // // }
+  @UseGuards(JwtAuthGuard, AllowedUsersGuard)
+  @Get('post-test-status/all')
+  async getAllPostTestStatus(@Res() res: Response): Promise<any> {
+    try {
+      // Get all users
+      const users = await this.userService.getAllUsers();
+
+      // Map through each user and check post-test status
+      const postTestStatuses = await Promise.all(
+        users.map(async (user) => {
+          const postTest = await this.testService.getOrGenerateTest(user._id.toString(), 'post-test');
+          return {
+            username: user.username,
+            completedAt: postTest.completedAt, // Null if not completed
+          };
+        })
+      );
+
+      return res.status(200).json(postTestStatuses);
+    } catch (error) {
+      console.error('Error fetching post-test statuses:', error);
+      return res.status(500).json({ message: 'Failed to retrieve post-test statuses.' });
+    }
+  }
 }

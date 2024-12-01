@@ -4,6 +4,8 @@ import LoginView from '../views/LoginView.vue';
 import RegisterView from '../views/RegisterView.vue';
 import ProfileView from '../views/ProfileView.vue';
 import QuizView from '../views/QuizView.vue';
+import PreTestView from '../views/PreTestView.vue';
+import PostTestView from '../views/PostTestView.vue';
 import { useAuthStore } from '../stores/auth';
 import axios from 'axios';
 
@@ -34,6 +36,18 @@ const routes = [
     path: '/quiz',
     name: 'quiz',
     component: QuizView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/pre-test',
+    name: 'pre-test',
+    component: PreTestView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/post-test',
+    name: 'post-test',
+    component: PostTestView,
     meta: { requiresAuth: true }
   }
 ];

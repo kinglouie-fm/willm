@@ -8,9 +8,10 @@ axios.defaults.withCredentials = true;
 export const useAuthStore = defineStore('auth', {
   // Set initial state
   state: () => ({
+    userId: '',
     isAuthenticated: false,
-    preTestsCompleted: false,
-    postTestsCompleted: false,
+    preTestCompleted: false,
+    postTestCompleted: false,
     quizDueToday: false,
     nextQuizDate: null,
     username: '',
@@ -51,15 +52,13 @@ export const useAuthStore = defineStore('auth', {
       let hideLoading2;
       try {
         const response = await axios.post('http://willm.corinth.informatik.rwth-aachen.de/user/login', { username, password });
-        if (response.status === 200 && response.data.message === 'Login successful') {
+        if (response.status === 200) {
           this.isAuthenticated = true;
-          this.preTestsCompleted = response.data.preTestsCompleted;
-
-          // Check if post-tests are completed
-          if (response.data.postTestsCompleted) {
-            this.postTestsCompleted = true;
-            alert('You have completed the post-test and can no longer use the tool.');
-            this.logout();
+          this.userId = response.data.userId;
+          if(!response.data.preTestCompleted) {
+            router.push({ name: 'pre-test' });
+          } else if (!response.data.postTestCompleted && isAfter(new Date(), new Date('2025-01-12'))) {
+            router.push({ name: 'post-test' });
           } else {
             // Check quiz status
             // Show loading spinner while checking quiz status
@@ -105,8 +104,7 @@ export const useAuthStore = defineStore('auth', {
       try {
         await axios.post('http://willm.corinth.informatik.rwth-aachen.de/user/logout');
         this.isAuthenticated = false;
-        this.preTestsCompleted = false;
-        this.postTestsCompleted = false;
+        this.postTestCompleted = false;
         router.push({ name: 'login' });
       } catch (error) {
         message.error('An error occurred. Please try again.');
@@ -114,15 +112,6 @@ export const useAuthStore = defineStore('auth', {
     },
     toggleQuizModal(show) {
       this.showQuizModal = show;
-    },
-    // Define action to check if user is authenticated
-    async checkAuthStatus() {
-      try {
-        const response = await axios.get('http://willm.corinth.informatik.rwth-aachen.de/user/pre-test-status');
-        this.preTestsCompleted = response.data.preTestsCompleted;
-      } catch (error) {
-        console.error('Error checking auth status');
-      }
     },
     // Define action to set authentication status
     setIsAuthenticated(value) {

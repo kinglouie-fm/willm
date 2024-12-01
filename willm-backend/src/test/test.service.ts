@@ -37,7 +37,7 @@ export class TestService {
     }).exec();
 
     if (preTest?.completedAt) {
-      return true; // Test completed
+      return true;
     }
 
     // If test is incomplete or doesn't exist, always generate a new one
@@ -52,7 +52,16 @@ export class TestService {
       testType: 'post-test',
     }).exec();
 
-    return !!(postTest && postTest.completedAt);
+    if (postTest && postTest.completedAt) {
+      return true; // Test completed
+    }
+
+    if (postTest) {
+      return false; // Test exists but not completed
+    }
+
+    // No test exists
+    return false;
   }
 
   // Always generate a new pre-test or post-test

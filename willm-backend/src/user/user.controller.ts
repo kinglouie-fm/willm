@@ -66,25 +66,35 @@ export class UserController {
         const preTest = await this.testService.getOrGenerateTest(user._id.toString(), 'pre-test');
         return res.status(200).json({
           message: 'Login successful, please complete the pre-test.',
+          preTestCompleted: false,
           preTest,
         });
       }
 
+      await this.gamificationService.handleLogin(user._id as Types.ObjectId);
+
       // Check post-test completion
       const postTestCompleted = await this.testService.checkPostTestCompletion(user._id.toString());
 
-      // If post-test is completed, revoke access
-      if (postTestCompleted) {
+      if (preTestCompleted && !isAfter(new Date(), new Date('2025-01-12'))) {
+        // Trigger quiz generation on login
+        const quizInfo = await this.quizService.handleLoginQuiz(user);
+        return res.status(200).json({ message: 'Login successful', preTestCompleted: true, postTestCompleted: false, quizInfo });
+      } else if (preTestCompleted && !postTestCompleted && isAfter(new Date(), new Date('2025-01-12'))) {
+        const postTest = await this.testService.getOrGenerateTest(user._id.toString(), 'post-test');
+        return res.status(200).json({
+          message: 'Login successful, please complete the post-test.',
+          preTestCompleted: true,
+          postTestCompleted: false,
+          postTest,
+        });
+      } else if (preTestCompleted && postTestCompleted) {
         return res.status(403).json({
           message: 'Access revoked: You have completed the post-test and cannot access the tool.',
+          preTestCompleted: true,
+          postTestCompleted: true,
         });
       }
-  
-      await this.gamificationService.handleLogin(user._id as Types.ObjectId);
-  
-      // Trigger quiz generation on login
-      const quizInfo = await this.quizService.handleLoginQuiz(user);
-      return res.status(200).json({ message: 'Login successful', quizInfo });
     } catch (error) {
       console.error(error);
     }

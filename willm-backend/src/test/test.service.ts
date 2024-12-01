@@ -191,4 +191,9 @@ export class TestService {
     }
     return question;
   }
+
+  async getTestIfExists(userId: string, testType: 'pre-test' | 'post-test') {
+    const TestModel = this.getTestModel(testType);
+    return await TestModel.findOne({ userId, testType }).exec();
+  }
 }

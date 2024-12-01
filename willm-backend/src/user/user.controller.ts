@@ -221,10 +221,10 @@ export class UserController {
       // Map through each user and check pre-test status
       const preTestStatuses = await Promise.all(
         users.map(async (user) => {
-          const preTest = await this.testService.getOrGenerateTest(user._id.toString(), 'pre-test');
+          const existingTest = await this.testService.getTestIfExists(user._id.toString(), 'pre-test');
           return {
             username: user.username,
-            completedAt: preTest.completedAt, // Null if not completed
+            completedAt: existingTest?.completedAt || null,
           };
         })
       );
@@ -247,10 +247,10 @@ export class UserController {
       // Map through each user and check post-test status
       const postTestStatuses = await Promise.all(
         users.map(async (user) => {
-          const postTest = await this.testService.getOrGenerateTest(user._id.toString(), 'post-test');
+          const existingTest = await this.testService.getTestIfExists(user._id.toString(), 'post-test');
           return {
             username: user.username,
-            completedAt: postTest.completedAt, // Null if not completed
+            completedAt: existingTest?.completedAt || null,
           };
         })
       );

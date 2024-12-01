@@ -27,7 +27,7 @@ COPY ./willm-backend/ ./
 RUN npm run build
 
 # Copy questions.json to backend build directory
-COPY ./willm-backend/src/assets/questions.json /backend/dist/assets/questions.json
+COPY ./willm-backend/src/assets/test-questions.json /backend/dist/assets/test-questions.json
 
 # Stage 3: Final image
 FROM node:22-alpine AS final

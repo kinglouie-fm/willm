@@ -19,10 +19,12 @@ export class TestService {
 
   // Load questions from the JSON file
   private async loadQuestions() {
-    const filePath = join(__dirname, '..', 'assets', 'questions.json');
+    console.log(__dirname);
+    const filePath = join(__dirname, '..', '..', 'src', 'assets', 'test-questions.json');
     try {
       const fileContent = await fs.readFile(filePath, 'utf8');
       this.questions = JSON.parse(fileContent);
+      // this.questions = {};
     } catch (error) {
       console.error('Failed to load questions JSON file:', error);
       throw new Error('Could not load questions.');

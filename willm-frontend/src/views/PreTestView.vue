@@ -5,7 +5,6 @@ import { message } from "ant-design-vue";
 import { useAuthStore } from '../stores/auth';
 
 const authStore = useAuthStore();
-const userId = authStore.userId;
 const test = ref(null);
 const answers = ref({});
 const currentIndex = ref(0);

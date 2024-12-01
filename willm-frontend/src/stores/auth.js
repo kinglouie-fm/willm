@@ -9,7 +9,6 @@ axios.defaults.withCredentials = true;
 export const useAuthStore = defineStore('auth', {
   // Set initial state
   state: () => ({
-    userId: '',
     isAuthenticated: false,
     preTestCompleted: false,
     postTestCompleted: false,
@@ -55,8 +54,6 @@ export const useAuthStore = defineStore('auth', {
         const response = await axios.post('http://willm.corinth.informatik.rwth-aachen.de/user/login', { username, password });
         if (response.status === 200) {
           this.isAuthenticated = true;
-          console.log("userId: ", response.data.userId);
-          this.userId = response.data.userId;
           if(!response.data.preTestCompleted) {
             router.push({ name: 'pre-test' });
           } else if (!response.data.postTestCompleted && isAfter(new Date(), new Date('2025-01-12'))) {

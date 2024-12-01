@@ -25,46 +25,6 @@ const isLastElement = computed(() => {
     return currentIndex.value === test.value?.randomizedWritingElements.length - 1;
 });
 
-function formatAdjectiveOrAdverb(text, options, questionId) {
-    const regex = /\(([^)]+)\)/g;
-    let index = 0;
-    return text.replace(regex, (match) => {
-        const optionsArray = match.slice(1, -1).split(',').map((o) => o.trim());
-        return `
-            <select v-model="answers['${questionId}'][${index++}]" class="form-select-inline">
-                <option value="" disabled>Select</option> <!-- Default unselected option -->
-                ${optionsArray.map((option) => `<option value="${option}">${option}</option>`).join("")}
-            </select>
-        `;
-    });
-}
-
-function formatPrepositions(text, options, questionId) {
-    const regex = /______/g;
-    let index = 0;
-    return text.replace(regex, () => {
-        return `
-            <select v-model="answers['${questionId}'][${index++}]" class="form-select-inline">
-                <option value="" disabled>Select</option> <!-- Default unselected option -->
-                ${options.map((option) => `<option value="${option}">${option}</option>`).join("")}
-            </select>
-        `;
-    });
-}
-
-function formatTransition(text, options, questionId) {
-    const regex = /___/g;
-    let index = 0;
-    return text.replace(regex, () => {
-        return `
-            <select v-model="answers['${questionId}'][${index++}]" class="form-select-inline">
-                <option value="" disabled>Select</option>
-                ${options.map((option) => `<option value="${option}">${option}</option>`).join("")}
-            </select>
-        `;
-    });
-}
-
 const loadTest = async () => {
     try {
         console.log("Loading Pre-Test...");
@@ -77,13 +37,13 @@ const loadTest = async () => {
 
         // Initialize answers object
         test.value.results.forEach((q) => {
-            if (q.exerciseType === 'adjectiveOrAdverb') {
+            if (q.exerciseType === "adjectiveOrAdverb") {
                 answers.value[q.questionId] = ["", ""]; // Initialize as empty array for multiple blanks
-            } else if (q.exerciseType === 'prepositions') {
+            } else if (q.exerciseType === "prepositions") {
                 answers.value[q.questionId] = new Array(q.options.length).fill(""); // Initialize for each blank
-            } else if (q.exerciseType === 'replacement') {
+            } else if (q.exerciseType === "replacement") {
                 answers.value[q.questionId] = []; // Multiple choice, initialized empty
-            } else if (q.exerciseType === 'reorganizing') {
+            } else if (q.exerciseType === "reorganizing") {
                 answers.value[q.questionId] = new Array(q.options.length).fill(""); // Initialize for reordering
             } else {
                 answers.value[q.questionId] = ""; // Single-answer exercises
@@ -145,23 +105,51 @@ onMounted(loadTest);
                         <h5 class="mb-3">
                             {{ currentElement.charAt(0).toUpperCase() + currentElement.slice(1) }} Questions
                         </h5>
-                        <!-- Track already displayed exercise types -->
-                        <div v-for="(question, index) in currentQuestions" :key="index" class="mb-3">
-                            <!-- Question text -->
-                            <p>
-                                <span v-html="question.exerciseType === 'adjectiveOrAdverb'
-                                    ? formatAdjectiveOrAdverb(question.questionText, question.options, question.questionId)
-                                    : question.exerciseType === 'prepositions'
-                                        ? formatPrepositions(question.questionText, question.options, question.questionId)
-                                        : question.exerciseType === 'transition'
-                                            ? formatTransition(question.questionText, question.options, question.questionId)
-                                            : question.questionText
-                                    ">
+                        <div class="mb-3" v-if="currentElement">
+                            <p class="font-weight-bold">
+                                <span v-if="currentElement === 'adjectiveOrAdverb'">Task: Choose the correct
+                                    item.</span>
+                                <span v-else-if="currentElement === 'prepositions'">
+                                    Task: Complete the following sentences with the correct preposition:
+                                    <strong>to, toward, on, onto, in,</strong> or <strong>into</strong>. Remember that a
+                                    few verbs of motion take only "on" rather than "onto.”
+                                </span>
+                                <span v-else-if="currentElement === 'tenseConsistency'">
+                                    Task: Check the following sentences for confusing shifts in tense. Write the answer
+                                    in the corresponding field. If there is no mistake, simply leave the field empty.
+                                    Reading the sentences aloud will help you recognize differences in time.
+                                </span>
+                                <span v-else-if="currentElement === 'replacement'">
+                                    Task: Select all the words that best replace the <strong>bolded word</strong> in the
+                                    sentence to make it more formal and academic. There may be more than one correct
+                                    answer.
+                                </span>
+                                <span v-else-if="currentElement === 'reorganizing'">
+                                    Task: Reorganize the sentences in the paragraph to ensure proper structure.
+                                </span>
+                                <span v-else-if="currentElement === 'insertion'">
+                                    Task: Identify the best sentence to insert into the paragraph to improve coherence.
+                                </span>
+                                <span v-else-if="currentElement === 'transition'">
+                                    Task: Add appropriate transitions to improve the coherence of the paragraph.
+                                </span>
+                                <span v-else-if="currentElement === 'writingStyle'">
+                                    Task: Revise these sentences to state their meaning in fewer words. Avoid passive
+                                    voice, needless repetition, and wordy phrases and clauses.
                                 </span>
                             </p>
+                        </div>
 
-                            <!-- Coherence: Insertion -->
-                            <div v-if="question.exerciseType === 'insertion'">
+                        <div v-for="(question, index) in currentQuestions" :key="index" class="mb-3">
+                            <!-- Render questionText directly if it contains embedded HTML (e.g., for prepositions, adjectives, etc.) -->
+                            <div
+                                v-if="['adjectiveOrAdverb', 'prepositions', 'transition'].includes(question.exerciseType)">
+                                <p v-html="question.questionText"></p>
+                            </div>
+
+                            <!-- Handle Coherence: Insertion -->
+                            <div v-else-if="question.exerciseType === 'insertion'">
+                                <p>{{ question.questionText }}</p>
                                 <div class="form-check" v-for="(option, idx) in question.options"
                                     :key="'insertion-' + idx">
                                     <input type="radio" :id="'insertion-' + question.questionId + '-' + idx"
@@ -172,8 +160,9 @@ onMounted(loadTest);
                                 </div>
                             </div>
 
-                            <!-- Vocabulary: Multiple Choice -->
+                            <!-- Handle Vocabulary: Multiple Choice -->
                             <div v-else-if="question.exerciseType === 'replacement'">
+                                <p>{{ question.questionText }}</p>
                                 <div class="form-check" v-for="(option, idx) in question.options" :key="'multi-' + idx">
                                     <input type="checkbox" :id="'multi-' + question.questionId + '-' + idx"
                                         :value="option" v-model="answers[question.questionId]" />
@@ -183,8 +172,9 @@ onMounted(loadTest);
                                 </div>
                             </div>
 
-                            <!-- Organization: Reordering Sentences -->
+                            <!-- Handle Organization: Reordering Sentences -->
                             <div v-else-if="question.exerciseType === 'reorganizing'">
+                                <p>{{ question.questionText }}</p>
                                 <div v-for="(sentence, idx) in question.options" :key="idx"
                                     class="d-flex mb-2 align-items-center">
                                     <select class="form-select form-select-sm me-2 w-auto"
@@ -198,26 +188,18 @@ onMounted(loadTest);
                                 </div>
                             </div>
 
-                            <!-- Grammar: Adjective or Adverb -->
-                            <div v-else-if="question.exerciseType === 'adjectiveOrAdverb'">
-                                <p>
-                                    <span
-                                        v-html="formatAdjectiveOrAdverb(question.questionText, question.options, question.questionId)"></span>
-                                </p>
-                            </div>
-
-                            <!-- Grammar: Prepositions -->
-                            <div v-else-if="question.exerciseType === 'prepositions'">
-                                <p>
-                                    <span
-                                        v-html="formatPrepositions(question.questionText, question.options, question.questionId)"></span>
-                                </p>
-                            </div>
-
                             <!-- Default: Textarea Input -->
-                            <textarea v-else-if="['tenseConsistency', 'paraphrasing'].includes(question.exerciseType)"
-                                class="form-control" :placeholder="'Write your answer here...'"
-                                v-model="answers[question.questionId]"></textarea>
+                            <div v-else-if="['tenseConsistency', 'paraphrasing'].includes(question.exerciseType)">
+                                <p>{{ question.questionText }}</p>
+                                <textarea class="form-control" :placeholder="'Write your answer here...'"
+                                    v-model="answers[question.questionId]"></textarea>
+                            </div>
+
+                            <!-- Fallback for unsupported types -->
+                            <div v-else>
+                                <p>{{ question.questionText }}</p>
+                                <p>Unsupported question type.</p>
+                            </div>
                         </div>
                     </div>
 

@@ -4,7 +4,7 @@
             "questionId": "grammar-adjectiveOrAdverb-001",
             "writingElement": "grammar",
             "exerciseType": "adjectiveOrAdverb",
-            "questionText": "The researcher conducted the experiment <select><option value=\"\">Select</option><option value=\"accurate\">accurate</option><option value=\"accurately\">accurately</option></select> and ensured the results were <select><option value=\"\">Select</option><option value=\"accurately\">accurately</option><option value=\"accurate\">accurate</option></select> recorded.",
+            "questionText": "The researcher conducted the experiment ___ and ensured the results were ___ recorded.",
             "options": [
                 "accurate",
                 "accurately"
@@ -18,7 +18,7 @@
             "questionId": "grammar-prepositions-001",
             "writingElement": "grammar",
             "exerciseType": "prepositions",
-            "questionText": "The study was conducted <select><option value=\"\">Select</option><option value=\"to\">to</option><option value=\"toward\">toward</option><option value=\"on\">on</option><option value=\"onto\">onto</option><option value=\"in\">in</option><option value=\"into\">into</option></select> the laboratory to ensure controlled conditions.",
+            "questionText": "The study was conducted ___ the laboratory to ensure controlled conditions.",
             "options": [
                 "to",
                 "toward",
@@ -35,7 +35,7 @@
             "questionId": "grammar-prepositions-002",
             "writingElement": "grammar",
             "exerciseType": "prepositions",
-            "questionText": "The data were entered <select><option value=\"\">Select</option><option value=\"to\">to</option><option value=\"toward\">toward</option><option value=\"on\">on</option><option value=\"onto\">onto</option><option value=\"in\">in</option><option value=\"into\">into</option></select> the statistical software for analysis.",
+            "questionText": "The data were entered ___ the statistical software for analysis.",
             "options": [
                 "to",
                 "toward",
@@ -52,7 +52,7 @@
             "questionId": "grammar-prepositions-003",
             "writingElement": "grammar",
             "exerciseType": "prepositions",
-            "questionText": "The data was transferred <select><option value=\"\">Select</option><option value=\"to\">to</option><option value=\"toward\">toward</option><option value=\"on\">on</option><option value=\"onto\">onto</option><option value=\"in\">in</option><option value=\"into\">into</option></select> the secure server to ensure confidentiality.",
+            "questionText": "The data was transferred ___ the secure server to ensure confidentiality.",
             "options": [
                 "to",
                 "toward",
@@ -176,7 +176,7 @@
             "questionId": "coherence-transition-001",
             "writingElement": "coherence",
             "exerciseType": "transition",
-            "questionText": "The introduction of a new curriculum significantly improved student engagement. <select><option value=\"\">Select</option><option value=\"Additionally\">Additionally</option><option value=\"Despite this\">Despite this</option><option value=\"Consequently\">Consequently</option><option value=\"However\">However</option></select>, many educators implemented project-based learning strategies in their classrooms. <select><option value=\"\">Select</option><option value=\"Additionally\">Additionally</option><option value=\"Despite this\">Despite this</option><option value=\"Consequently\">Consequently</option><option value=\"However\">However</option></select>, students reported higher levels of interest in coursework. Teachers also observed improved collaboration among students.",
+            "questionText": "The introduction of a new curriculum significantly improved student engagement. ___, many educators implemented project-based learning strategies in their classrooms. ___, students reported higher levels of interest in coursework. Teachers also observed improved collaboration among students.",
             "options": [
                 "Additionally",
                 "Despite this",

@@ -144,7 +144,7 @@
             "questionId": "organization-reorganizing-001",
             "writingElement": "organization",
             "exerciseType": "reorganizing",
-            "questionText": "Reorganize the sentences in the paragraph to ensure proper structure.",
+            "questionText": "",
             "options": [
                 "This theory suggests that economic growth depends on investments in education and technology.",
                 "Many economists emphasize the role of human capital in driving innovation and productivity.",
@@ -176,7 +176,7 @@
             "questionId": "coherence-transition-001",
             "writingElement": "coherence",
             "exerciseType": "transition",
-            "questionText": "The introduction of a new curriculum significantly improved student engagement. <select><option value=\"\">Select</option><option value=\"Additionally\">Additionally</option><option value=\"Despite this\">Despite this</option><option value=\"Consequently\">Consequently</option><option value=\"However\">However</option></select>, many educators implemented project-based learning strategies in their classrooms. ___, students reported higher levels of interest in coursework. Teachers also observed improved collaboration among students.",
+            "questionText": "The introduction of a new curriculum significantly improved student engagement. <select><option value=\"\">Select</option><option value=\"Additionally\">Additionally</option><option value=\"Despite this\">Despite this</option><option value=\"Consequently\">Consequently</option><option value=\"However\">However</option></select>, many educators implemented project-based learning strategies in their classrooms. <select><option value=\"\">Select</option><option value=\"Additionally\">Additionally</option><option value=\"Despite this\">Despite this</option><option value=\"Consequently\">Consequently</option><option value=\"However\">However</option></select>, students reported higher levels of interest in coursework. Teachers also observed improved collaboration among students.",
             "options": [
                 "Additionally",
                 "Despite this",

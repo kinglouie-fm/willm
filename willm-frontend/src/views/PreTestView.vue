@@ -27,10 +27,10 @@ const isLastElement = computed(() => {
 
 const loadTest = async () => {
     try {
-        loadingMessage = message.info("Loading Pre-Test...", 0); // Persistent loading message
-        const response = await axios.get(
-            `http://willm.corinth.informatik.rwth-aachen.de/test/${userId}/pre-test`
-        );
+        console.log("Loading Pre-Test...");
+        loadingMessage = message.info("Loading Pre-Test...", 0);
+        const response = await axios.get('http://willm.corinth.informatik.rwth-aachen.de/test/pre-test');
+        console.log("Pre-Test loaded:", response.data);
         test.value = response.data;
 
         // Initialize answers object
@@ -61,10 +61,7 @@ const prevElement = () => {
 const submitTest = async () => {
     try {
         loadingMessage = message.info("Submitting Pre-Test...", 0);
-        await axios.post(
-            `http://willm.corinth.informatik.rwth-aachen.de/test/${userId}/${test.value._id}/pre-test/complete`,
-            answers.value
-        );
+        await axios.post(`http://willm.corinth.informatik.rwth-aachen.de/test/${testId}/pre-test/complete`, answers);
         if (loadingMessage) loadingMessage(); // Dismiss loading message
         message.success("Pre-Test submitted successfully!");
     } catch (error) {

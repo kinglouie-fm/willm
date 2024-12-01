@@ -1,27 +1,32 @@
-import { Controller, Get, Param, Post, Body } from '@nestjs/common';
+import { Controller, Get, Post, Body, Req, UseGuards, Param } from '@nestjs/common';
 import { TestService } from './test.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Request } from 'express';
 
 @Controller('test')
+@UseGuards(JwtAuthGuard)
 export class TestController {
   constructor(private readonly testService: TestService) {}
 
   // Get or generate a pre-test/post-test
-  @Get(':userId/:testType')
+  @Get(':testType')
   async getTest(
-    @Param('userId') userId: string,
-    @Param('testType') testType: 'pre-test' | 'post-test',
+    @Req() req: Request,
+    @Param('testType') testType: 'pre-test' | 'post-test'
   ) {
-    return this.testService.getOrGenerateTest(userId, testType);
+    const userId = req.user._id;
+    return this.testService.getOrGenerateTest(userId.toString(), testType);
   }
 
   // Submit answers and complete a test
-  @Post(':userId/:testId/:testType/complete')
+  @Post(':testId/:testType/complete')
   async completeTest(
-    @Param('userId') userId: string,
+    @Req() req: Request,
     @Param('testId') testId: string,
     @Param('testType') testType: 'pre-test' | 'post-test',
     @Body() answers: Record<string, string[]>
   ) {
-    return this.testService.completeTest(userId, testId, answers, testType);
+    const userId = req.user._id;
+    return this.testService.completeTest(userId.toString(), testId, answers, testType);
   }
 }

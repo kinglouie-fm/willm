@@ -65,6 +65,7 @@ export class UserController {
       if (!preTestCompleted) {
         const preTest = await this.testService.getOrGenerateTest(user._id.toString(), 'pre-test');
         return res.status(200).json({
+          userId: user._id.toString(),
           message: 'Login successful, please complete the pre-test.',
           preTestCompleted: false,
           preTest,
@@ -79,10 +80,16 @@ export class UserController {
       if (preTestCompleted && !isAfter(new Date(), new Date('2025-01-12'))) {
         // Trigger quiz generation on login
         const quizInfo = await this.quizService.handleLoginQuiz(user);
-        return res.status(200).json({ message: 'Login successful', preTestCompleted: true, postTestCompleted: false, quizInfo });
+        return res.status(200).json({ 
+          userId: user._id.toString(),
+          message: 'Login successful', 
+          preTestCompleted: true, 
+          postTestCompleted: false, 
+          quizInfo });
       } else if (preTestCompleted && !postTestCompleted && isAfter(new Date(), new Date('2025-01-12'))) {
         const postTest = await this.testService.getOrGenerateTest(user._id.toString(), 'post-test');
         return res.status(200).json({
+          userId: user._id.toString(),
           message: 'Login successful, please complete the post-test.',
           preTestCompleted: true,
           postTestCompleted: false,
@@ -90,6 +97,7 @@ export class UserController {
         });
       } else if (preTestCompleted && postTestCompleted) {
         return res.status(403).json({
+          userId: user._id.toString(),
           message: 'Access revoked: You have completed the post-test and cannot access the tool.',
           preTestCompleted: true,
           postTestCompleted: true,

@@ -19,12 +19,16 @@ export class TestService {
 
   // Load questions from the JSON file
   private async loadQuestions() {
-    console.log(__dirname);
     const filePath = join(__dirname, '..', '..', 'src', 'assets', 'test-questions.json');
     try {
       const fileContent = await fs.readFile(filePath, 'utf8');
-      this.questions = JSON.parse(fileContent);
-      // this.questions = {};
+      const parsed = JSON.parse(fileContent);
+
+      if (!parsed.questions || !Array.isArray(parsed.questions)) {
+        throw new Error("Invalid JSON structure: 'questions' key not found or not an array.");
+      }
+
+      this.questions = parsed; // Store the parsed JSON
     } catch (error) {
       console.error('Failed to load questions JSON file:', error);
       throw new Error('Could not load questions.');
@@ -66,31 +70,32 @@ export class TestService {
     return false;
   }
 
+  private getTestModel(testType: 'pre-test' | 'post-test'): Model<PreTest | PostTest> {
+    return testType === 'pre-test' ? this.preTestModel : this.postTestModel;
+  }
+
   // Always generate a new pre-test or post-test
   async getOrGenerateTest(userId: string, testType: 'pre-test' | 'post-test'): Promise<PreTest | PostTest> {
-    const TestModel: Model<PreTest | PostTest> = 
-      testType === 'pre-test' ? this.preTestModel : this.postTestModel;
+    const TestModel = this.getTestModel(testType);
 
     const existingTest = await TestModel.findOne({ userId, testType, completedAt: null }).exec();
     if (existingTest) {
       return existingTest;
     }
 
-    const writingElements = Object.keys(this.questions);
+    // Extract unique writing elements
+    const writingElements = Array.from(new Set(this.questions.questions.map(q => q.writingElement)));
     const randomizedOrder = [...writingElements].sort(() => Math.random() - 0.5);
 
     const testQuestions = [];
     for (const element of randomizedOrder) {
-      const exerciseTypes = Object.keys(this.questions[element]);
-      for (const type of exerciseTypes) {
-        const questions = this.questions[element][type];
-        questions.forEach((q: any) => {
-          testQuestions.push({
-            questionId: q.questionId,
-            writingElement: element,
-          });
+      const elementQuestions = this.questions.questions.filter(q => q.writingElement === element);
+      elementQuestions.forEach((q) => {
+        testQuestions.push({
+          questionId: q.questionId,
+          writingElement: q.writingElement,
         });
-      }
+      });
     }
 
     const newTest = new TestModel({
@@ -100,11 +105,9 @@ export class TestService {
       results: testQuestions,
     });
 
-    return newTest.save();
-  }
+    console.log(newTest);
 
-  private getTestModel(testType: 'pre-test' | 'post-test'): Model<PreTest | PostTest> {
-    return testType === 'pre-test' ? this.preTestModel : this.postTestModel;
+    return newTest.save();
   }
 
   // Complete a test and save the results
@@ -138,14 +141,10 @@ export class TestService {
 
   // Helper to find a question by ID
   private findQuestionById(questionId: string) {
-    for (const element of Object.values(this.questions)) {
-      for (const type of Object.values(element)) {
-        const question = (type as any[]).find((q) => q.questionId === questionId);
-        if (question) {
-          return question;
-        }
-      }
+    const question = this.questions.questions.find(q => q.questionId === questionId);
+    if (!question) {
+      throw new NotFoundException(`Question with ID ${questionId} not found.`);
     }
-    throw new NotFoundException(`Question with ID ${questionId} not found.`);
+    return question;
   }
 }

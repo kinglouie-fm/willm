@@ -72,12 +72,12 @@ const splitQuestionText = (text, options, questionId) => {
 
 const loadTest = async () => {
     try {
-        console.log("Loading Pre-Test...");
+        // console.log("Loading Pre-Test...");
         loadingMessage = message.info("Loading Pre-Test...", 0);
         const response = await axios.get(
             "http://willm.corinth.informatik.rwth-aachen.de/test/pre-test"
         );
-        console.log("Pre-Test loaded:", response.data);
+        // console.log("Pre-Test loaded:", response.data);
         test.value = response.data;
 
         // Initialize answers object
@@ -123,7 +123,7 @@ const closeSubmitModal = () => {
 
 const submitTest = async () => {
     try {
-        console.log(answers.value)
+        // console.log(answers.value)
         closeSubmitModal();
         loadingMessage = message.info("Submitting Pre-Test...", 0);
         await axios.post(

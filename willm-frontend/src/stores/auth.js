@@ -147,5 +147,11 @@ export const useAuthStore = defineStore('auth', {
     setGamificationData(value) {
       this.gamificationData = value;
     },
+    setPreTestStatus(value) {
+      this.preTestCompleted = value;
+    },
+    setPostTestStatus(value) {
+      this.postTestCompleted = value;
+    },
   },
 });

@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import * as fs from 'fs/promises';
 import { join } from 'path';
 import { PreTest } from './schema/pre-test.schema';
@@ -36,38 +36,26 @@ export class TestService {
   }
 
   // Check if the pre-test is completed
-  async checkPreTestCompletion(userId: string): Promise<boolean> {
+  async checkPreTestCompletion(userId: Types.ObjectId): Promise<boolean> {
     const preTest = await this.preTestModel.findOne({
-      userId,
+      userId: new Types.ObjectId(userId),
       testType: 'pre-test',
     }).exec();
 
-    if (preTest?.completedAt) {
-      return true;
-    }
+    console.log(preTest);
+    console.log(!!preTest?.completedAt);
 
-    // If test is incomplete or doesn't exist, always generate a new one
-    await this.getOrGenerateTest(userId, 'pre-test');
-    return false;
+    return !!preTest?.completedAt;
   }
 
   // Check if the post-test is completed
-  async checkPostTestCompletion(userId: string): Promise<boolean> {
+  async checkPostTestCompletion(userId: Types.ObjectId): Promise<boolean> {
     const postTest = await this.postTestModel.findOne({
-      userId,
+      userId: new Types.ObjectId(userId),
       testType: 'post-test',
     }).exec();
 
-    if (postTest && postTest.completedAt) {
-      return true; // Test completed
-    }
-
-    if (postTest) {
-      return false; // Test exists but not completed
-    }
-
-    // No test exists
-    return false;
+    return !!postTest?.completedAt;
   }
 
   private getTestModel(testType: 'pre-test' | 'post-test'): Model<PreTest | PostTest> {
@@ -75,10 +63,10 @@ export class TestService {
   }
 
   // Always generate a new pre-test or post-test
-  async getOrGenerateTest(userId: string, testType: 'pre-test' | 'post-test'): Promise<any> {
+  async getOrGenerateTest(userId: Types.ObjectId, testType: 'pre-test' | 'post-test'): Promise<any> {
     const TestModel = this.getTestModel(testType);
 
-    const existingTest = await TestModel.findOne({ userId, testType, completedAt: null }).exec();
+    const existingTest = await TestModel.findOne({ userId: new Types.ObjectId(userId), testType, completedAt: null }).exec();
     if (existingTest) {
       // Add question details to the response
       const resultsWithDetails = existingTest.results.map(result => {
@@ -113,7 +101,7 @@ export class TestService {
     }
 
     const newTest = new TestModel({
-      userId,
+      userId: new Types.ObjectId(userId),
       testType,
       randomizedWritingElements: randomizedOrder,
       results: testQuestions,
@@ -137,7 +125,7 @@ export class TestService {
   }
 
   // Complete a test and save the results
-  async completeTest(userId: string, testId: string, answers: Record<string, string | string[]>, testType: 'pre-test' | 'post-test'): Promise<PreTest | PostTest> {
+  async completeTest(userId: Types.ObjectId, testId: string, answers: Record<string, string | string[]>, testType: 'pre-test' | 'post-test'): Promise<PreTest | PostTest> {
     // Dynamically select the model based on test type
     const TestModel = this.getTestModel(testType);
 
@@ -149,7 +137,7 @@ export class TestService {
         throw new NotFoundException('Test not found.');
     }
 
-    if (test.userId.toString() !== userId) {
+    if (test.userId.toString() !== userId.toString()) {
         throw new NotFoundException('You are not authorized to complete this test.');
     }
 
@@ -192,8 +180,8 @@ export class TestService {
     return question;
   }
 
-  async getTestIfExists(userId: string, testType: 'pre-test' | 'post-test') {
+  async getTestIfExists(userId: Types.ObjectId, testType: 'pre-test' | 'post-test') {
     const TestModel = this.getTestModel(testType);
-    return await TestModel.findOne({ userId, testType }).exec();
+    return await TestModel.findOne({ userId: new Types.ObjectId(userId), testType }).exec();
   }
 }

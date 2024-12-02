@@ -60,36 +60,33 @@ export class UserController {
       const token = this.userService.generateJwtToken(username);
       res.cookie('auth_token', token, { httpOnly: true, secure: false });
 
+      await this.gamificationService.handleLogin(user._id as Types.ObjectId);
+
       // Check if the user has completed the pre-test
-      const preTestCompleted = await this.testService.checkPreTestCompletion(user._id.toString());
+      const preTestCompleted = await this.testService.checkPreTestCompletion(user._id as Types.ObjectId);
       if (!preTestCompleted) {
-        const preTest = await this.testService.getOrGenerateTest(user._id.toString(), 'pre-test');
+        const preTest = await this.testService.getOrGenerateTest(user._id as Types.ObjectId, 'pre-test');
         return res.status(200).json({
-          userId: user._id.toString(),
           message: 'Login successful, please complete the pre-test.',
           preTestCompleted: false,
           preTest,
         });
       }
 
-      await this.gamificationService.handleLogin(user._id as Types.ObjectId);
-
       // Check post-test completion
-      const postTestCompleted = await this.testService.checkPostTestCompletion(user._id.toString());
+      const postTestCompleted = await this.testService.checkPostTestCompletion(user._id as Types.ObjectId);
 
       if (preTestCompleted && !isAfter(new Date(), new Date('2025-01-12'))) {
         // Trigger quiz generation on login
         const quizInfo = await this.quizService.handleLoginQuiz(user);
         return res.status(200).json({ 
-          userId: user._id.toString(),
           message: 'Login successful', 
           preTestCompleted: true, 
           postTestCompleted: false, 
           quizInfo });
       } else if (preTestCompleted && !postTestCompleted && isAfter(new Date(), new Date('2025-01-12'))) {
-        const postTest = await this.testService.getOrGenerateTest(user._id.toString(), 'post-test');
+        const postTest = await this.testService.getOrGenerateTest(user._id as Types.ObjectId, 'post-test');
         return res.status(200).json({
-          userId: user._id.toString(),
           message: 'Login successful, please complete the post-test.',
           preTestCompleted: true,
           postTestCompleted: false,
@@ -97,7 +94,6 @@ export class UserController {
         });
       } else if (preTestCompleted && postTestCompleted) {
         return res.status(403).json({
-          userId: user._id.toString(),
           message: 'Access revoked: You have completed the post-test and cannot access the tool.',
           preTestCompleted: true,
           postTestCompleted: true,
@@ -116,6 +112,7 @@ export class UserController {
   }
 
   // Get the user's profile
+  @UseGuards(JwtAuthGuard)
   @Get('profile')
   async profile(@Req() req: Request, @Res() res: Response): Promise<any> {
     const token = req.cookies['auth_token'];
@@ -127,6 +124,10 @@ export class UserController {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
+    const userId = req.user._id;
+    const preTestCompleted = await this.testService.checkPreTestCompletion(userId);
+    const postTestCompleted = await this.testService.checkPostTestCompletion(userId);
+
     const user = await this.userService.findUserByToken(token);
     return res.status(200).json({ 
       username: decoded.username, 
@@ -135,7 +136,9 @@ export class UserController {
       furtherCorrectionModel: user.furtherCorrectionModel,
       scoreModel: user.scoreModel,
       reviewModel: user.reviewModel,
-      dailyRequestsLeft: user.dailyRequestsLeft
+      dailyRequestsLeft: user.dailyRequestsLeft,
+      preTestCompleted: preTestCompleted,
+      postTestCompleted: postTestCompleted
     });
   }
 
@@ -221,7 +224,7 @@ export class UserController {
       // Map through each user and check pre-test status
       const preTestStatuses = await Promise.all(
         users.map(async (user) => {
-          const existingTest = await this.testService.getTestIfExists(user._id.toString(), 'pre-test');
+          const existingTest = await this.testService.getTestIfExists(user._id as Types.ObjectId, 'pre-test');
           return {
             username: user.username,
             completedAt: existingTest?.completedAt || null,
@@ -247,7 +250,7 @@ export class UserController {
       // Map through each user and check post-test status
       const postTestStatuses = await Promise.all(
         users.map(async (user) => {
-          const existingTest = await this.testService.getTestIfExists(user._id.toString(), 'post-test');
+          const existingTest = await this.testService.getTestIfExists(user._id as Types.ObjectId, 'post-test');
           return {
             username: user.username,
             completedAt: existingTest?.completedAt || null,

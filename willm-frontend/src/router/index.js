@@ -8,6 +8,7 @@ import PreTestView from '../views/PreTestView.vue';
 import PostTestView from '../views/PostTestView.vue';
 import { useAuthStore } from '../stores/auth';
 import axios from 'axios';
+import { isAfter } from 'date-fns';
 
 const routes = [
   {
@@ -60,13 +61,22 @@ const router = createRouter({
 // Check if user is authenticated before navigating to a route that requires authentication
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
+
+  // Check if user is trying to access an auth-protected page
   if (to.matched.some(record => record.meta.requiresAuth)) {
     try {
+      // Fetch user profile and test statuses
       const profileResponse = await axios.get('http://willm.corinth.informatik.rwth-aachen.de/user/profile', { withCredentials: true });
       const gamificationResponse = await axios.get('http://willm.corinth.informatik.rwth-aachen.de/user/gamification', { withCredentials: true });
-      // Check if user is authenticated and set user data
+      const isAfter2025 = isAfter(new Date(), new Date('2025-01-12'));
+
+      console.log(profileResponse);
+
       if (profileResponse.status === 200 && gamificationResponse.status === 200) {
+        // User is authenticated, update the store
         authStore.setIsAuthenticated(true);
+        authStore.setPreTestStatus(profileResponse.data.preTestCompleted);
+        authStore.setPostTestStatus(profileResponse.data.postTestCompleted);
         authStore.setUsername(profileResponse.data.username);
         authStore.setLanguage(profileResponse.data.language);
         authStore.setLLM('correctionModel', profileResponse.data.correctionModel);
@@ -75,7 +85,13 @@ router.beforeEach(async (to, from, next) => {
         authStore.setLLM('reviewModel', profileResponse.data.reviewModel);
         authStore.setDailyRequestsLeft(profileResponse.data.dailyRequestsLeft);
         authStore.setGamificationData(gamificationResponse.data);
+
         next();
+        if (!profileResponse.data.preTestCompleted && (to.name === 'home' || to.name === 'profile' || to.name === 'quiz' || to.name === 'post-test')) {
+          next({ name: 'pre-test' });
+        } else if (!profileResponse.data.postTestCompleted && isAfter2025 && (to.name === 'home' || to.name === 'profile' || to.name === 'quiz' || to.name === 'pre-test')) {
+          next({ name: 'post-test' });
+        }
       } else {
         authStore.setIsAuthenticated(false);
         next({ name: 'login' });

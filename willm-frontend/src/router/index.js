@@ -70,8 +70,6 @@ router.beforeEach(async (to, from, next) => {
       const gamificationResponse = await axios.get('http://willm.corinth.informatik.rwth-aachen.de/user/gamification', { withCredentials: true });
       const isAfter2025 = isAfter(new Date(), new Date('2025-01-12'));
 
-      console.log(profileResponse);
-
       if (profileResponse.status === 200 && gamificationResponse.status === 200) {
         // User is authenticated, update the store
         authStore.setIsAuthenticated(true);

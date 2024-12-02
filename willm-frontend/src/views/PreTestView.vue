@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from "vue";
 import axios from "axios";
 import { message } from "ant-design-vue";
+import { useRoute, useRouter } from 'vue-router';
 
 const test = ref(null);
 const answers = ref({});
@@ -9,6 +10,7 @@ const currentIndex = ref(0);
 const showModal = ref(false);
 const showInitialModal = ref(true);
 let loadingMessage = null;
+const router = useRouter();
 
 const currentElement = computed(() => {
     return test.value?.randomizedWritingElements[currentIndex.value];
@@ -132,6 +134,7 @@ const submitTest = async () => {
         );
         if (loadingMessage) loadingMessage();
         message.success("Pre-Test submitted successfully!");
+        router.push('/');
     } catch (error) {
         if (error.response && error.response.data.message === 'Test has already been completed.') {
             message.error("You have already submitted this test. Progress cannot be saved again.");

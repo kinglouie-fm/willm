@@ -42,9 +42,6 @@ export class TestService {
       testType: 'pre-test',
     }).exec();
 
-    console.log(preTest);
-    console.log(!!preTest?.completedAt);
-
     return !!preTest?.completedAt;
   }
 

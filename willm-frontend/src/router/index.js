@@ -86,12 +86,12 @@ router.beforeEach(async (to, from, next) => {
         authStore.setDailyRequestsLeft(profileResponse.data.dailyRequestsLeft);
         authStore.setGamificationData(gamificationResponse.data);
 
-        next();
         if (!profileResponse.data.preTestCompleted && (to.name === 'home' || to.name === 'profile' || to.name === 'quiz' || to.name === 'post-test')) {
           next({ name: 'pre-test' });
         } else if (!profileResponse.data.postTestCompleted && isAfter2025 && (to.name === 'home' || to.name === 'profile' || to.name === 'quiz' || to.name === 'pre-test')) {
           next({ name: 'post-test' });
         }
+        next();
       } else {
         authStore.setIsAuthenticated(false);
         next({ name: 'login' });

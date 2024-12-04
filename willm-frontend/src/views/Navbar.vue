@@ -107,17 +107,6 @@ const checkQuiz = async () => {
     }
 };
 
-// Determine if the post-test is enabled
-const isPostTestEnabled = ref(isAfter(new Date(), new Date('2025-01-12')));
-
-// Show post-test modal if enabled
-const showPostTestModal = () => {
-    if (isPostTestEnabled.value) {
-        const postTestModal = new bootstrap.Modal(document.getElementById('postTestModal'));
-        postTestModal.show();
-    }
-};
-
 // Computed property to determine the navigation links based on the current route
 const navigationLinks = computed(() => {
     if (route.name === 'home') {
@@ -187,9 +176,6 @@ const startQuiz = () => {
             <div class="flex-grow-1"></div>
 
             <div v-if="authStore.isAuthenticated" class="d-flex align-items-center">
-                <button v-if="isPostTestEnabled" class="btn btn-post-test" @click="showPostTestModal">
-                    Start Post-Test
-                </button>
 
                 <div class="dropdown">
                     <button id="userDropdown" class="btn btn-link ms-3" data-bs-toggle="dropdown" aria-expanded="false"

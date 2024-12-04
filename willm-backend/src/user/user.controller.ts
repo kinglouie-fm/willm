@@ -108,7 +108,7 @@ export class UserController {
   @Post('logout')
   async logout(@Res() res: Response): Promise<any> {
     res.clearCookie('auth_token');
-    return res.send({ message: 'Logout successful' });
+    return res.status(200).send({ message: 'Logout successful' });
   }
 
   // Get the user's profile

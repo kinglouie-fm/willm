@@ -88,6 +88,10 @@ router.beforeEach(async (to, from, next) => {
           next({ name: 'pre-test' });
         } else if (!profileResponse.data.postTestCompleted && isAfter2025 && (to.name === 'home' || to.name === 'profile' || to.name === 'quiz' || to.name === 'pre-test')) {
           next({ name: 'post-test' });
+        } else if (profileResponse.data.preTestCompleted && (to.name === 'pre-test')) {
+          next({ name: 'home' });
+        } else if (!profileResponse.data.postTestCompleted && !isAfter2025 && (to.name === 'post-test')) {
+          next({ name: 'home' });
         }
         next();
       } else {

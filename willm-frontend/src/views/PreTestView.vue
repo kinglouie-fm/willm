@@ -2,7 +2,7 @@
 import { ref, computed, onMounted } from "vue";
 import axios from "axios";
 import { message } from "ant-design-vue";
-import { useRoute, useRouter } from 'vue-router';
+import { useRouter } from 'vue-router';
 
 const test = ref(null);
 const answers = ref({});

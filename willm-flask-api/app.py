@@ -457,9 +457,13 @@ def generate_question():
         options_match = re.search(r'Options:\s*(A.*?)(?=\nAnswer:)', output, re.DOTALL)
         if options_match:
             options_raw = options_match.group(1).strip()
-            options = "\n".join([option.strip() for option in options_raw.split('\n')])
+            if ',' in options_raw and not '\n' in options_raw:
+                options = re.findall(r'([A-Z]\..*?)(?=(?:, [A-Z]\.|$))', options_raw)
+                options = [option.strip() for option in options]
+            else:
+                options = [option.strip() for option in options_raw.split('\n')]
+            
             metadata['options'] = options
-
         if question_type == 'synonyms':
             word_match = re.search(r'Word:\s*(.*?)\n', output, re.DOTALL)
             if word_match:

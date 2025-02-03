@@ -1,0 +1,14 @@
+title Review generation
+
+participant DataProcessor
+participant DB
+participant LLM
+
+DataProcessor -> DB: Retrieve recent submissions + scores
+DB -> DataProcessor: Return recent submissions + scores
+DataProcessor -> LLM: Provide recent submissions + scores
+LLM -> LLM: Generate recent improvements + tips
+LLM -> LLM: Embed recent improvements + tips
+LLM -> DataProcessor: Return (embedded) recent improvements + tips
+DataProcessor -> DB: Store (embedded) recent improvements + tips
+DB -> DB: Check for duplicates

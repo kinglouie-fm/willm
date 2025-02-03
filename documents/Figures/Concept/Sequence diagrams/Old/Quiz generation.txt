@@ -1,0 +1,21 @@
+title Quiz generation
+
+participant DataProcessor
+participant DB
+participant Semantic Similarity Search
+participant LLM
+
+DataProcessor -> DB: Retrieve (embedded) recent submissions + contextual information
+DB -> DataProcessor: Return (embedded) recent submissions + contextual information
+DataProcessor -> DB: Retrieve question pool
+DB -> DataProcessor: Return question pool
+DataProcessor -> Semantic Similarity Search: Provide (embedded) recent submissions + contextual information + question pool
+Semantic Similarity Search -> Semantic Similarity Search: Get top-k questions with semantic similarity search
+Semantic Similarity Search -> DataProcessor: Return top-k questions
+DataProcessor -> DB: Retrieve quiz history
+DB -> DataProcessor: Return quiz history
+DataProcessor -> LLM: Provide top-k questions + quiz history
+LLM -> LLM: Select final questions based on spaced repetition
+LLM -> DataProcessor: Return final questions
+DataProcessor -> DB: Retrieve corresponding answers from question pool
+DB -> DataProcessor: Return corresponding answers from question pool

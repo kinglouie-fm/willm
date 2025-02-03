@@ -1,0 +1,23 @@
+title Paraphrasing
+
+participant User
+participant UI
+participant DataProcessor
+participant Database
+
+participant LLM
+
+User -> UI: Submission (writing, title, section)\n + selected prompt
+UI -> DataProcessor: Provide submission + selected prompt
+DataProcessor -> LLM: Provide submission
+LLM -> LLM: Embed submission
+LLM -> DataProcessor: Return embedded submission
+DataProcessor -> Database: Store (embedded) submission + selected prompt
+DataProcessor -> LLM: Provide prompt with submission
+LLM -> DataProcessor: Return response
+DataProcessor -> UI: Return response
+UI -> User: Display paraphrased writing
+DataProcessor -> LLM: Provide feedback prompt
+LLM -> DataProcessor: Return feedback
+DataProcessor -> UI: Return feedback
+UI -> User: Display feedback

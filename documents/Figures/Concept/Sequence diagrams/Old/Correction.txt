@@ -1,0 +1,24 @@
+title Correction
+
+participant User
+participant UI
+participant DataProcessor
+participant Database
+participant LLM
+
+User -> UI: Submission (writing)
+UI -> DataProcessor: Provide submission
+DataProcessor -> LLM: Provide submission
+LLM -> LLM: Embed submission
+LLM -> DataProcessor: Return embedded submission
+DataProcessor -> Database: Store (embedded) submission
+UI -> DataProcessor: Provide submission
+DataProcessor -> LLM: Provide prompt with submission
+LLM -> DataProcessor: Return response
+DataProcessor -> DataProcessor: Process response to recognize changes
+DataProcessor -> UI: Return processed response
+UI -> User: Display underlined corrections with popup on click
+DataProcessor -> LLM: Provide feedback prompt
+LLM -> DataProcessor: Return feedback
+DataProcessor -> UI: Return feedback
+UI -> User: Display feedback

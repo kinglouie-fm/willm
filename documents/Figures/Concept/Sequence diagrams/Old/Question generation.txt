@@ -1,0 +1,15 @@
+title Question generation
+
+participant DataProcessor
+participant DB
+participant LLM
+
+
+DataProcessor -> DB: Retrieve recent submissions
+DB -> DataProcessor: Return recent submissions
+DataProcessor -> LLM: Provide recent submissions
+LLM -> LLM: Generate questions + corresponding answers based on recent issues
+LLM -> LLM: Embed questions + corresponding answers
+LLM -> DataProcessor: Return (embedded) questions + corresponding answers
+DataProcessor -> DB: Store (embedded) questions + corresponding answers
+DB -> DB: Check for duplicates
